@@ -20,29 +20,29 @@ There are a few things you need to know about the function:
 
 ## Registering the function
 
-After you've defined the function, you need to register it, using the doStuff.register() function that accepts an object with the following keys:
+After you've defined the function, you need to register it by calling doStuff.register(), which accepts an object with the following keys:
 
-1. __`function`__: {function} The function (the name of the function, not quoted)
-2. __`action`__: {string} The GET '`action`' value that tells the script that this is the right function to use
-3. __`name`__: {string} Used as the sub-title when the action is selected also used as the link text for the action in the menu.
-4. `docsURL`: {string} [optional] URL for documentation page (must be HTTPS:)
+1. __`function`__: {function} _[required]_ The function (the name of the function, not quoted)
+2. __`action`__: {string} _[required]_ The GET '`action`' value that tells the script that this is the right function to use
+3. __`name`__: {string} _[required]_ Used as the sub-title when the action is selected also used as the link text for the action in the menu.
+4. `docsURL`: {string} _[optional]_ URL for documentation page (must be HTTPS:)
 5. `extraInputs`: {array} [option] list of objects for extra inputs needed for the find/replace
     Extra inputs have the following keys:
-   1. __`name`__: {string}
+   1. __`name`__: {string} _[required]_
       used to identify the input (also used as the key when the '`extraInputs`' are passed to the function
-   2. __`label`__: {string}
+   2. __`label`__: {string} _[required]_
         text to describe the field (or group of checkboxes/radio buttons)
-   3. `type`: {string} [optional]
+   3. `type`: {string} _[optional]_
         text (default), textarea, number, radio, checkbox, select
         (if type is invalid, an error will be shown in the console)
-   4. `default`: {string, number} [optional]
+   4. `default`: {string, number} _[optional]_
         the default value for the input
    5. `options`: {array} [required for radio, checkbox, select]
         list of option objects (option object must have both __`value`__ & __`label`__ keys)
-   6. `placeholder`: {string} [optional]
+   6. `placeholder`: {string} _[optional]_
         Text displayed within the text or number field
         (only used for text & number inputs)
-   7. `pattern`: {string} [optional]
+   7. `pattern`: {string} _[optional]_
         regular expression to validate the contents of the text/number field
         (only used for text & number inputs)
 
