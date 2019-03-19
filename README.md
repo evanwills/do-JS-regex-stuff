@@ -25,8 +25,9 @@ After you've defined the function, you need to register it by calling doStuff.re
 1. __`function`__: {function} _[required]_ The function (the name of the function, not quoted)
 2. __`action`__: {string} _[required]_ The GET '`action`' value that tells the script that this is the right function to use
 3. __`name`__: {string} _[required]_ Used as the sub-title when the action is selected also used as the link text for the action in the menu.
-4. `docsURL`: {string} _[optional]_ URL for documentation page (must be HTTPS:)
-5. `extraInputs`: {array} [option] list of objects for extra inputs needed for the find/replace
+4. `description`: {string} _[optional (but recommended)]_ short paragraph decribing the purpose of the function.
+5. `docsURL`: {string} _[optional]_ URL for documentation page (must be HTTPS). Used in a popup to give detailed information about the action. Including the expected input what will be changed and the expected output why this needs to be done
+6. `extraInputs`: {array} _[option]_ list of objects for extra inputs needed for the find/replace
     Extra inputs have the following keys:
    1. __`name`__: {string} _[required]_
       used to identify the input (also used as the key when the '`extraInputs`' are passed to the function

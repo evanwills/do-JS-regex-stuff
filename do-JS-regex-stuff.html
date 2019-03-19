@@ -4,19 +4,22 @@
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="user-scalable=yes, initial-scale=1.0, width=device-width, height=device-height" />
-		<title>Do JS Regex Stuff</title>
-		<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="css/do-JS-regex-stuff.css" />
+		<title id="doc-title">Do JS Regex Stuff</title>
+		<script type="text/javascript" src="js/jquery-3.3.1.min.js" id="ID-2308433"></script>
+		<link rel="stylesheet" type="text/css" href="css/do-JS-regex-stuff.css" id="ID-2308436" />
 	</head>
 	<body>
 		<header>
 			<h1>Do JS Regex Stuff</h1>
 			<h2 id="sub-title" class="hide"></h2>
 		</header>
+
 		<p id="no-action">Select an action from the menu (top right)</p>
+
 		<form action="do-JS-regex-stuff.html" id="some-action" class="hide" method="POST">
 			<ul id="custom-fields" class="hide">
 			</ul>
+			<p id="action-message" class="hide"></p>
 			<p>
 				<label for="input" class="block">Text to be modified</label>
 				<textarea id="input" name="input" class="block"></textarea>
@@ -26,6 +29,7 @@
 				<input type="submit" value="Reset" id="reset" title="Clear all settings for" class="btn btn-reset" />
 			</p>
 		</form>
+
 		<nav role="menu" class="main-nav">
 			<button id="nav-show-hide" class="btn btn-burger" title="Open menu">
 				<span class="sr-only" id="menu-btn-text">Show Menu</span>
@@ -33,7 +37,10 @@
 			<ul id="menu-items">
 			</ul>
 		</nav>
-		<script type="text/javascript" src="js/do-JS-regex-stuff.js" id="ID-2308435"></script>
-		<script type="text/javascript" src="js/init.js"></script>
+		<script type="text/javascript" src="js/init.js" id="ID-2308434"></script>
+		<script type="text/javascript" src="js/doable-stuff.js" id="ID-2308435"></script>
+		<script type="text/javascript">
+			doStuff.render()
+		</script>
 	</body>
 </html>
