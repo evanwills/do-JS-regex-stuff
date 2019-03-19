@@ -25,15 +25,16 @@ After you've defined the function, you need to register it, using the doStuff.re
 1. __`function`__: {function} The function (the name of the function, not quoted)
 2. __`action`__: {string} The GET '`action`' value that tells the script that this is the right function to use
 3. __`name`__: {string} Used as the sub-title when the action is selected also used as the link text for the action in the menu.
-4. __`docsURL`__: {string} [optional] URL for documentation page (must be HTTPS:)
-5. __`extraInputs`__: {array} [option] list of objects for extra inputs needed for the find/replace
+4. `docsURL`: {string} [optional] URL for documentation page (must be HTTPS:)
+5. `extraInputs`: {array} [option] list of objects for extra inputs needed for the find/replace
     Extra inputs have the following keys:
    1. __`name`__: {string}
       used to identify the input (also used as the key when the '`extraInputs`' are passed to the function
    2. __`label`__: {string}
         text to describe the field (or group of checkboxes/radio buttons)
-   3. `type`: {string} [optional] (text by default)
-        text, textarea, number, radio, checkbox, select
+   3. `type`: {string} [optional]
+        text (default), textarea, number, radio, checkbox, select
+        (if type is invalid, an error will be shown in the console)
    4. `default`: {string, number} [optional]
         the default value for the input
    5. `options`: {array} [required for radio, checkbox, select]
