@@ -29,12 +29,19 @@ function getURLobject (url) {
   var key = ''
   var tmp = ''
   var reg
+  var _url = ''
 
-  if (typeof url === 'string' && url[0] !== '#') {
-    // console.log('url:', url[0])
-    reg = new RegExp('((https?:)?//([^/#?]+))(:[0-9]+)?(/[^?#]+)(?:(?:(\\?)([^#]+)|(#)([^?]+))(?:(#)([^?]+)|(\\?)([^#]+))?)?', 'i')
+  if (typeof url === 'string') {
+    _url = url
+  } else if (typeof url.href === 'string') {
+    _url = url.href
+  }
 
-    urlParts = reg.exec(url)
+  if (typeof _url === 'string' && _url[0] !== '#') {
+    //
+    reg = new RegExp('((https?:|file:/)?//([^/#?]+))(:[0-9]+)?(/[^?#]+)(?:(?:(\\?)([^#]+)|(#)([^?]+))(?:(#)([^?]+)|(\\?)([^#]+))?)?', 'i')
+
+    urlParts = reg.exec(_url)
 
     if (urlParts.length >= 3) {
       output.origin = urlParts[1]
@@ -84,21 +91,33 @@ var DoStuff = function (url, debugMode) {
   var action = ''
   var actionName = ''
   var actionFunction = null
+  var navOpen = false
   var registry = {}
-  var inputTypes = {
-    'text': null,
-    'number': null,
-    'textarea': null,
-    'radio': null,
-    'select': null,
-    'checkbox': null
-  }
+  // var customFields = document.getElementById('some-action')
+  var subTitle = document.getElementById('sub-title')
+  var docTitle = document.getElementById('doc-title')
+  var someAction = document.getElementById('some-action')
+  var inputTextarea = document.getElementById('input')
+  var noAction = document.getElementById('no-action')
+  var menuShowHide = document.getElementById('nav-show-hide')
+  var navWrap = document.getElementById('main-nav')
+  var nav = document.getElementById('menu-items')
+  var mask = document.getElementById('nav-show-hide__mask')
+  var submit = document.getElementById('submit')
+  // var inputTypes = {
+  //   'text': null,
+  //   'number': null,
+  //   'textarea': null,
+  //   'radio': null,
+  //   'select': null,
+  //   'checkbox': null
+  // }
   /**
-   * @var _extraInputs [array] An array of objects where the key is the "name" attribute
+   * @var extraInputs [array] An array of objects where the key is the "name" attribute
    *      for an input field and the value is a function that returns
    *      the value for that input field
    */
-  var _extraInputs = []
+  var extraInputs = []
 
   function updateRegistry (config) {
     if (typeof config.action !== 'string' || config.action === '') {
@@ -107,10 +126,12 @@ var DoStuff = function (url, debugMode) {
     if (typeof config.name !== 'string' || config.name === '') {
       throw new Error('a "name" property that is a non-empty string. ' + typeof config.name + ' given.')
     }
-    if (typeof config.function !== 'function') {
-      throw new Error('a "function" property that is a plain javascript function. ' + typeof config.name + ' given.')
+    if (typeof config.func !== 'function') {
+      throw new Error('a "func" property that is a plain javascript function. ' + typeof config.name + ' given.')
     }
 
+    // TODO: work out how to sort the registry so it's always in
+    // alphabetical order (by name, not action)
     registry[config.action] = config
   }
 
@@ -118,35 +139,50 @@ var DoStuff = function (url, debugMode) {
     var a = 0
     var output = {}
     var key = ''
-    for (a; a < _extraInputs.length; a += 1) {
-      key = _extraInputs[a].name
-      output[key] = _extraInputs[a].getValue()
+    for (a; a < extraInputs.length; a += 1) {
+      key = extraInputs[a].name
+      output[key] = extraInputs[a].getValue()
     }
     return output
   }
 
   function initialiseAction (_action) {
-    var docTitle = document.getElementById('doc-title')
-    var subTitle = document.getElementById('sub-title')
-    var form = document.getElementById('some-action')
-    var noAction = document.getElementById('no-action')
-    var customFields = null
+    // var customFields = null
 
     if (typeof _action !== 'string') {
       throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string. ' + typeof _action + ' given.')
     }
-    if (typeof registry[action] === 'undefined') {
-      throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string. ' + typeof _action + ' given.')
+    if (typeof registry[_action] === 'undefined') {
+      throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string that matches a key in the registry of actions. ' + typeof _action + ' given.')
     }
 
-    subTitle.className = ''
-    subTitle.innerHTML = registry[_action].name
     docTitle.innerHTML = 'Do JS Regex Stuff &ndash; ' + registry[_action].name
+    subTitle.className = ''
+    subTitle.innerHTML = 'blah blah ' + registry[_action].name
+    actionFunction = registry[_action].func
 
-    form.className = ''
+    someAction.className = ''
     noAction.className = 'hide'
+  }
 
-    customFields = document.getElementById('some-action')
+  function getNavClickHandler (_action) {
+    return function (e) {
+      var success = true
+      e.preventDefault()
+
+      try {
+        initialiseAction(_action)
+      } catch (error) {
+        success = false
+        console.error(error)
+      }
+
+      if (success === true) {
+        hideBurger()
+        history.pushState({ id: _action }, registry[_action].name, URL.protocol + '//' + URL.host + URL.pathname + '?action=' + _action)
+        submit.onclick = doMagic()
+      }
+    }
   }
 
   function addToNav (_action) {
@@ -158,22 +194,42 @@ var DoStuff = function (url, debugMode) {
     // if (typeof registry[_action] !== 'undefined') {
 
     a = document.createElement('a')
-    a.setAttribute('href', URL.protocol + '://' + URL.host + URL.pathname + '?action=' + _action)
+    a.setAttribute('href', URL.protocol + '//' + URL.host + URL.pathname + '?action=' + _action)
     linkText = document.createTextNode(registry[_action].name)
     if (typeof registry[_action].description === 'string') {
       a.setAttribute('title', registry[_action].description)
     }
+    a.setAttribute('data-title', registry[_action].name)
     a.appendChild(linkText)
+    a.onclick = getNavClickHandler(_action)
     li = document.createElement('li')
     li.appendChild(a)
 
     // }
     return li
   }
+  function hideBurger () {
+    menuShowHide.className = 'btn btn-burger'
+    navWrap.className = 'main-nav'
+    mask.className = 'mask'
+    navOpen = false
+  }
+  function showBurger () {
+    navWrap.className = 'main-nav main-nav--show'
+    menuShowHide.className = 'btn btn-burger btn-burger--open'
+    mask.className = 'mask mask--show'
+    navOpen = true
+  }
+
+  function bergerShowHide (e) {
+    if (navOpen === true) {
+      hideBurger()
+    } else {
+      showBurger()
+    }
+  }
 
   this.register = function (config) {
-    var nav = document.getElementById('menu-items')
-
     try {
       updateRegistry(config)
     } catch (error) {
@@ -187,40 +243,49 @@ var DoStuff = function (url, debugMode) {
 
     // need to sort out making this alphabetical
     // but this'll do for the moment
-    nav.appendChild(addToNav(action))
+    nav.appendChild(addToNav(config.action))
   }
 
   this.render = function () {
-    var subTitle = document.getElementById('sub-title')
-    if (typeof extraInputs === 'undefined') {
+    menuShowHide.onclick = bergerShowHide
+    mask.onclick = bergerShowHide
+
+    if (typeof action === 'string' && action !== '') {
       subTitle.className = ''
-      subTitle.innerHTML = actionName
+      subTitle.innerHTML = registry[action].name
+
+      submit.onclick = doMagic()
     }
   }
 
+  /**
+   * doMagic() is called when the submit button is clicked.
+   */
   function doMagic () {
-    var output = ''
-    var textarea = null
-    var msg = null
-    var input = ''
-    var extraInputs = {}
+    return function (e) {
+      e.preventDefault()
 
-    if (actionFunction !== null) {
-      textarea = document.getElementById('input')
-      extraInputs = getExtraInputs()
-      input = textarea.innerHTML
-      output = input
-      try {
-        output = actionFunction(output, extraInputs)
-      } catch (e) {
-        console.error('Action "' + actionName + '" failed due to error: "' + e + '"')
-      }
+      var output = ''
+      var msg = null
+      var input = ''
+      var extraInputs = {}
 
-      if (output !== input) {
-        textarea.innerHTML = output
-      } else {
-        msg = document.getElementById('action-message')
-        msg.innerHTML = 'Action "' + actionName + '" had no effect on <em>Text to be modified</em>.'
+      if (actionFunction !== null) {
+        extraInputs = getExtraInputs()
+        input = inputTextarea.value
+        output = input
+        try {
+          output = actionFunction(output, extraInputs)
+        } catch (e) {
+          console.error('Action "' + actionName + '" failed due to error: "' + e + '"')
+        }
+
+        if (output !== input) {
+          inputTextarea.value = output
+        } else {
+          msg = document.getElementById('action-message')
+          msg.innerHTML = 'Action "' + actionName + '" had no effect on <em>Text to be modified</em>.'
+        }
       }
     }
   }

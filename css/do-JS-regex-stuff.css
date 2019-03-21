@@ -45,10 +45,15 @@ textarea {
 }
 .btn-burger {
   background-color: #000;
-  width: 3rem;
   height: 3rem;
+  left: -2.95rem;
+  position: absolute;
+  width: 3rem;
 }
-.btn-burger::before {
+.btn-burger:hover {
+  cursor: pointer;
+}
+.btn-burger::after {
   /* content: '\2261  '; */
   content: '\025BD ';
   font-size: 1.5rem;
@@ -56,14 +61,15 @@ textarea {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%) rotate(90deg);
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.35s ease-in-out;
+  cursor: pointer;
 }
-.btn-burger.open::before {
+.btn-burger--open::after {
   /* content: '\0003E ';
   content: '\021D2 ';
   content: '\021DB '; */
   transform: translate(-50%, -50%) rotate(-90deg);
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.35s ease-in-out;
 }
 .sr-only {
   position: absolute;
@@ -72,8 +78,99 @@ textarea {
 }
 
 .main-nav {
+  background-color: #000;
   position: fixed;
   /* position: sticky; */
-  top: 0;
   right: 0;
+  top: 0;
+  width: 15rem;
+  right: -15rem;
+  transform: translateX(0);
+  transition: transform 0.4s ease-in-out;
+  z-index: 2
+}
+.main-nav--show {
+  transform: translateX(-15rem);
+  transition: transform 0.4s ease-in-out;
+}
+
+.menu-items {
+  background-color: #fff;
+  border: 0.05rem solid #ccc;
+  margin: 0;
+  padding: 0;
+  border-top: none;
+}
+.menu-items li {
+  border-top: 0.05rem solid #ccc;
+  list-style-type: none;
+}
+.menu-items li:first-child {
+  border-top: none;
+}
+.menu-items li a {
+  text-decoration: none;
+  color: #000;
+  display: block;
+  padding: 0.9rem 1rem;
+  position: relative;
+  z-index: 1;
+}
+.menu-items li a::before {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  background-color: #666;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  content: '';
+  z-index: 1;
+  content: '';
+}
+.menu-items li a::after {
+  color: #fff;
+  opacity: 0;
+  padding: 0.9rem 1rem;
+  transform: scale(0);
+  transform: translate(-50%,-50%);
+  transition: opacity 0.3s ease-in-out transform 0.3s ease-in-out 0.2s;
+  position: absolute;
+  left: 0;
+  top: 0;
+  content: attr(data-title);
+  z-index: 2;
+  }
+.menu-items li a:hover::before {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out
+}
+.menu-items li a:hover::after {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s ease-in-out transform 0.3s ease-in-out;
+}
+
+.mask {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  background-color: #000;
+  opacity: 0.6;
+  transform: translate(102%, -102%);
+  transform-origin: top right;
+  transition: transform 0.5s ease-in-out;
+  display: block;
+  width: 110%;
+  z-index: 1
+}
+.mask:hover {
+  cursor: pointer;
+}
+.mask--show {
+  transform: translate(-5%, 0);
+  transition: transform 0.5s ease-in-out;
 }
