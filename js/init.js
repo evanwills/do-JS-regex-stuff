@@ -86,24 +86,154 @@ function getURLobject (url) {
   return output
 }
 
-var DoStuff = function (url, debugMode) {
+/**
+ *
+ * @param {string} url
+ */
+var DoStuff = function (url) {
+  /**
+   * @var object URL contains all the parts of a URL, making it easy
+   *             to use varios parts just as individual parts.
+   *
+   * In this case it's used to create the base URL used for all links
+   * plus provide easy access to GET variables.
+   */
   var URL = null
+  /**
+   * @var {string} action what the "app" is app is doing at the moment
+   *
+   * It's used to identify the function to be used to modify the input
+   */
   var action = ''
-  var actionName = ''
+
+  /**
+   * @var {function} actionFunction the function to be called when
+   *               modifying the input
+   */
   var actionFunction = null
+
+  /**
+   * @var {string} actionName Human friendly name of the action
+   */
+  var actionName = ''
+
+  /**
+   * @var {string} baseURL used as the main part of the URL for all
+   *             links
+   */
+  var baseURL = ''
+
+  /**
+   * @var {string} debugGet string to be appended to the URL of all
+   *             links when in debug mode it adds a GET variable to
+   *             the URL
+   */
+  var debugGet = ''
+
+  /**
+   * @var {boolean} navOpen whether or not the nav (burger menu) is
+   *              open or closed
+   */
   var navOpen = false
+
+  /**
+   * @var {object} registry list of objects where the key is the
+   *             action name and the value is all the metadata for
+   *             the action plus the action function
+   */
   var registry = {}
+
+  /**
+   * @var {boolean} debugMode whether the script is in "Debug Mode"
+   */
+  var debugMode = false
+
+  /**
+   * @var {DOMelement} debugField textarea field used to output the
+   *             results of the action function.
+   *
+   * Useful when you're creating a new action and you want to use
+   * the same input over and over again.
+   */
+  var debugField = null
+
   // var customFields = document.getElementById('some-action')
+
+  /**
+   * @var {DOMelement} subTitle the page's main H2 element
+   *
+   * Used to set house the action's name in the main page content
+   */
   var subTitle = document.getElementById('sub-title')
+
+  /**
+   * @var {DOMelement} docTitle the Title element in the page header
+   */
   var docTitle = document.getElementById('doc-title')
+
+  /**
+   * @var {DOMelement} someAction the main form element where all
+   *             the cool stuff happens
+   */
   var someAction = document.getElementById('some-action')
+
+  /**
+   * @var {DOMelement} customFields the un-ordered list element
+   */
+  var customFields = document.getElementById('custom-fields')
+
+  /**
+   * @var {DOMelement} inputTextarea the textarea element where the
+   *             text that is to be modified by the "app" is put by
+   *             the user and where the modified output of the action
+   *             is also put once the action has been run
+   */
   var inputTextarea = document.getElementById('input')
+
+  /**
+   * @var {DOMelement} noAction where the message explaining what is
+   *             happeing when no action has been selected and also
+   *             the place to put the action description if one has
+   *             been set.
+   */
   var noAction = document.getElementById('no-action')
+
+  /**
+   * @var {DOMelement} menuShowHide the button used for showing and
+   *             hiding the navigation menue
+   */
   var menuShowHide = document.getElementById('nav-show-hide')
+
+  /**
+   * @var {DOMelement} navWrap the wrapping element for the
+   *             navigation (Berger) Menu
+   */
   var navWrap = document.getElementById('main-nav')
+
+  /**
+   * @var {DOMelement} nav the unordered list use to house all the
+   *             action links
+   */
   var nav = document.getElementById('menu-items')
+
+  /**
+   * @var {DOMelement} mask a button element stretched across the
+   *             whole visible window area that when clicked on
+   *             closes the navingation (berger) menu
+   */
   var mask = document.getElementById('nav-show-hide__mask')
+
+  /**
+   * @var {DOMelement} submit the submit button used to trigger an
+   *             action to modify the user's input
+   */
   var submit = document.getElementById('submit')
+
+  /**
+   * @var {DOMelement} renderOuput textarea used to render the output
+   *             of an action when in Debug mode
+   */
+  var renderOutput = null
   // var inputTypes = {
   //   'text': null,
   //   'number': null,
@@ -113,12 +243,19 @@ var DoStuff = function (url, debugMode) {
   //   'checkbox': null
   // }
   /**
-   * @var extraInputs [array] An array of objects where the key is the "name" attribute
+   * @var {array} extraInputs [array] An array of objects where the key is the "name" attribute
    *      for an input field and the value is a function that returns
    *      the value for that input field
    */
   var extraInputs = []
 
+  /**
+   * updateRegistry adds a new action to the registry of action
+   *
+   * @param {object} config config object used containing the
+   *             action's function and all the metadata needed to
+   *             initialise the action if selected
+   */
   function updateRegistry (config) {
     if (typeof config.action !== 'string' || config.action === '') {
       throw new Error('a "action" property that is a non-empty string. ' + typeof config.name + ' given.')
@@ -129,12 +266,22 @@ var DoStuff = function (url, debugMode) {
     if (typeof config.func !== 'function') {
       throw new Error('a "func" property that is a plain javascript function. ' + typeof config.name + ' given.')
     }
+    config.action = config.action.toLowerCase()
 
     // TODO: work out how to sort the registry so it's always in
     // alphabetical order (by name, not action)
     registry[config.action] = config
   }
 
+  /**
+   * getExtraInputs() returns an object containing key/value pairs
+   * where the key is an extra input field's ID and the value is the
+   * value of that field
+   *
+   * @returns {object} simple key/value pair object where the key is
+   *             the ID/name of a form field and the value is either
+   *             a string, number or boolean (checkboxes only)
+   */
   function getExtraInputs () {
     var a = 0
     var output = {}
@@ -146,8 +293,17 @@ var DoStuff = function (url, debugMode) {
     return output
   }
 
+  /**
+   * initialiseAction() does all the work of making an action
+   * available to the user once the user has selected that action
+   *
+   * @param {string} _action name of the action to be initialised
+   *            (as listed in the registry)
+   *
+   * @returns {void}
+   */
   function initialiseAction (_action) {
-    // var customFields = null
+    var a = 0
 
     if (typeof _action !== 'string') {
       throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string. ' + typeof _action + ' given.')
@@ -158,13 +314,40 @@ var DoStuff = function (url, debugMode) {
 
     docTitle.innerHTML = 'Do JS Regex Stuff &ndash; ' + registry[_action].name
     subTitle.className = ''
-    subTitle.innerHTML = 'blah blah ' + registry[_action].name
+    subTitle.innerHTML = registry[_action].name
     actionFunction = registry[_action].func
-
     someAction.className = ''
-    noAction.className = 'hide'
+
+    if (typeof registry[_action].description === 'string' && registry[_action].description !== '') {
+      noAction.innerHTML = registry[_action].description
+      noAction.className = 'description'
+    } else {
+      noAction.className = 'hide'
+    }
+
+    customFields.innerHTML = ''
+    customFields.className = 'custom-fields hide'
+
+    if (Array.isArray(registry[_action].extraInputs)) {
+      for (a = 0; a < registry[_action].extraInputs.length; a += 1) {
+        customFields.appendChild(getSingleExtraInput(registry[_action].extraInputs[a]))
+      }
+      if (a > 0) {
+        customFields.className = 'custom-fields'
+      }
+    }
   }
 
+  /**
+   * getNavClickHandler() returns a function to be used as the
+   * onClick callaback function when a navigation item is clicked
+   *
+   * @param {string} _action name of the action to be initialised
+   *             (as listed in the registry)
+   *
+   * @returns {function} calback to be passed to the onclick event
+   *             handler
+   */
   function getNavClickHandler (_action) {
     return function (e) {
       var success = true
@@ -179,11 +362,230 @@ var DoStuff = function (url, debugMode) {
 
       if (success === true) {
         hideBurger()
-        history.pushState({ id: _action }, registry[_action].name, URL.protocol + '//' + URL.host + URL.pathname + '?action=' + _action)
+        history.pushState({ id: _action }, registry[_action].name, baseURL + _action + debugGet)
         submit.onclick = doMagic()
       }
     }
   }
+
+  // ======================================================
+  // START: extra field generators
+
+  /**
+   * setTextInputAttributes() returns an form field DOM element
+   *
+   * @param {string} nodeType type of input to be created
+   * @param {object} config all the metadata required to create a
+   *             textarea element
+   *
+   * @returns {DOMelement} HTML appropriate input or textarea field
+   */
+  function setTextInputAttributes (nodeType, config) {
+    var textTypes = ['text', 'textarea', 'number', 'email']
+    var _node = null
+
+    if (textTypes.indexOf(nodeType) > -1) {
+      throw new Error('DoStuff.setTextInputAttributes() expects first parameter "noteType" to be a string matching the name of a valid HTML text type input field')
+    }
+    _node = document.createElement(nodeType)
+
+    _node.setAttribute('id', config.id)
+    _node.setAttribute('name', config.id)
+    if (typeof config.default === 'string') {
+      _node.value = config.default
+    }
+    if (typeof config.placeholder === 'string' && config.placeholder !== '') {
+      _node.setAttribute('placeholder', config.placeholder)
+    }
+    if (typeof config.pattern === 'string' && config.pattern !== '') {
+      _node.setAttribute('pattern', config.pattern)
+    }
+    return _node
+  }
+
+  /**
+   * getTextarea() returns a textarea DOMelement
+   *
+   * @param {object} config all the metadata required to create a
+   *             textarea element
+   *
+   * @returns {DOMelement} HTML textarea field
+   */
+  function getTextarea (config) {
+    return setTextInputAttributes('textarea', config)
+  }
+
+  /**
+   * getText() returns a text input DOMelement
+   *
+   * @param {object} config all the metadata required to create a
+   *             textarea element
+   * @returns {DOMelement} HTML simple text input field
+   */
+  function getText (config) {
+    return setTextInputAttributes('text', config)
+  }
+
+  /**
+   * getNumber() returns a numbers input DOMelement
+   *
+   * @param {object} config all the metadata required to create a
+   *             textarea element
+   * @returns {DOMelement} HTML number input field
+   */
+  function getNumber (config) {
+    var _node = setTextInputAttributes('number', config)
+
+    if (typeof (config.min * 1) === 'number') {
+      _node.setAttribute('min', config.min * 1)
+    }
+    if (typeof (config.max * 1) === 'number') {
+      _node.setAttribute('max', config.min * 1)
+    }
+    if (typeof (config.step * 1) === 'number') {
+      _node.setAttribute('step', config.min * 1)
+    }
+    return _node
+  }
+
+  /**
+   * getLabel() returns a field's label DOMelement (for semantic and
+   * accessible form fields)
+   *
+   * @param {object} config all the metadata required to create a
+   *             textarea element
+   * @returns {DOMelement} HTML number input field
+   */
+  function getLabel (config) {
+    var _node = document.createElement('label')
+    var _text = document.createTextNode(config.label)
+
+    _node.setAttribute('for', config.id)
+    _node.appendChild(_text)
+    return _node
+  }
+
+  /**
+   * getDescription() returns a span DOMelement containing a longer
+   * description of the purpose of a form fieldd (for semantic and
+   * accessible form fields)
+   *
+   * @param {object} config all the metadata required to create a
+   *             textarea element
+   * @returns {DOMelement} HTML span element
+   */
+  function getDescription (config) {
+    var _node = document.createElement('span')
+    var _text = document.createTextNode(config.description)
+
+    _node.setAttribute('id', config.action + 'Desc')
+    _node.className = 'input-description'
+    _node.appendChild(_text)
+
+    return _node
+  }
+
+  /**
+   * getSelectOption() returns a single select option to be appended
+   * to a select field
+   *
+   * @param {object} config all the metadata required to create a
+   *             textarea element
+   * @returns {DOMelement} HTML option element
+   */
+  function getSelectOption (_value, _label, _default) {
+    var _node = document.createElement('option')
+    var _text = document.createTextNode(_label)
+
+    _node.value = _value
+    _node.appendChild(_text)
+
+    if (typeof _default === 'boolean' && _default === true) {
+      _node.setAttribute('selected', 'selected')
+    }
+
+    return _node
+  }
+
+  /**
+   * getSelect() returns a full select field with all specified
+   * options
+   *
+   * @param {object} config all the metadata required to create
+   *             a textarea element
+   * @returns {DOMelement} HTML select form field element
+   */
+  function getSelect (config) {
+    var _node = document.createElement('select')
+    var _isDefault = false
+    var a = 0
+
+    _node.setAttribute('id', config.id)
+    _node.setAttribute('name', config.id)
+
+    for (a = 0; a < config.options.length; a += 1) {
+      _isDefault = (typeof config.options[a].default === 'boolean') ? config.options[a].default : false
+      _node.appendChild(getSelectOption(config.options[a].value, config.options[a].label, _isDefault))
+    }
+    return _node
+  }
+
+  /**
+   * getSingleExtraInput() returns a full semantically correct
+   * accessible form field wrapped in a list item
+   *
+   * @param {object} config all the metadata required to create
+   *             a textarea element
+   * @returns {DOMelement} HTML select form field element
+   */
+  function getSingleExtraInput (config) {
+    var _node = document.createElement('li')
+    var _inputWrap = document.createElement('div')
+    var _input = null
+    var _desc = null
+
+    switch (config.type) {
+      case 'select':
+        _input = getSelect(config)
+        break
+
+      case 'number':
+        _input = getNumber(config)
+        break
+
+      case 'textarea':
+        _input = getTextarea(config)
+        break
+
+      case 'radio':
+        break
+
+      case 'checkbox':
+        break
+
+      default:
+        _input = getText(config.type, config)
+    }
+    if (typeof config.description === 'string' && config.description !== '') {
+      _input.setAttribute('aria-describedby', config.action + 'Desc')
+      _desc = getDescription(config)
+    }
+    _inputWrap.className = 'input-wrap'
+
+    _node.appendChild(getLabel(config))
+    _inputWrap.append(_input)
+    if (_desc !== null) {
+      _inputWrap.appendChild(getDescription(config))
+    }
+    _node.appendChild(_inputWrap)
+
+    extraInputs[config.id] = _node
+
+    return _node
+  }
+
+  //  END: extra field generators
+  // ======================================================
 
   function addToNav (_action) {
     var li = null
@@ -194,7 +596,7 @@ var DoStuff = function (url, debugMode) {
     // if (typeof registry[_action] !== 'undefined') {
 
     a = document.createElement('a')
-    a.setAttribute('href', URL.protocol + '//' + URL.host + URL.pathname + '?action=' + _action)
+    a.setAttribute('href', baseURL + _action + debugGet)
     linkText = document.createTextNode(registry[_action].name)
     if (typeof registry[_action].description === 'string') {
       a.setAttribute('title', registry[_action].description)
@@ -211,7 +613,7 @@ var DoStuff = function (url, debugMode) {
   function hideBurger () {
     menuShowHide.className = 'btn btn-burger'
     navWrap.className = 'main-nav'
-    mask.className = 'mask'
+    mask.className = 'mask mask--hide'
     navOpen = false
   }
   function showBurger () {
@@ -228,6 +630,56 @@ var DoStuff = function (url, debugMode) {
       showBurger()
     }
   }
+
+  renderOutput = function (_input) {
+    inputTextarea.value = _input
+  }
+
+  /**
+   * doMagic() is called when the submit button is clicked.
+   */
+  function doMagic () {
+    return function (e) {
+      e.preventDefault()
+
+      var output = ''
+      var msg = null
+      var input = ''
+      var extraInputs = {}
+
+      if (actionFunction !== null) {
+        extraInputs = getExtraInputs()
+        input = inputTextarea.value
+        output = input
+        try {
+          output = actionFunction(output, extraInputs, URL.searchParams)
+        } catch (e) {
+          console.error('Action "' + actionName + '" failed due to error: "' + e + '"')
+        }
+
+        if (output !== input) {
+          renderOutput(output)
+        } else {
+          msg = document.getElementById('action-message')
+          msg.innerHTML = 'Action "' + actionName + '" had no effect on <em>Text to be modified</em>.'
+        }
+      }
+    }
+  }
+
+  function activateDebugMode () {
+    if (debugMode) {
+      debugField = getTextarea('output', 'Test output')
+      debugField.setAttribute('readonly', 'readonly')
+    }
+    renderOutput = function (_input) {
+      debugField.value = _input
+    }
+  }
+
+  //  END:  private methods
+  // ======================================================
+  // START: public methods
 
   this.register = function (config) {
     try {
@@ -258,43 +710,28 @@ var DoStuff = function (url, debugMode) {
     }
   }
 
-  /**
-   * doMagic() is called when the submit button is clicked.
-   */
-  function doMagic () {
-    return function (e) {
-      e.preventDefault()
-
-      var output = ''
-      var msg = null
-      var input = ''
-      var extraInputs = {}
-
-      if (actionFunction !== null) {
-        extraInputs = getExtraInputs()
-        input = inputTextarea.value
-        output = input
-        try {
-          output = actionFunction(output, extraInputs)
-        } catch (e) {
-          console.error('Action "' + actionName + '" failed due to error: "' + e + '"')
-        }
-
-        if (output !== input) {
-          inputTextarea.value = output
-        } else {
-          msg = document.getElementById('action-message')
-          msg.innerHTML = 'Action "' + actionName + '" had no effect on <em>Text to be modified</em>.'
-        }
-      }
-    }
-  }
+  //  END:  public methods
+  // ======================================================
+  // START: proceedural part of code (constructor stuff)
 
   URL = getURLobject(url)
 
   if (typeof URL.searchParams['action'] !== 'undefined') {
-    action = URL.searchParams['action']
+    action = URL.searchParams['action'].toLowerCase()
   }
+
+  if (typeof URL.searchParams['debug'] !== 'undefined') {
+    debugMode = (URL.searchParams['debug'].toLowerCase() === 'true' || URL.searchParams['debug'] === '1')
+
+    if (debugMode === true) {
+      debugGet = '&debug=true'
+    }
+  }
+  baseURL = URL.protocol + '//' + URL.host + URL.pathname + '?action='
 }
 
+/**
+ * @var doStuff global object to allow functions to be registered
+ *              (and to do all the stuff required to make this work)
+ */
 var doStuff = new DoStuff(window.location)

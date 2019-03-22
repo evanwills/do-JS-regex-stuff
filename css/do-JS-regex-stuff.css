@@ -39,6 +39,10 @@ textarea {
   background-color: #090;
   text-shadow: #040 0rem 0rem 0.2rem;
 }
+.btn-submit:hover {
+  background-color: #080;
+  text-shadow: #000 0rem 0rem 0.5rem;
+}
 .btn-reset {
   background-color: #900;
   float: right;
@@ -46,7 +50,7 @@ textarea {
 .btn-burger {
   background-color: #000;
   height: 3rem;
-  left: -2.95rem;
+  left: -3rem;
   position: absolute;
   width: 3rem;
 }
@@ -79,27 +83,24 @@ textarea {
 
 .main-nav {
   background-color: #000;
+  max-width: 20rem;
   position: fixed;
-  /* position: sticky; */
-  right: 0;
+  right: -20rem;
   top: 0;
-  width: 15rem;
-  right: -15rem;
   transform: translateX(0);
   transition: transform 0.4s ease-in-out;
-  z-index: 2
+  width: calc(100% - 3rem);
+  z-index: 2;
 }
 .main-nav--show {
-  transform: translateX(-15rem);
+  transform: translateX(-20rem);
   transition: transform 0.4s ease-in-out;
 }
 
 .menu-items {
   background-color: #fff;
-  border: 0.05rem solid #ccc;
   margin: 0;
   padding: 0;
-  border-top: none;
 }
 .menu-items li {
   border-top: 0.05rem solid #ccc;
@@ -122,7 +123,7 @@ textarea {
   left: 0;
   right: 0;
   top: 0;
-  background-color: #666;
+  background-color: #205;
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
   content: '';
@@ -160,17 +161,66 @@ textarea {
   top: 0;
   background-color: #000;
   opacity: 0.6;
-  transform: translate(102%, -102%);
   transform-origin: top right;
-  transition: transform 0.5s ease-in-out;
   display: block;
   width: 110%;
-  z-index: 1
+  z-index: 1;
+  margin: -1rem
 }
 .mask:hover {
   cursor: pointer;
 }
+.mask--hide {
+  transform: translate(102%, -102%);
+  transition: transform 0.5s ease-in-out;
+}
 .mask--show {
   transform: translate(-5%, 0);
   transition: transform 0.5s ease-in-out;
+}
+
+form {
+  position: relative;
+  padding-bottom: 3rem;
+  box-sizing: border-box;
+}
+.action-buttons {
+  bottom: -1rem;
+  box-sizing: border-box;
+  left: 0;
+  margin-top: 2rem;
+  position: absolute;
+  right: 0;
+}
+
+.custom-fields {
+  margin: 1rem 0;
+  padding: 0;
+}
+.custom-fields li {
+  display: flex;
+  list-style-type: none;
+  margin: 0.5rem 0
+}
+.custom-fields label {
+  width: 10rem;
+  font-weight: bold;
+  text-align: right;
+  position: relative;
+  top: -0.3rem;
+}
+.custom-fields label::after {
+  content: ': ';
+}
+.input-wrap {
+  flex-grow: 1
+}
+.input-wrap span {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 90%;
+}
+select { font-size: 1rem; }
+option {
+  padding: 0.3rem 0.5rem;
 }

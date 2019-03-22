@@ -15,6 +15,7 @@ There are a few things you need to know about the function:
    1. __`input`__: {string} text from the main "Text to be modified" textarea
    2. __`extraInputs`__: {object} list of key/value pairs where the key is the contents of the `name` attribute of the field
         (extra fields that you can define when you register the function)
+   3. __`GETvars`__: {object} list of all supplied GET vars
 3. It must return a string (to be used as the replacement contents for the "Text to be modified" textarea
 4. It must be a pure function (i.e. it must not make changes to variables that are not defined within the function)
 
@@ -46,4 +47,13 @@ After you've defined the function, you need to register it by calling doStuff.re
    7. `pattern`: {string} _[optional]_
         regular expression to validate the contents of the text/number field
         (only used for text & number inputs)
+   8. `description`: {string} _[optional]_
+        Information about what this field is used for. (Displayed below the input field input)
+   9. `min`: {number} _[optional]_ (number fields only)
+        Minumum value the number field can contain
+   10. `max`: {number} _[optional]_ (number fields only)
+        Maximum value the number field can contain
+   11. `step`: {number} _[optional]_ (number fields only)
+        The amount to increment the field's value up and down when using the arrow keys or number scroller
+      
 
