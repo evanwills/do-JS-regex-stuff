@@ -92,14 +92,6 @@ function getURLobject (url) {
  */
 var DoStuff = function (url) {
   /**
-   * @var object URL contains all the parts of a URL, making it easy
-   *             to use varios parts just as individual parts.
-   *
-   * In this case it's used to create the base URL used for all links
-   * plus provide easy access to GET variables.
-   */
-  var URL = null
-  /**
    * @var {string} action what the "app" is app is doing at the moment
    *
    * It's used to identify the function to be used to modify the input
@@ -124,11 +116,89 @@ var DoStuff = function (url) {
   var baseURL = ''
 
   /**
+   * @var {DOMelement} customFields the un-ordered list element
+   */
+  var customFields = document.getElementById('custom-fields')
+
+  /**
+   * @var {DOMelement} debugField textarea field used to output the
+   *             results of the action function.
+   *
+   * Useful when you're creating a new action and you want to use
+   * the same input over and over again.
+   */
+  var debugField = null
+
+  /**
    * @var {string} debugGet string to be appended to the URL of all
    *             links when in debug mode it adds a GET variable to
    *             the URL
    */
   var debugGet = ''
+
+  /**
+   * @var {boolean} debugMode whether the script is in "Debug Mode"
+   */
+  var debugMode = false
+
+  /**
+   * @var {DOMelement} docTitle the Title element in the page header
+   */
+  var docTitle = document.getElementById('doc-title')
+
+  /**
+   * @var {array} extraInputs [array] An array of objects where the key is the "name" attribute
+   *      for an input field and the value is a function that returns
+   *      the value for that input field
+   */
+  var extraInputs = {}
+
+  /**
+   * @var {DOMelement} inputTextarea the textarea element where the
+   *             text that is to be modified by the "app" is put by
+   *             the user and where the modified output of the action
+   *             is also put once the action has been run
+   */
+  var inputTextarea = document.getElementById('input')
+
+  /**
+   * @var {DOMelement} inputWrapper The wrapper for the main input text area
+   */
+  var inputWrapper = document.getElementById('input-wrapper')
+
+  /**
+   * @var {DOMelement} mask a button element stretched across the
+   *             whole visible window area that when clicked on
+   *             closes the navingation (berger) menu
+   */
+  var mask = document.getElementById('nav-show-hide__mask')
+
+  /**
+   * @var {DOMelement} menuShowHide the button used for showing and
+   *             hiding the navigation menue
+   */
+  var menuShowHide = document.getElementById('nav-show-hide')
+
+  /**
+   * @var {DOMelement} noAction where the message explaining what is
+   *             happeing when no action has been selected and also
+   *             the place to put the action description if one has
+   *             been set.
+   */
+  var noAction = document.getElementById('no-action')
+
+  /**
+   * @var {DOMelement} nav the unordered list use to house all the
+   *             action links
+   */
+  var nav = document.getElementById('menu-items')
+
+  /**
+   var mask = document.getElementById('nav-show-hide__mask')
+   * @var {DOMelement} navWrap the wrapping element for the
+   *             navigation (Berger) Menu
+   */
+  var navWrap = document.getElementById('main-nav')
 
   /**
    * @var {boolean} navOpen whether or not the nav (burger menu) is
@@ -144,20 +214,18 @@ var DoStuff = function (url) {
   var registry = {}
 
   /**
-   * @var {boolean} debugMode whether the script is in "Debug Mode"
+   * @var {DOMelement} renderOuput textarea used to render the output
+   *             of an action when in Debug mode
    */
-  var debugMode = false
-
-  /**
-   * @var {DOMelement} debugField textarea field used to output the
-   *             results of the action function.
-   *
-   * Useful when you're creating a new action and you want to use
-   * the same input over and over again.
-   */
-  var debugField = null
+  var renderOutput = null
 
   // var customFields = document.getElementById('some-action')
+
+  /**
+   * @var {DOMelement} someAction the main form element where all
+   *             the cool stuff happens
+   */
+  var someAction = document.getElementById('some-action')
 
   /**
    * @var {DOMelement} subTitle the page's main H2 element
@@ -167,87 +235,23 @@ var DoStuff = function (url) {
   var subTitle = document.getElementById('sub-title')
 
   /**
-   * @var {DOMelement} docTitle the Title element in the page header
-   */
-  var docTitle = document.getElementById('doc-title')
-
-  /**
-   * @var {DOMelement} someAction the main form element where all
-   *             the cool stuff happens
-   */
-  var someAction = document.getElementById('some-action')
-
-  /**
-   * @var {DOMelement} customFields the un-ordered list element
-   */
-  var customFields = document.getElementById('custom-fields')
-
-  /**
-   * @var {DOMelement} inputTextarea the textarea element where the
-   *             text that is to be modified by the "app" is put by
-   *             the user and where the modified output of the action
-   *             is also put once the action has been run
-   */
-  var inputTextarea = document.getElementById('input')
-
-  /**
-   * @var {DOMelement} noAction where the message explaining what is
-   *             happeing when no action has been selected and also
-   *             the place to put the action description if one has
-   *             been set.
-   */
-  var noAction = document.getElementById('no-action')
-
-  /**
-   * @var {DOMelement} menuShowHide the button used for showing and
-   *             hiding the navigation menue
-   */
-  var menuShowHide = document.getElementById('nav-show-hide')
-
-  /**
-   * @var {DOMelement} navWrap the wrapping element for the
-   *             navigation (Berger) Menu
-   */
-  var navWrap = document.getElementById('main-nav')
-
-  /**
-   * @var {DOMelement} nav the unordered list use to house all the
-   *             action links
-   */
-  var nav = document.getElementById('menu-items')
-
-  /**
-   * @var {DOMelement} mask a button element stretched across the
-   *             whole visible window area that when clicked on
-   *             closes the navingation (berger) menu
-   */
-  var mask = document.getElementById('nav-show-hide__mask')
-
-  /**
    * @var {DOMelement} submit the submit button used to trigger an
    *             action to modify the user's input
    */
   var submit = document.getElementById('submit')
 
   /**
-   * @var {DOMelement} renderOuput textarea used to render the output
-   *             of an action when in Debug mode
+   * @var object URL contains all the parts of a URL, making it easy
+   *             to use varios parts just as individual parts.
+   *
+   * In this case it's used to create the base URL used for all links
+   * plus provide easy access to GET variables.
    */
-  var renderOutput = null
-  // var inputTypes = {
-  //   'text': null,
-  //   'number': null,
-  //   'textarea': null,
-  //   'radio': null,
-  //   'select': null,
-  //   'checkbox': null
-  // }
-  /**
-   * @var {array} extraInputs [array] An array of objects where the key is the "name" attribute
-   *      for an input field and the value is a function that returns
-   *      the value for that input field
-   */
-  var extraInputs = {}
+  var URL = null
+
+  //  END:  object (private) properties
+  // ======================================================
+  // START: private functions
 
   /**
    * updateRegistry adds a new action to the registry of action
@@ -293,26 +297,6 @@ var DoStuff = function (url) {
     }
     return _output
   }
-
-  /**
-   * getExtraInputs() returns an object containing key/value pairs
-   * where the key is an extra input field's ID and the value is the
-   * value of that field
-   *
-   * @returns {object} simple key/value pair object where the key is
-   *             the ID/name of a form field and the value is either
-   *             a string, number or boolean (checkboxes only)
-   */
-  // function getExtraInputs () {
-  //   var a = 0
-  //   var output = {}
-  //   var key = ''
-  //   for (a; a < extraInputs.length; a += 1) {
-  //     key = extraInputs[a].name
-  //     output[key] = extraInputs[a].getValue()
-  //   }
-  //   return output
-  // }
 
   /**
    * initialiseAction() does all the work of making an action
@@ -399,7 +383,11 @@ var DoStuff = function (url) {
    * @param {object} config all the metadata required to create a
    *             textarea element
    *
-   * @returns {DOMelement} HTML appropriate input or textarea field
+   * @returns {object} Object with two properties:
+   *          * "node" - A DOM node containing a sematically correct
+   *                     text type field and
+   *          * "getter" - A function used by the developer to get
+   *                     the current value of the radio field
    */
   function setTextInputAttributes (nodeType, config) {
     var textTypes = ['text', 'textarea', 'number', 'email']
@@ -408,11 +396,15 @@ var DoStuff = function (url) {
     if (textTypes.indexOf(nodeType) === -1) {
       throw new Error('DoStuff.setTextInputAttributes() expects first parameter "noteType" to be a string matching the name of a valid HTML text type input field')
     }
-    _node = document.createElement('input')
+    if (nodeType === 'textarea') {
+      _node = document.createElement('textarea')
+    } else {
+      _node = document.createElement('input')
+      _node.setAttribute('type', nodeType)
+    }
 
     _node.setAttribute('id', config.id)
     _node.setAttribute('name', config.id)
-    _node.setAttribute('type', nodeType)
 
     if (typeof config.default === 'string') {
       _node.value = config.default
@@ -423,7 +415,11 @@ var DoStuff = function (url) {
     if (typeof config.pattern === 'string' && config.pattern !== '') {
       _node.setAttribute('pattern', config.pattern)
     }
+    if (typeof config.default === 'string' || typeof config.default === 'number') {
+      _node.value = config.default
+    }
 
+    console.log('_node:', _node)
     return { node: _node, getter: function () { return _node.value } }
   }
 
@@ -433,7 +429,11 @@ var DoStuff = function (url) {
    * @param {object} config all the metadata required to create a
    *             textarea element
    *
-   * @returns {DOMelement} HTML textarea field
+   * @returns {object} Object with two properties:
+   *          * "node" - A DOM node containing a sematically correct
+   *                     text area field and
+   *          * "getter" - A function used by the developer to get
+   *                     the current value of the radio field
    */
   function getTextarea (config) {
     return setTextInputAttributes('textarea', config)
@@ -442,9 +442,15 @@ var DoStuff = function (url) {
   /**
    * getText() returns a text input DOMelement
    *
-   * @param {object} config all the metadata required to create a
+   * @param {string} inputType The type of text input field
+   * @param {object} config All the metadata required to create a
    *             textarea element
-   * @returns {DOMelement} HTML simple text input field
+   *
+   * @returns {object} Object with two properties:
+   *          * "node" - A DOM node containing a sematically correct
+   *                     text input field and
+   *          * "getter" - A function used by the developer to get
+   *                     the current value of the radio field
    */
   function getText (inputType, config) {
     return setTextInputAttributes(inputType, config)
@@ -455,19 +461,24 @@ var DoStuff = function (url) {
    *
    * @param {object} config all the metadata required to create a
    *             textarea element
-   * @returns {DOMelement} HTML number input field
+   *
+   * @returns {object} object with two properties:
+   *          * "node" - a DOM node containing a sematically correct
+   *                     number input field and
+   *          * "getter" - a function used by the developer to get
+   *                     the current value of the radio field
    */
   function getNumber (config) {
     var _node = setTextInputAttributes('number', config)
 
     if (typeof (config.min * 1) === 'number') {
-      _node.setAttribute('min', config.min * 1)
+      _node.node.setAttribute('min', config.min * 1)
     }
     if (typeof (config.max * 1) === 'number') {
-      _node.setAttribute('max', config.min * 1)
+      _node.node.setAttribute('max', config.max * 1)
     }
     if (typeof (config.step * 1) === 'number') {
-      _node.setAttribute('step', config.min * 1)
+      _node.node.setAttribute('step', config.step * 1)
     }
     return _node
   }
@@ -477,8 +488,13 @@ var DoStuff = function (url) {
    * accessible form fields)
    *
    * @param {object} config all the metadata required to create a
-   *             textarea element
-   * @returns {DOMelement} HTML number input field
+   *             label element. Object requires "id" & "label"
+   *             properties
+   * @param {boolean} groupLabel If the label is for a group of input
+   *             fields the the returned node will be a <DIV> instead
+   *             of a label
+   * @returns {DOMelement} HTML Label element used for simple
+   *             description of form field
    */
   function getLabel (config, groupLabel) {
     var _node = null
@@ -487,12 +503,20 @@ var DoStuff = function (url) {
 
     if (typeof groupLabel === 'boolean' && groupLabel === true) {
       _element = 'div'
+    } else {
+      groupLabel = false
     }
 
     _node = document.createElement(_element)
     _node.className = 'custom-fields--label'
     _node.setAttribute('id', 'group-' + config.id)
-    _node.setAttribute('for', config.id)
+
+    if (groupLabel === false) {
+      // only relavent for single input fields
+      // (not radio or checkbox)
+      _node.setAttribute('for', config.id)
+    }
+
     _node.appendChild(_text)
 
     return _node
@@ -524,7 +548,12 @@ var DoStuff = function (url) {
    *
    * @param {object} config all the metadata required to create a
    *             textarea element
-   * @returns {DOMelement} HTML option element
+   *
+   * @returns {object} object with two properties:
+   *          * "node" - a DOM node containing a sematically correct
+   *                     radio or checkbox input field and
+   *          * "getter" - a function used by the developer to get
+   *                     the current value of the radio field
    */
   function getSelectOption (_value, _label, _default) {
     var _node = document.createElement('option')
@@ -546,7 +575,12 @@ var DoStuff = function (url) {
    *
    * @param {object} config all the metadata required to create
    *             a textarea element
-   * @returns {DOMelement} HTML select form field element
+   *
+   * @returns {object} object with two properties:
+   *          * "node" - a DOM node containing a sematically correct
+   *                     radio or checkbox input field and
+   *          * "getter" - a function used by the developer to get
+   *                     the current value of the radio field
    */
   function getSelect (config) {
     var _node = document.createElement('select')
@@ -563,6 +597,18 @@ var DoStuff = function (url) {
     return { node: _node, getter: function () { return _node.value } }
   }
 
+  /**
+   * getGroupableInput() builds either checkbox or radio input fields
+   *
+   * @param {object} config object containing metadata required for
+   *             building a radio or checkbox field
+   *
+   * @returns {object} object with two properties:
+   *          * "wrapper" - a DOM node containing a sematically
+   *                     correct radio or checkbox input field and
+   *          * "field" - a DOM node representing the actual input
+   *                     field
+   */
   function getGroupableInput (config) {
     var _wrapper = document.createElement('label')
     var _input = document.createElement('input')
@@ -596,6 +642,20 @@ var DoStuff = function (url) {
     return { wrapper: _wrapper, field: _input }
   }
 
+  /**
+   * getRadio() returns a semantically correct input group containing
+   *            a (developer defined) number of radio input fields
+   *            which all share the same "name" attribute
+   *
+   * @param {object} config object containing metadata required for
+   *             building a group of radio fields
+   *
+   * @returns {object} object with two properties:
+   *          * "node" - a DOM node containing a sematically correct
+   *                     group of radio input fields and
+   *          * "getter" - a function used by the developer to get
+   *                     the current value of the radio field
+   */
   function getRadio (config) {
     var _wrapper = document.createElement('p')
     var _tmp = null
@@ -631,6 +691,20 @@ var DoStuff = function (url) {
     return { node: _wrapper, getter: _getterFunc }
   }
 
+  /**
+   * getCheckbox() returns a semantically correct input group
+   *            containing a (developer defined) number of checkbox
+   *            input fields
+   *
+   * @param {object} config object containing metadata required for
+   *             building a group of checkbox fields
+   *
+   * @returns {object} object with two properties:
+   *          * "node" - a DOM node containing a sematically correct
+   *                     group of checkbox input fields and
+   *          * "getter" - a function used by the developer to get
+   *                     the current value of the radio field
+   */
   function getCheckbox (config) {
     var _wrapper = document.createElement('p')
     var _tmp = null
@@ -680,7 +754,11 @@ var DoStuff = function (url) {
    *
    * @param {object} config all the metadata required to create
    *             a textarea element
-   * @returns {DOMelement} HTML select form field element
+   * @returns {DOMelement} HTML single, semantically correct form
+   *             field containing:
+   *              * A label
+   *              * A field (or group of fields) and
+   *              * A field description of the field's purpose (if available)
    */
   function getSingleExtraInput (config) {
     var _node = document.createElement('li')
@@ -819,6 +897,7 @@ var DoStuff = function (url) {
   }
 
   renderOutput = function (_input) {
+    console.log('inside renderOutput() (in "normal" mode)')
     inputTextarea.value = _input
   }
 
@@ -855,12 +934,34 @@ var DoStuff = function (url) {
   }
 
   function activateDebugMode () {
-    if (debugMode) {
-      debugField = getTextarea('output', 'Test output')
+    var p = null
+    var label = null
+
+    if (debugMode === true && action !== '') {
+      debugField = document.createElement('textarea')
       debugField.setAttribute('readonly', 'readonly')
-    }
-    renderOutput = function (_input) {
-      debugField.value = _input
+      debugField.setAttribute('id', 'output')
+
+      p = document.createElement('p')
+      p.setAttribute('id', 'output-wrap')
+      p.className = 'main-input'
+
+      label = document.createElement('label')
+      label.appendChild(document.createTextNode('Modified text'))
+      label.className = 'block'
+      label.setAttribute('for', 'output')
+
+      p.appendChild(label)
+      p.appendChild(debugField)
+
+      inputWrapper.appendChild(p)
+      inputWrapper.className = 'input-wrapper debug-mode'
+
+      renderOutput = function (_input) {
+        debugField.value = _input
+      }
+    } else {
+      inputWrapper.className = 'input-wrapper'
     }
   }
 
@@ -885,6 +986,9 @@ var DoStuff = function (url) {
     nav.appendChild(addToNav(config.action))
   }
 
+  /**
+   * render() does all the last minute stuff to make this app work
+   */
   this.render = function () {
     menuShowHide.onclick = bergerShowHide
     mask.onclick = bergerShowHide
@@ -894,6 +998,10 @@ var DoStuff = function (url) {
       subTitle.innerHTML = registry[action].name
 
       submit.onclick = doMagic()
+    }
+
+    if (debugMode === true) {
+      activateDebugMode()
     }
   }
 
@@ -915,6 +1023,9 @@ var DoStuff = function (url) {
     }
   }
   baseURL = URL.protocol + '//' + URL.host + URL.pathname + '?action='
+
+  //  END:  proceedural part of code (constructor stuff)
+  // ======================================================
 }
 
 /**

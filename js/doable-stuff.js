@@ -17,13 +17,55 @@
  */
 
 function simpleUpdate (input, extraInputs, GETvars) {
-  return input.replace(/[aeiou]+/ig, ' [[BOC! BOC!!! I am a chicken]] ')
+  var _boc = 'BOC! BOC!!'
+  var _chicken = 'chicken'
+  var _gender = extraInputs.gender()
+  var _spring = ''
+  var _year = extraInputs.year()
+
+  if (_gender === 'male') {
+    _chicken = 'rooster'
+    _boc = 'COCK-A-DOODLE-DO'
+  } else if (_gender === 'female') {
+    _chicken = 'hen'
+  } else if (_gender === 'other') {
+    _chicken += ' first don\'t try to pigeon hole me'
+  }
+
+  if (_year >= 2018) {
+    _spring = ' spring'
+  } else if (_year < 2016) {
+    _spring = 'n old'
+    _chicken += '. Please don\'t boil me and make me into soup.'
+  }
+  return input.replace(/[aeiou]+/ig, ' [[' + _boc + '!! I am a' + _spring + ' ' + _chicken + ']] ')
 }
 
 doStuff.register({
   action: 'doChicken',
   name: 'Expose the chickens',
   func: simpleUpdate,
+  extraInputs: [
+    {
+      id: 'year',
+      label: 'Year chicken was born',
+      type: 'number',
+      min: 2013,
+      max: 2019,
+      step: 1,
+      default: 2019
+    },
+    {
+      id: 'gender',
+      label: 'Gender of chicken',
+      type: 'radio',
+      options: [
+        { 'value': 'male', label: 'Male (rooster)' },
+        { 'value': 'female', label: 'Female (hen)', default: true },
+        { 'value': 'other', label: 'Other' }
+      ]
+    }
+  ],
   description: 'Change all vowels into chickens'
 })
 
