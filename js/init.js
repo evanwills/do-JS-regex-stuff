@@ -247,7 +247,7 @@ var DoStuff = function (url) {
    *      for an input field and the value is a function that returns
    *      the value for that input field
    */
-  var extraInputs = []
+  var extraInputs = {}
 
   /**
    * updateRegistry adds a new action to the registry of action
@@ -273,6 +273,27 @@ var DoStuff = function (url) {
     registry[config.action] = config
   }
 
+  function makeAttributeSafe (_attr) {
+    var _output = ''
+    var _valid = new RegExp('^[a-z_-]', 'i')
+    var _clean = new RegExp('[^a-z0-9_\\-]+', 'ig')
+
+    if (typeof _attr !== 'string') {
+      throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
+    }
+
+    _output = _attr.replace(_clean, 'makeAttributeSafe() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
+
+    if (_output === '') {
+      throw new Error('')
+    }
+
+    if (!_valid.test(_output)) {
+      _output = '_' + _output
+    }
+    return _output
+  }
+
   /**
    * getExtraInputs() returns an object containing key/value pairs
    * where the key is an extra input field's ID and the value is the
@@ -282,16 +303,16 @@ var DoStuff = function (url) {
    *             the ID/name of a form field and the value is either
    *             a string, number or boolean (checkboxes only)
    */
-  function getExtraInputs () {
-    var a = 0
-    var output = {}
-    var key = ''
-    for (a; a < extraInputs.length; a += 1) {
-      key = extraInputs[a].name
-      output[key] = extraInputs[a].getValue()
-    }
-    return output
-  }
+  // function getExtraInputs () {
+  //   var a = 0
+  //   var output = {}
+  //   var key = ''
+  //   for (a; a < extraInputs.length; a += 1) {
+  //     key = extraInputs[a].name
+  //     output[key] = extraInputs[a].getValue()
+  //   }
+  //   return output
+  // }
 
   /**
    * initialiseAction() does all the work of making an action
@@ -384,13 +405,15 @@ var DoStuff = function (url) {
     var textTypes = ['text', 'textarea', 'number', 'email']
     var _node = null
 
-    if (textTypes.indexOf(nodeType) > -1) {
+    if (textTypes.indexOf(nodeType) === -1) {
       throw new Error('DoStuff.setTextInputAttributes() expects first parameter "noteType" to be a string matching the name of a valid HTML text type input field')
     }
-    _node = document.createElement(nodeType)
+    _node = document.createElement('input')
 
     _node.setAttribute('id', config.id)
     _node.setAttribute('name', config.id)
+    _node.setAttribute('type', nodeType)
+
     if (typeof config.default === 'string') {
       _node.value = config.default
     }
@@ -400,7 +423,8 @@ var DoStuff = function (url) {
     if (typeof config.pattern === 'string' && config.pattern !== '') {
       _node.setAttribute('pattern', config.pattern)
     }
-    return _node
+
+    return { node: _node, getter: function () { return _node.value } }
   }
 
   /**
@@ -422,8 +446,8 @@ var DoStuff = function (url) {
    *             textarea element
    * @returns {DOMelement} HTML simple text input field
    */
-  function getText (config) {
-    return setTextInputAttributes('text', config)
+  function getText (inputType, config) {
+    return setTextInputAttributes(inputType, config)
   }
 
   /**
@@ -456,12 +480,21 @@ var DoStuff = function (url) {
    *             textarea element
    * @returns {DOMelement} HTML number input field
    */
-  function getLabel (config) {
-    var _node = document.createElement('label')
+  function getLabel (config, groupLabel) {
+    var _node = null
+    var _element = 'label'
     var _text = document.createTextNode(config.label)
 
+    if (typeof groupLabel === 'boolean' && groupLabel === true) {
+      _element = 'div'
+    }
+
+    _node = document.createElement(_element)
+    _node.className = 'custom-fields--label'
+    _node.setAttribute('id', 'group-' + config.id)
     _node.setAttribute('for', config.id)
     _node.appendChild(_text)
+
     return _node
   }
 
@@ -527,7 +560,118 @@ var DoStuff = function (url) {
       _isDefault = (typeof config.options[a].default === 'boolean') ? config.options[a].default : false
       _node.appendChild(getSelectOption(config.options[a].value, config.options[a].label, _isDefault))
     }
-    return _node
+    return { node: _node, getter: function () { return _node.value } }
+  }
+
+  function getGroupableInput (config) {
+    var _wrapper = document.createElement('label')
+    var _input = document.createElement('input')
+    var _label = document.createTextNode(config.label)
+    var _id = config.id
+    var _name = config.id
+
+    try {
+      _id = makeAttributeSafe(config.id + '__' + config.value)
+    } catch (e) {
+      console.warn('could not convert "' + config.label + '" to an ID')
+    }
+
+    _input.setAttribute('type', config.type)
+
+    if (config.type === 'checkbox') {
+      _name = _id
+    }
+
+    _input.setAttribute('name', _name)
+    _input.setAttribute('id', _id)
+    _input.setAttribute('value', config.value)
+
+    if (typeof config.default === 'boolean' && config.default === true) {
+      _input.setAttribute('checked', 'checked')
+    }
+
+    _wrapper.appendChild(_input)
+    _wrapper.appendChild(_label)
+
+    return { wrapper: _wrapper, field: _input }
+  }
+
+  function getRadio (config) {
+    var _wrapper = document.createElement('p')
+    var _tmp = null
+    var a = 0
+    var _fields = []
+    var _count = 0
+    var _getterFunc = null
+
+    for (a = 0; a < config.options.length; a += 1) {
+      _tmp = getGroupableInput({
+        id: config.id,
+        type: 'radio',
+        label: config.options[a].label,
+        value: config.options[a].value,
+        defaulg: (typeof config.options[a].default === 'boolean' && config.options[a].default === true)
+      })
+
+      _wrapper.appendChild(_tmp.wrapper)
+      _fields.push(_tmp.field)
+    }
+    _count = _fields.length
+
+    _getterFunc = function () {
+      var i = 0
+      for (i = 0; i < _count; i += 1) {
+        if (_fields[i].checked) {
+          return _fields[i].value
+        }
+      }
+      return false
+    }
+
+    return { node: _wrapper, getter: _getterFunc }
+  }
+
+  function getCheckbox (config) {
+    var _wrapper = document.createElement('p')
+    var _tmp = null
+    var a = 0
+    var _fields = {}
+    var _count = 0
+    var _getterFunc = null
+    var _tmpCBID = ''
+
+    for (a = 0; a < config.options.length; a += 1) {
+      _tmp = getGroupableInput({
+        id: config.id,
+        type: 'checkbox',
+        label: config.options[a].label,
+        value: config.options[a].value,
+        defaulg: (typeof config.options[a].default === 'boolean' && config.options[a].default === true)
+      })
+
+      _wrapper.appendChild(_tmp.wrapper)
+      _tmpCBID = config.options[a].value
+      _fields[_tmpCBID] = _tmp.field
+    }
+    _count = a
+
+    if (_count === 1) {
+      _getterFunc = function (box) {
+        return _fields[_tmpCBID].checked
+      }
+    } else {
+      _getterFunc = function (box) {
+        if (typeof box !== 'string') {
+          throw new Error('getter Function for "' + config.label + '" requires only parameter "box" to be a string that matches the value of a checkbox in the "' + config.id + '" group. ' + typeof box + ' given.')
+        } else if (typeof _fields[box] === 'undefined') {
+          throw new Error('Could not find checkbox matching "' + box + '" in "' + config.id + '" group.')
+        }
+
+        return _fields[box].checked
+      }
+    }
+
+    return { node: _wrapper, getter: _getterFunc }
   }
 
   /**
@@ -543,6 +687,9 @@ var DoStuff = function (url) {
     var _inputWrap = document.createElement('div')
     var _input = null
     var _desc = null
+    var _default = true
+
+    config.id = makeAttributeSafe(config.id)
 
     switch (config.type) {
       case 'select':
@@ -558,28 +705,46 @@ var DoStuff = function (url) {
         break
 
       case 'radio':
+        _default = false
+        if (!Array.isArray(config.options) || config.options.length === 0) {
+          throw new Error('Radio button inputs must have an "options" property. No "options" property was defined for "' + config.id + '" ("' + config.label + '").')
+        }
+        _input = getRadio(config)
+        _node.setAttribute('role', 'group')
+        _node.setAttribute('aria-labelledby', 'group-' + config.id)
         break
 
       case 'checkbox':
+        _default = false
+        if (!Array.isArray(config.options) || config.options.length === 0) {
+          throw new Error('Radio button inputs must have an "options" property. No "options" property was defined for "' + config.id + '" ("' + config.label + '").')
+        }
+        _input = getCheckbox(config)
+        _node.setAttribute('role', 'group')
+        _node.setAttribute('aria-labelledby', 'group-' + config.id)
         break
 
       default:
         _input = getText(config.type, config)
     }
+
     if (typeof config.description === 'string' && config.description !== '') {
-      _input.setAttribute('aria-describedby', config.action + 'Desc')
+      if (_default === true) {
+        _input.node.setAttribute('aria-describedby', config.action + 'Desc')
+      }
       _desc = getDescription(config)
     }
+
     _inputWrap.className = 'input-wrap'
 
-    _node.appendChild(getLabel(config))
-    _inputWrap.append(_input)
+    _node.appendChild(getLabel(config, !_default))
+    _inputWrap.append(_input.node)
     if (_desc !== null) {
       _inputWrap.appendChild(getDescription(config))
     }
     _node.appendChild(_inputWrap)
 
-    extraInputs[config.id] = _node
+    extraInputs[config.id] = _input.getter
 
     return _node
   }
@@ -587,6 +752,12 @@ var DoStuff = function (url) {
   //  END: extra field generators
   // ======================================================
 
+  /**
+   * addToNav() adds links to navigation (burger) menu
+   * @param {string} _action identifier of action for which a link
+   *                 is to be created
+   * @returns {void}
+   */
   function addToNav (_action) {
     var li = null
     var a = null
@@ -610,12 +781,22 @@ var DoStuff = function (url) {
     // }
     return li
   }
+
+  /**
+   * hideBurger() click handler for when burger is open and user
+   * clicks on a close button
+   */
   function hideBurger () {
     menuShowHide.className = 'btn btn-burger'
     navWrap.className = 'main-nav'
     mask.className = 'mask mask--hide'
     navOpen = false
   }
+
+  /**
+   * showBurger() click handler for when burger is closed and user
+   * clicks on the burger button
+   */
   function showBurger () {
     navWrap.className = 'main-nav main-nav--show'
     menuShowHide.className = 'btn btn-burger btn-burger--open'
@@ -623,6 +804,12 @@ var DoStuff = function (url) {
     navOpen = true
   }
 
+  /**
+   * bergerShowHide() click handler applied directly to buttons to
+   * open/close the burger menue
+   *
+   * @param {Event} e the click event that triggered this callback
+   */
   function bergerShowHide (e) {
     if (navOpen === true) {
       hideBurger()
@@ -645,10 +832,10 @@ var DoStuff = function (url) {
       var output = ''
       var msg = null
       var input = ''
-      var extraInputs = {}
+      // var extraInputs = {}
 
       if (actionFunction !== null) {
-        extraInputs = getExtraInputs()
+        // extraInputs = getExtraInputs()
         input = inputTextarea.value
         output = input
         try {

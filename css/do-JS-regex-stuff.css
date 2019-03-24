@@ -12,7 +12,6 @@ h1, h2 {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 label {
-  font-weight: bold;
   padding: 0.3rem 0.5rem
 }
 label:first-of-type {
@@ -188,9 +187,13 @@ form {
   bottom: -1rem;
   box-sizing: border-box;
   left: 0;
-  margin-top: 2rem;
-  position: absolute;
+  position: fixed;
+  margin: 0;
   right: 0;
+  bottom: 0;
+  padding: 1rem;
+  background-color: rgba(235, 235, 255, 0.6)
+
 }
 
 .custom-fields {
@@ -200,25 +203,29 @@ form {
 .custom-fields li {
   display: flex;
   list-style-type: none;
-  margin: 0.5rem 0
+  margin: 0.5rem 0 1rem;
 }
-.custom-fields label {
+.custom-fields--label {
   width: 10rem;
   font-weight: bold;
   text-align: right;
   position: relative;
-  top: -0.3rem;
+  /* top: -0.3rem; */
 }
-.custom-fields label::after {
+.custom-fields--label::after {
   content: ': ';
 }
 .input-wrap {
-  flex-grow: 1
+  flex-grow: 1;
+  padding-left: 0.5rem;
 }
 .input-wrap span {
   display: block;
   margin-top: 0.5rem;
   font-size: 90%;
+}
+.input-wrap p {
+  margin: 0;
 }
 select { font-size: 1rem; }
 option {

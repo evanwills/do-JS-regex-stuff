@@ -2,7 +2,7 @@
 
 So you have some dodgy text and you'd like to clean it up? Well you've come to the right place.
 
-In the _[do-JS-regex-stuff.js](js/do-JS-regex-stuff.js)_ file you need to write a function that does all the stuff you need for one action.
+In the _[js/doable-stuff.js](js/doable-stuff.js)_ file you need to write a function that does all the stuff you need for one action.
 
 Then you need to register that function so the app knows what to do.
 
@@ -11,11 +11,11 @@ Then you need to register that function so the app knows what to do.
 There are a few things you need to know about the function:
 
 1. The function must have a unique name (so you don't override someone else's work).
-2. It must accept two parameters:
+2. It must accept three parameters:
    1. __`input`__: {string} text from the main "Text to be modified" textarea
-   2. __`extraInputs`__: {object} list of key/value pairs where the key is the contents of the `name` attribute of the field
-        (extra fields that you can define when you register the function)
-   3. __`GETvars`__: {object} list of all supplied GET vars
+   2. __`extraInputs`__: {object} list of key/value pairs where the key is the contents of the `name` attribute of the field and the value is a function that can be called to retrieve the value of that field
+        (see below for more info on extra fields that you can define when you register the function)
+   3. __`GETvars`__: {object} list of all supplied GET variables from URL
 3. It must return a string (to be used as the replacement contents for the "Text to be modified" textarea
 4. It must be a pure function (i.e. it must not make changes to variables that are not defined within the function)
 
