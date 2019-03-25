@@ -2,7 +2,7 @@
 
 So you have some dodgy text and you'd like to clean it up? Well you've come to the right place.
 
-In the _[js/doable-stuff.js](js/doable-stuff.js)_ file you need to write a function that does all the stuff you need for one action.
+In the _[js/action-functions.js](js/action-functions.js)_ file you need to write a function that does all the stuff you need for one action.
 
 Then you need to register that function so the app knows what to do.
 
@@ -27,7 +27,7 @@ After you've defined the function, you need to register it by calling doStuff.re
 2. __`action`__: {string} _[required]_ The GET '`action`' value that tells the script that this is the right function to use
 3. __`name`__: {string} _[required]_ Used as the sub-title when the action is selected also used as the link text for the action in the menu.
 4. `description`: {string} _[optional (but recommended)]_ short paragraph decribing the purpose of the function.
-5. `docsURL`: {string} _[optional]_ URL for documentation page (must be HTTPS). Used in a popup to give detailed information about the action. Including the expected input what will be changed and the expected output why this needs to be done
+5. `docURL`: {string} _[optional]_ URL for documentation page (must be HTTPS). Used in a popup to give detailed information about the action. Including the expected input what will be changed and the expected output why this needs to be done
 6. `extraInputs`: {array} _[option]_ list of objects for extra inputs needed for the find/replace
     Extra inputs have the following keys:
    1. __`id`__: {string} _[required]_

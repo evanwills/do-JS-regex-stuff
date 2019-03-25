@@ -3,7 +3,7 @@
  * "Do JS regex stuff"
  *
  * Each action has two parts:
- * 1. A function declaration which is the business part this function
+ * 1. A function declaration which is the business part. This function
  *    gets called when the user clicks "Modify input"
  * 2. Passing a "Registration" object to doStuff.register() which
  *    provides all the configuration "Do JS regex stuff" needs to
