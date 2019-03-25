@@ -1,5 +1,20 @@
 /**
- * simpleUpdate() finds all the voels in a string and converts them
+ * action-functions.js contains all the possible actions available to
+ * "Do JS regex stuff"
+ *
+ * Each action has two parts:
+ * 1. A function declaration which is the business part this function
+ *    gets called when the user clicks "Modify input"
+ * 2. Passing a "Registration" object to doStuff.register() which
+ *    provides all the configuration "Do JS regex stuff" needs to
+ *    make the action work.
+ */
+
+// ====================================================================
+// START: Sample code
+
+/**
+ * exposeChickens() finds all the vowels in a string and converts them
  * to what a chicken might say if it could speak English.
  *
  * created by: Evan Wills
@@ -15,14 +30,21 @@
  *
  * @returns {string} modified version user input
  */
-
-function simpleUpdate (input, extraInputs, GETvars) {
+function exposeChickens (input, extraInputs, GETvars) {
+  var _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
+  var _angry = extraInputs.mood('angry')
   var _boc = 'BOC! BOC!!'
   var _chicken = 'chicken'
+  var _excited = extraInputs.mood('excited')
+  // We retrieve the value of _gender by calling the function that
+  // matches the ID (or name) of the input field
   var _gender = extraInputs.gender()
+  var output = ''
   var _spring = ''
+  // We do the same for _year
   var _year = extraInputs.year()
 
+  // Test the gender of the chicken
   if (_gender === 'male') {
     _chicken = 'rooster'
     _boc = 'COCK-A-DOODLE-DO'
@@ -32,19 +54,36 @@ function simpleUpdate (input, extraInputs, GETvars) {
     _chicken += ' first don\'t try to pigeon hole me'
   }
 
+  // Test the Year (as defined by the user)
   if (_year >= 2018) {
     _spring = ' spring'
   } else if (_year < 2016) {
     _spring = 'n old'
     _chicken += '. Please don\'t boil me and make me into soup.'
   }
-  return input.replace(/[aeiou]+/ig, ' [[' + _boc + '!! I am a' + _spring + ' ' + _chicken + ']] ')
+
+  if (_excited === true) {
+    _boc += ' BOC-OCK!!! '
+    output = ' [[' + _boc + _unsure + ' ' + _boc + _boc + 'I am a ' + _boc + _boc + _boc + _spring + ' ' + _boc + _boc + _boc + _boc + _chicken + ' ' + _boc + _boc + _boc + _boc + _boc + '!!]] '
+  } else {
+    output = ' [[' + _boc + '!!' + _unsure + ' I am a' + _spring + ' ' + _chicken + ']] '
+  }
+
+  if (_angry === true) {
+    output = output.toUpperCase()
+  }
+
+  if (typeof GETvars.backwards === 'boolean' && GETvars.backwards === true) {
+    output = output.split('').reverse().join('')
+  }
+
+  // Do the replacement and return the updated string
+  return input.replace(/[aeiou]+/ig, output)
 }
 
 doStuff.register({
   action: 'doChicken',
-  name: 'Expose the chickens',
-  func: simpleUpdate,
+  description: 'Change all vowels into chickens',
   extraInputs: [
     {
       id: 'year',
@@ -64,78 +103,22 @@ doStuff.register({
         { 'value': 'female', label: 'Female (hen)', default: true },
         { 'value': 'other', label: 'Other' }
       ]
-    }
-  ],
-  description: 'Change all vowels into chickens'
-})
-
-// ====================================================================
-// Do JS Regex Stuff
-// Expose the chickens
-// Text to be modified
-function internationalPatners (input, extraInputs, GETvars) {
-  console.log('extraInputs:', extraInputs)
-  console.log('extraInputs.textType():', extraInputs.textType())
-  console.log('extraInputs.filterType():', extraInputs.filterType())
-  console.log('extraInputs.radioType():', extraInputs.radioType())
-  console.log('extraInputs.checkboxType("country-filter"):', extraInputs.checkboxType('country-filter'))
-  console.log('extraInputs.checkboxType("agreement-type"):', extraInputs.checkboxType('agreement-type'))
-  console.log('extraInputs.checkboxType("org-unit-filter"):', extraInputs.checkboxType('org-unit-filter'))
-  return input
-}
-
-doStuff.register({
-  action: 'internationalPatners',
-  name: 'Iternational partners unique select',
-  func: internationalPatners,
-  description: 'I don\'t know what this is for but it had an extra input field so I\'m using it to test stuff.',
-  extraInputs: [
-    {
-      id: 'textType',
-      label: 'Text Type',
-      type: 'text',
-      description: 'text a filter type you want to output',
-      placeholder: 'something here'
     },
     {
-      id: 'tex1tType',
-      label: 'Tex1t Type',
-      type: 'text',
-      description: 'text1 a filter type you want to output',
-      placeholder: 'something here'
-    },
-    {
-      id: 'filterType',
-      label: 'Filter Type',
-      type: 'select',
-      options: [
-        { 'value': 'country-filter', label: 'Country Filter' },
-        { 'value': 'agreement-type', label: 'Agreement type', default: true },
-        { 'value': 'org-unit-filter', label: 'Org Unit filter' }
-      ],
-      description: 'Select a filter type you want to output'
-    },
-    {
-      id: 'radioType',
-      label: 'Radio Type',
-      type: 'radio',
-      options: [
-        { 'value': 'country-filter', label: 'Country Filter' },
-        { 'value': 'agreement-type', label: 'Agreement type', default: true },
-        { 'value': 'org-unit-filter', label: 'Org Unit filter' }
-      ],
-      description: 'Select a radio type you want to output'
-    },
-    {
-      id: 'checkboxType',
-      label: 'Checkbox Type',
+      id: 'mood',
+      label: 'Mood of the chicken',
       type: 'checkbox',
       options: [
-        { 'value': 'country-filter', label: 'Country Filter' },
-        { 'value': 'agreement-type', label: 'Agreement type', default: true },
-        { 'value': 'org-unit-filter', label: 'Org Unit filter' }
-      ],
-      description: 'Select a radio type you want to output'
+        { 'value': 'unsure', label: 'Chicken is confused about its identity' },
+        { 'value': 'angry', label: 'Chicken woke up on the wrong side of its purch', default: true },
+        { 'value': 'excited', label: 'Chicken is super excited', default: true }
+      ]
     }
-  ]
+  ],
+  func: exposeChickens,
+  // ignore: true,
+  name: 'Expose the chickens'
 })
+
+//  END:  Sample code
+// ====================================================================

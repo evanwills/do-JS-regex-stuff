@@ -24,6 +24,7 @@ function getURLobject (url) {
     protocol: '',
     search: '',
     searchParams: {},
+    searchParamsRaw: {},
     username: ''
   }
   var key = ''
@@ -35,6 +36,19 @@ function getURLobject (url) {
     _url = url
   } else if (typeof url.href === 'string') {
     _url = url.href
+  }
+
+  function cleanGET (input) {
+    var _output = decodeURI(input)
+
+    if (_output.toLowerCase() === 'true') {
+      _output = true
+    } else if (_output.toLowerCase() === 'false') {
+      _output = false
+    } else if (isNaN(_output) === false) {
+      _output = (_output * 1)
+    }
+    return _output
   }
 
   if (typeof _url === 'string' && _url[0] !== '#') {
@@ -71,7 +85,8 @@ function getURLobject (url) {
         for (i = 0; i < tmp.length; i += 1) {
           tmp[i] = tmp[i].split('=')
           key = tmp[i][0]
-          output.searchParams[key] = tmp[i][1]
+          output.searchParams[key] = cleanGET(tmp[i][1])
+          output.searchParamsRaw[key] = tmp[i][1]
         }
 
         output.search = '?' + output.search
@@ -88,7 +103,7 @@ function getURLobject (url) {
 
 /**
  *
- * @param {string} url
+ * @param {string} url document.location string for the URL of the page
  */
 var DoStuff = function (url) {
   /**
@@ -164,6 +179,11 @@ var DoStuff = function (url) {
    *      the value for that input field
    */
   var extraInputs = {}
+
+  /**
+   * @var {object} GET list of URL GET variables
+   */
+  var GET = {}
 
   /**
    * @var {DOMelement} inputTextarea the textarea element where the
@@ -284,27 +304,38 @@ var DoStuff = function (url) {
     }
     config.action = config.action.toLowerCase()
 
+    config.rawGET = (typeof config.rawGET === 'boolean') ? config.rawGET : false
+
     // TODO: work out how to sort the registry so it's always in
     // alphabetical order (by name, not action)
     registry[config.action] = config
   }
 
+  /**
+   * makeAttributeSafe() makes a string safe to be used as an ID or
+   * class name
+   *
+   * @param {string} _attr A string to be made safe to use as a HTML
+   *             class name or ID
+   *
+   * @returns {string} class name or ID safe string
+   */
   function makeAttributeSafe (_attr) {
     var _output = ''
-    var _valid = new RegExp('^[a-z_-]', 'i')
+    var _isValid = new RegExp('^[a-z_-]', 'i')
     var _clean = new RegExp('[^a-z0-9_\\-]+', 'ig')
 
     if (typeof _attr !== 'string') {
       throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
     }
 
-    _output = _attr.replace(_clean, 'makeAttributeSafe() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
+    _output = _attr.replace(_clean, _attr)
 
     if (_output === '') {
-      throw new Error('')
+      throw new Error('makeAttributeSafe() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
     }
 
-    if (!_valid.test(_output)) {
+    if (!_isValid.test(_output)) {
       _output = '_' + _output
     }
     return _output
@@ -341,6 +372,8 @@ var DoStuff = function (url) {
     } else {
       noAction.className = 'hide'
     }
+
+    GET = (registry[_action].rawGET === false) ? URL.searchParams : URL.searchParamsRaw
 
     customFields.innerHTML = ''
     customFields.className = 'custom-fields hide'
@@ -389,6 +422,65 @@ var DoStuff = function (url) {
   // START: extra field generators
 
   /**
+   * getLabel() returns a field's label DOMelement (for semantic and
+   * accessible form fields)
+   *
+   * @param {object} config all the metadata required to create a
+   *             label element. Object requires "id" & "label"
+   *             properties
+   * @param {boolean} groupLabel If the label is for a group of input
+   *             fields the the returned node will be a <DIV> instead
+   *             of a label
+   * @returns {DOMelement} HTML Label element used for simple
+   *             description of form field
+   */
+  function getLabel (config, groupLabel) {
+    var _node = null
+    var _element = 'label'
+    var _text = document.createTextNode(config.label)
+
+    if (typeof groupLabel === 'boolean' && groupLabel === true) {
+      _element = 'div'
+    } else {
+      groupLabel = false
+    }
+
+    _node = document.createElement(_element)
+    _node.className = 'custom-fields--label'
+    _node.setAttribute('id', 'group-' + config.id)
+
+    if (groupLabel === false) {
+      // only relavent for single input fields
+      // (not radio or checkbox)
+      _node.setAttribute('for', config.id)
+    }
+
+    _node.appendChild(_text)
+
+    return _node
+  }
+
+  /**
+   * getDescription() returns a span DOMelement containing a longer
+   * description of the purpose of a form fieldd (for semantic and
+   * accessible form fields)
+   *
+   * @param {object} config all the metadata required to create a
+   *             textarea element
+   * @returns {DOMelement} HTML span element
+   */
+  function getDescription (config) {
+    var _node = document.createElement('span')
+    var _text = document.createTextNode(config.description)
+
+    _node.setAttribute('id', config.action + 'Desc')
+    _node.className = 'input-description'
+    _node.appendChild(_text)
+
+    return _node
+  }
+
+  /**
    * setTextInputAttributes() returns an form field DOM element
    *
    * @param {string} nodeType type of input to be created
@@ -427,8 +519,13 @@ var DoStuff = function (url) {
     if (typeof config.pattern === 'string' && config.pattern !== '') {
       _node.setAttribute('pattern', config.pattern)
     }
-    if (typeof config.default === 'string' || typeof config.default === 'number') {
-      _node.value = config.default
+
+    if (typeof URL.searchParams[config.id] === 'string') {
+      _node.value = URL.searchParams[config.id]
+    } else {
+      if (typeof config.default === 'string' || typeof config.default === 'number') {
+        _node.value = config.default
+      }
     }
 
     return { node: _node, getter: function () { return _node.value } }
@@ -495,65 +592,6 @@ var DoStuff = function (url) {
   }
 
   /**
-   * getLabel() returns a field's label DOMelement (for semantic and
-   * accessible form fields)
-   *
-   * @param {object} config all the metadata required to create a
-   *             label element. Object requires "id" & "label"
-   *             properties
-   * @param {boolean} groupLabel If the label is for a group of input
-   *             fields the the returned node will be a <DIV> instead
-   *             of a label
-   * @returns {DOMelement} HTML Label element used for simple
-   *             description of form field
-   */
-  function getLabel (config, groupLabel) {
-    var _node = null
-    var _element = 'label'
-    var _text = document.createTextNode(config.label)
-
-    if (typeof groupLabel === 'boolean' && groupLabel === true) {
-      _element = 'div'
-    } else {
-      groupLabel = false
-    }
-
-    _node = document.createElement(_element)
-    _node.className = 'custom-fields--label'
-    _node.setAttribute('id', 'group-' + config.id)
-
-    if (groupLabel === false) {
-      // only relavent for single input fields
-      // (not radio or checkbox)
-      _node.setAttribute('for', config.id)
-    }
-
-    _node.appendChild(_text)
-
-    return _node
-  }
-
-  /**
-   * getDescription() returns a span DOMelement containing a longer
-   * description of the purpose of a form fieldd (for semantic and
-   * accessible form fields)
-   *
-   * @param {object} config all the metadata required to create a
-   *             textarea element
-   * @returns {DOMelement} HTML span element
-   */
-  function getDescription (config) {
-    var _node = document.createElement('span')
-    var _text = document.createTextNode(config.description)
-
-    _node.setAttribute('id', config.action + 'Desc')
-    _node.className = 'input-description'
-    _node.appendChild(_text)
-
-    return _node
-  }
-
-  /**
    * getSelectOption() returns a single select option to be appended
    * to a select field
    *
@@ -602,7 +640,12 @@ var DoStuff = function (url) {
     _node.setAttribute('name', config.id)
 
     for (a = 0; a < config.options.length; a += 1) {
-      _isDefault = (typeof config.options[a].default === 'boolean') ? config.options[a].default : false
+      if (typeof URL.searchParams[config.id] === 'string') {
+        _isDefault = (URL.searchParams[config.id] === config.options[a].value)
+      } else {
+        _isDefault = (typeof config.options[a].default === 'boolean') ? config.options[a].default : false
+      }
+
       _node.appendChild(getSelectOption(config.options[a].value, config.options[a].label, _isDefault))
     }
     return { node: _node, getter: function () { return _node.value } }
@@ -626,6 +669,7 @@ var DoStuff = function (url) {
     var _label = document.createTextNode(config.label)
     var _id = config.id
     var _name = config.id
+    var _isDefault = false
 
     try {
       _id = makeAttributeSafe(config.id + '__' + config.value)
@@ -643,7 +687,13 @@ var DoStuff = function (url) {
     _input.setAttribute('id', _id)
     _input.setAttribute('value', config.value)
 
-    if (typeof config.default === 'boolean' && config.default === true) {
+    if (typeof URL.searchParams[_name] === 'string') {
+      _isDefault = (URL.searchParams[_name] === config.value)
+    } else {
+      _isDefault = config.default
+    }
+
+    if (_isDefault === true) {
       _input.setAttribute('checked', 'checked')
     }
 
@@ -681,7 +731,7 @@ var DoStuff = function (url) {
         type: 'radio',
         label: config.options[a].label,
         value: config.options[a].value,
-        defaulg: (typeof config.options[a].default === 'boolean' && config.options[a].default === true)
+        default: (typeof config.options[a].default === 'boolean' && config.options[a].default === true)
       })
 
       _wrapper.appendChild(_tmp.wrapper)
@@ -731,7 +781,7 @@ var DoStuff = function (url) {
         type: 'checkbox',
         label: config.options[a].label,
         value: config.options[a].value,
-        defaulg: (typeof config.options[a].default === 'boolean' && config.options[a].default === true)
+        default: (typeof config.options[a].default === 'boolean' && config.options[a].default === true)
       })
 
       _wrapper.appendChild(_tmp.wrapper)
@@ -928,7 +978,7 @@ var DoStuff = function (url) {
         input = inputTextarea.value
         output = input
         try {
-          output = actionFunction(output, extraInputs, URL.searchParams)
+          output = actionFunction(output, extraInputs, GET)
         } catch (e) {
           console.error('Action "' + actionName + '" failed due to error: "' + e + '"')
         }
@@ -1057,7 +1107,7 @@ var DoStuff = function (url) {
   }
 
   if (typeof URL.searchParams['debug'] !== 'undefined') {
-    debugMode = (URL.searchParams['debug'].toLowerCase() === 'true' || URL.searchParams['debug'] === '1')
+    debugMode = (URL.searchParams['debug'] === true || URL.searchParams['debug'] === 1)
 
     if (debugMode === true) {
       debugGet = '&debug=true'
