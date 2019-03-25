@@ -33,6 +33,7 @@ textarea {
   padding: 0.5rem 1rem;
   position: relative;
   text-transform: uppercase;
+  font-size: 0.9rem;
 }
 .btn-submit {
   background-color: #090;
@@ -45,6 +46,15 @@ textarea {
 .btn-reset {
   background-color: #900;
   float: right;
+}
+.btn-help {
+  background-color: #007;
+  float: right;
+  margin-right: 1rem;
+  text-decoration: none;
+}
+.btn-help:hover {
+  text-decoration: underline;
 }
 .btn-burger {
   background-color: #000;
