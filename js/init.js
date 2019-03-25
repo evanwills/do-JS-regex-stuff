@@ -142,6 +142,18 @@ var DoStuff = function (url) {
   var debugMode = false
 
   /**
+   * @var {DOMelement} debugSwitch button toggling between debug and
+   *             non-debug modes
+   */
+  var debugSwitch = null
+
+  /**
+   * @var {DOMelement} debugWrapper Element that wraps the debug
+   *             output field
+   */
+  var debugWrapper = null
+
+  /**
    * @var {DOMelement} docTitle the Title element in the page header
    */
   var docTitle = document.getElementById('doc-title')
@@ -419,7 +431,6 @@ var DoStuff = function (url) {
       _node.value = config.default
     }
 
-    console.log('_node:', _node)
     return { node: _node, getter: function () { return _node.value } }
   }
 
@@ -897,7 +908,6 @@ var DoStuff = function (url) {
   }
 
   renderOutput = function (_input) {
-    console.log('inside renderOutput() (in "normal" mode)')
     inputTextarea.value = _input
   }
 
@@ -934,27 +944,29 @@ var DoStuff = function (url) {
   }
 
   function activateDebugMode () {
-    var p = null
     var label = null
 
     if (debugMode === true && action !== '') {
-      debugField = document.createElement('textarea')
-      debugField.setAttribute('readonly', 'readonly')
-      debugField.setAttribute('id', 'output')
+      if (debugField === null) {
+        debugField = document.createElement('textarea')
+        debugField.setAttribute('id', 'output')
+        debugField.setAttribute('readonly', 'readonly')
 
-      p = document.createElement('p')
-      p.setAttribute('id', 'output-wrap')
-      p.className = 'main-input'
+        debugWrapper = document.createElement('p')
+        debugWrapper.setAttribute('id', 'output-wrap')
 
-      label = document.createElement('label')
-      label.appendChild(document.createTextNode('Modified text'))
-      label.className = 'block'
-      label.setAttribute('for', 'output')
+        label = document.createElement('label')
+        label.appendChild(document.createTextNode('Modified text'))
+        label.className = 'block'
+        label.setAttribute('for', 'output')
 
-      p.appendChild(label)
-      p.appendChild(debugField)
+        debugWrapper.appendChild(label)
+        debugWrapper.appendChild(debugField)
 
-      inputWrapper.appendChild(p)
+        inputWrapper.appendChild(debugWrapper)
+      }
+
+      debugWrapper.className = 'main-input'
       inputWrapper.className = 'input-wrapper debug-mode'
 
       renderOutput = function (_input) {
@@ -962,7 +974,26 @@ var DoStuff = function (url) {
       }
     } else {
       inputWrapper.className = 'input-wrapper'
+      debugWrapper.className = 'main-input hide'
+
+      renderOutput = function (_input) {
+        inputTextarea.value = _input
+      }
     }
+  }
+
+  function toggleDebug () {
+    console.log('inside toggleDebug()')
+    if (debugMode === false) {
+      debugSwitch.innerHTML = 'Disable Debug mode'
+      debugSwitch.className = 'btn btn-debug btn-debug--on'
+      debugMode = true
+    } else {
+      debugSwitch.innerHTML = 'Turn on Debug mode'
+      debugSwitch.className = 'btn btn-debug btn-debug--off'
+      debugMode = false
+    }
+    activateDebugMode()
   }
 
   //  END:  private methods
@@ -990,6 +1021,7 @@ var DoStuff = function (url) {
    * render() does all the last minute stuff to make this app work
    */
   this.render = function () {
+    var li = document.createElement('li')
     menuShowHide.onclick = bergerShowHide
     mask.onclick = bergerShowHide
 
@@ -1000,9 +1032,18 @@ var DoStuff = function (url) {
       submit.onclick = doMagic()
     }
 
+    debugSwitch = document.createElement('button')
     if (debugMode === true) {
       activateDebugMode()
+      debugSwitch.appendChild(document.createTextNode('Disable Debug mode'))
+      debugSwitch.className = 'btn btn-debug btn-debug--on'
+    } else {
+      debugSwitch.appendChild(document.createTextNode('Turn on Debug mode'))
+      debugSwitch.className = 'btn btn-debug btn-debug--off'
     }
+    debugSwitch.onclick = toggleDebug
+    li.appendChild(debugSwitch)
+    nav.appendChild(li)
   }
 
   //  END:  public methods
