@@ -192,6 +192,19 @@ textarea {
   transform: translate(-5%, 0);
   transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
+.modal-mask {
+  transform-origin: top center;
+}
+.modal-mask--hide {
+  opacity: 0;
+  transform: translateY(-102%);
+  transition: transform 0.5s ease-in-out 0.1s, opacity 0.5s ease-in-out 0.1s;
+}
+.modal-mask--show {
+  opacity: 0.6;
+  transform: translate(0);
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
 
 form {
   position: relative;
@@ -258,4 +271,24 @@ option {
 *[readonly="readonly"] {
   color: #007;
   background-color: #f9f9e5;
+}
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80%;
+  height: 40rem;
+  padding: 2rem;
+  border: 0.1rem solid #509;
+  max-width: 40rem;
+  z-index: 100;
+  background-color: #fff;
+}
+.modal--show {
+  transform: translate(-50%, -50%);
+  transition: transform 0.5s ease-in-out 0.1s
+}
+.modal--hide {
+  transform: translate(-50%, -250%);
+  transition: transform 0.5s ease-in-out
 }

@@ -84,10 +84,12 @@ function exposeChickens (input, extraInputs, GETvars) {
 doStuff.register({
   action: 'doChicken',
   description: 'Change all vowels into chickens',
+  docURL: 'docs/expose-chickens.md',
+  // docURL: 'https://courses.acu.edu.au/do-js-regex-stuff/docs/expose-chickens',
   extraInputs: [
     {
       id: 'year',
-      label: 'Year chicken was born',
+      label: 'Year chicken was hatched',
       type: 'number',
       min: 2013,
       max: 2019,

@@ -174,6 +174,11 @@ var DoStuff = function (url) {
   var docTitle = document.getElementById('doc-title')
 
   /**
+   * @var {string} docsURL URL for documentation for action authors
+   */
+  var docsURL = 'README.md'
+
+  /**
    * @var {array} extraInputs [array] An array of objects where the key is the "name" attribute
    *      for an input field and the value is a function that returns
    *      the value for that input field
@@ -184,6 +189,12 @@ var DoStuff = function (url) {
    * @var {object} GET list of URL GET variables
    */
   var GET = {}
+
+  /**
+   * @var {DOMelement} helpBtn the help button that links to
+   *             documentation about an action
+   */
+  var helpBtn = document.getElementById('help')
 
   /**
    * @var {DOMelement} inputTextarea the textarea element where the
@@ -210,6 +221,22 @@ var DoStuff = function (url) {
    *             hiding the navigation menue
    */
   var menuShowHide = document.getElementById('nav-show-hide')
+
+  /**
+   * @var {boolean} modalOpen whether or not the modal is currently open
+   */
+  var modalOpen = false
+
+  /**
+   * @var {DOMelement} modalBlock the the block in which modal content is
+   *             inserted when the help button is clicked
+   */
+  var modalBlock = document.getElementById('modal')
+
+  /**
+   * @var {DOMelement} modalMask the clickable background
+   */
+  var modalMask = document.getElementById('modal-show-hide__mask')
 
   /**
    * @var {DOMelement} noAction where the message explaining what is
@@ -314,36 +341,6 @@ var DoStuff = function (url) {
   }
 
   /**
-   * makeAttributeSafe() makes a string safe to be used as an ID or
-   * class name
-   *
-   * @param {string} _attr A string to be made safe to use as a HTML
-   *             class name or ID
-   *
-   * @returns {string} class name or ID safe string
-   */
-  function makeAttributeSafe (_attr) {
-    var _output = ''
-    var _isValid = new RegExp('^[a-z_-]', 'i')
-    var _clean = new RegExp('[^a-z0-9_\\-]+', 'ig')
-
-    if (typeof _attr !== 'string') {
-      throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
-    }
-
-    _output = _attr.replace(_clean, _attr)
-
-    if (_output === '') {
-      throw new Error('makeAttributeSafe() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
-    }
-
-    if (!_isValid.test(_output)) {
-      _output = '_' + _output
-    }
-    return _output
-  }
-
-  /**
    * initialiseAction() does all the work of making an action
    * available to the user once the user has selected that action
    *
@@ -354,6 +351,8 @@ var DoStuff = function (url) {
    */
   function initialiseAction (_action) {
     var a = 0
+    var _docsURL = ''
+    var request = new XMLHttpRequest()
 
     if (typeof _action !== 'string') {
       throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string. ' + typeof _action + ' given.')
@@ -388,36 +387,54 @@ var DoStuff = function (url) {
         customFields.className = 'custom-fields'
       }
     }
+
+    _docsURL = (!invalidStrNum('docURL', registry[action])) ? registry[action].docURL : docsURL
+    helpBtn.setAttribute('href', _docsURL)
+
+    // Preload documentation
+    request.open('GET', _docsURL, true)
+    request.onload = function () {
+      if (this.status >= 200 && this.status < 400) {
+        // Success!
+        modalBlock.innerHTML = this.response
+      } else {
+        modalBlock.innerHTML = 'Sorry we couldn\'t get content from "' + _docsURL
+      }
+    }
+    request.onerror = function () {
+      // There was a connection error of some sort
+    }
+    request.send()
   }
 
   /**
-   * getNavClickHandler() returns a function to be used as the
-   * onClick callaback function when a navigation item is clicked
-   *
-   * @param {string} _action name of the action to be initialised
-   *             (as listed in the registry)
-   *
-   * @returns {function} calback to be passed to the onclick event
-   *             handler
+   * addToNav() adds links to navigation (burger) menu
+   * @param {string} _action identifier of action for which a link
+   *                 is to be created
+   * @returns {void}
    */
-  function getNavClickHandler (_action) {
-    return function (e) {
-      var success = true
-      e.preventDefault()
+  function addToNav (_action) {
+    var li = null
+    var a = null
+    var linkText = null
+    // var desc = null
 
-      try {
-        initialiseAction(_action)
-      } catch (error) {
-        success = false
-        console.error(error)
-      }
+    // if (typeof registry[_action] !== 'undefined') {
 
-      if (success === true) {
-        hideBurger()
-        history.pushState({ id: _action }, registry[_action].name, baseURL + _action + debugGet)
-        submit.onclick = doMagic()
-      }
+    a = document.createElement('a')
+    a.setAttribute('href', baseURL + _action + debugGet)
+    linkText = document.createTextNode(registry[_action].name)
+    if (typeof registry[_action].description === 'string') {
+      a.setAttribute('title', registry[_action].description)
     }
+    a.setAttribute('data-title', registry[_action].name)
+    a.appendChild(linkText)
+    a.onclick = getNavClickHandler(_action)
+    li = document.createElement('li')
+    li.appendChild(a)
+
+    // }
+    return li
   }
 
   //  END:
@@ -457,6 +474,36 @@ var DoStuff = function (url) {
 
   function isFunction (functionToCheck) {
     return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
+  }
+
+  /**
+   * makeAttributeSafe() makes a string safe to be used as an ID or
+   * class name
+   *
+   * @param {string} _attr A string to be made safe to use as a HTML
+   *             class name or ID
+   *
+   * @returns {string} class name or ID safe string
+   */
+  function makeAttributeSafe (_attr) {
+    var _output = ''
+    var _isValid = new RegExp('^[a-z_-]', 'i')
+    var _clean = new RegExp('[^a-z0-9_\\-]+', 'ig')
+
+    if (typeof _attr !== 'string') {
+      throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
+    }
+
+    _output = _attr.replace(_clean, _attr)
+
+    if (_output === '') {
+      throw new Error('makeAttributeSafe() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
+    }
+
+    if (!_isValid.test(_output)) {
+      _output = '_' + _output
+    }
+    return _output
   }
 
   //  END: validation functions
@@ -980,36 +1027,7 @@ var DoStuff = function (url) {
 
   //  END: extra field generators
   // ======================================================
-
-  /**
-   * addToNav() adds links to navigation (burger) menu
-   * @param {string} _action identifier of action for which a link
-   *                 is to be created
-   * @returns {void}
-   */
-  function addToNav (_action) {
-    var li = null
-    var a = null
-    var linkText = null
-    // var desc = null
-
-    // if (typeof registry[_action] !== 'undefined') {
-
-    a = document.createElement('a')
-    a.setAttribute('href', baseURL + _action + debugGet)
-    linkText = document.createTextNode(registry[_action].name)
-    if (typeof registry[_action].description === 'string') {
-      a.setAttribute('title', registry[_action].description)
-    }
-    a.setAttribute('data-title', registry[_action].name)
-    a.appendChild(linkText)
-    a.onclick = getNavClickHandler(_action)
-    li = document.createElement('li')
-    li.appendChild(a)
-
-    // }
-    return li
-  }
+  // START: helper functions used in by callback functions
 
   /**
    * hideBurger() click handler for when burger is open and user
@@ -1034,20 +1052,6 @@ var DoStuff = function (url) {
   }
 
   /**
-   * bergerShowHide() click handler applied directly to buttons to
-   * open/close the burger menue
-   *
-   * @param {Event} e the click event that triggered this callback
-   */
-  function bergerShowHide (e) {
-    if (navOpen === true) {
-      hideBurger()
-    } else {
-      showBurger()
-    }
-  }
-
-  /**
    * renderOutput() renders the results returned by the current
    * action function to the appropriate field based on whether the
    * app is in Debug Mode or not.
@@ -1058,42 +1062,6 @@ var DoStuff = function (url) {
    */
   renderOutput = function (_input) {
     inputTextarea.value = _input
-  }
-
-  /**
-   * doMagic() returns a callback function with all of the variables
-   * of this scope bound into the function
-   *
-   * @returns {function} onclick callback function used by the
-   *             "Modify input" button
-   */
-  function doMagic () {
-    return function (e) {
-      e.preventDefault()
-
-      var output = ''
-      var msg = null
-      var input = ''
-      // var extraInputs = {}
-
-      if (actionFunction !== null) {
-        // extraInputs = getExtraInputs()
-        input = inputTextarea.value
-        output = input
-        try {
-          output = actionFunction(output, extraInputs, GET)
-        } catch (e) {
-          console.error('Action "' + actionName + '" failed due to error: "' + e + '"')
-        }
-
-        if (output !== input) {
-          renderOutput(output)
-        } else {
-          msg = document.getElementById('action-message')
-          msg.innerHTML = 'Action "' + actionName + '" had no effect on <em>Text to be modified</em>.'
-        }
-      }
-    }
   }
 
   /**
@@ -1139,6 +1107,76 @@ var DoStuff = function (url) {
     }
   }
 
+  //  END:  general private methods
+  // ======================================================
+  // START: Callback functions
+
+  /**
+   * getNavClickHandler() returns a function to be used as the
+   * onClick callaback function when a navigation item is clicked
+   *
+   * @param {string} _action name of the action to be initialised
+   *             (as listed in the registry)
+   *
+   * @returns {function} calback to be passed to the onclick event
+   *             handler
+   */
+  function getNavClickHandler (_action) {
+    return function (e) {
+      var success = true
+      e.preventDefault()
+
+      try {
+        initialiseAction(_action)
+      } catch (error) {
+        success = false
+        console.error(error)
+      }
+
+      if (success === true) {
+        hideBurger()
+        history.pushState({ id: _action }, registry[_action].name, baseURL + _action + debugGet)
+        submit.onclick = doMagic()
+      }
+    }
+  }
+
+  /**
+   * doMagic() returns a callback function with all of the variables
+   * of this scope bound into the function
+   *
+   * @returns {function} onclick callback function used by the
+   *             "Modify input" button
+   */
+  function doMagic () {
+    return function (e) {
+      e.preventDefault()
+
+      var output = ''
+      var msg = null
+      var input = ''
+      // var extraInputs = {}
+
+      if (actionFunction !== null) {
+        // extraInputs = getExtraInputs()
+        input = inputTextarea.value
+        output = input
+        try {
+          output = actionFunction(output, extraInputs, GET)
+        } catch (e) {
+          console.error('Action "' + actionName + '" failed due to error: "' + e + '"')
+        }
+
+        if (output !== input) {
+          renderOutput(output)
+        } else {
+          msg = document.getElementById('action-message')
+          msg.innerHTML = 'Action "' + actionName + '" had no effect on <em>Text to be modified</em>.'
+        }
+      }
+    }
+  }
+
   /**
    * toggleDebug() callback function used as on click handler for
    * "Debug mode" button
@@ -1158,7 +1196,42 @@ var DoStuff = function (url) {
     hideBurger()
   }
 
-  //  END:  private methods
+  /**
+   * bergerShowHide() click handler applied directly to buttons to
+   * open/close the burger menue
+   *
+   * @param {Event} e the click event that triggered this callback
+   */
+  function bergerShowHide (e) {
+    if (navOpen === true) {
+      hideBurger()
+    } else {
+      showBurger()
+    }
+  }
+
+  function resetDoStuff (e) {
+    e.preventDefault()
+    renderOutput('')
+    initialiseAction(action)
+  }
+
+  function toggleModal (e) {
+    e.preventDefault()
+
+    console.log('modalOpen:', modalOpen)
+    if (modalOpen === true) {
+      modalBlock.className = 'modal modal--hide'
+      modalMask.className = 'mask modal-mask modal-mask--hide'
+      modalOpen = false
+    } else {
+      modalBlock.className = 'modal modal--show'
+      modalMask.className = 'mask modal-mask modal-mask--show'
+      modalOpen = true
+    }
+  }
+
+  //  END:  callback functions
   // ======================================================
   // START: public methods
 
@@ -1200,6 +1273,7 @@ var DoStuff = function (url) {
    */
   this.render = function () {
     var li = document.createElement('li')
+    var resetBtn = document.getElementById('reset')
     menuShowHide.onclick = bergerShowHide
     mask.onclick = bergerShowHide
 
@@ -1222,6 +1296,10 @@ var DoStuff = function (url) {
     debugSwitch.onclick = toggleDebug
     li.appendChild(debugSwitch)
     nav.appendChild(li)
+
+    resetBtn.onclick = resetDoStuff
+    helpBtn.onclick = toggleModal
+    modalMask.onclick = toggleModal
   }
 
   //  END:  public methods
