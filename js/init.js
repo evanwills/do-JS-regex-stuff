@@ -389,7 +389,7 @@ var DoStuff = function (url) {
       }
     }
 
-    _docsURL = (!invalidStrNum('docURL', registry[action])) ? registry[action].docURL : docsURL
+    _docsURL = (!invalidStrNum('docURL', registry[_action])) ? registry[_action].docURL : docsURL
     helpBtn.setAttribute('href', _docsURL)
 
     // Preload documentation
@@ -1126,7 +1126,6 @@ var DoStuff = function (url) {
     return function (e) {
       var success = true
       e.preventDefault()
-
       try {
         initialiseAction(_action)
       } catch (error) {
