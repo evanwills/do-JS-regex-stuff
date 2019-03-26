@@ -290,7 +290,7 @@ option {
 }
 
 .modal {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.9);
   border: 0.2rem solid #509;
   height: auto;
   max-height: 40rem;
@@ -301,12 +301,13 @@ option {
   top: 50%;
   width: 80%;
   z-index: 100;
+  overflow-y: auto;
 }
 .modal--show {
   transform: translate(-50%, -50%);
   transition: transform 0.5s ease-in-out 0.1s
 }
 .modal--hide {
-  transform: translate(-50%, -450%);
+  transform: translate(-50%, -82rem);
   transition: transform 0.5s ease-in-out
 }

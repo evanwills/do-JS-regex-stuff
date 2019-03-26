@@ -84,7 +84,7 @@ function exposeChickens (input, extraInputs, GETvars) {
 doStuff.register({
   action: 'doChicken',
   description: 'Change all vowels into chickens',
-  docURL: 'docs/expose-chickens.md',
+  docURL: 'docs/expose-chickens.html',
   // docURL: 'https://courses.acu.edu.au/do-js-regex-stuff/docs/expose-chickens',
   extraInputs: [
     {
