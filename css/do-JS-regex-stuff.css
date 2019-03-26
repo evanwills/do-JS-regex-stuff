@@ -311,3 +311,27 @@ option {
   transform: translate(-50%, -82rem);
   transition: transform 0.5s ease-in-out
 }
+
+.modal h1 {
+  border-bottom: 0.05rem solid #509;
+  color: #206;
+  font-size: 1.7rem;
+  padding-bottom: 0.5rem;
+}
+.modal h2 {
+  color: #206;
+  font-size: 1.3rem;
+  margin: 1.5rem 0 0;
+  text-transform: uppercase;
+}
+.modal h3 {
+  color: #206;
+  font-size: 1.3rem;
+  margin: 1.5rem 0 0;
+}
+.modal h4 {
+  color: #206;
+  font-size: 1.05rem;
+  margin: 1.5rem 0 0;
+  text-transform: uppercase;
+}
