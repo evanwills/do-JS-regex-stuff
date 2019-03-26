@@ -12,7 +12,7 @@ h1, h2 {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 label {
-  padding: 0.3rem 0.5rem
+  padding: 0.3rem 0.5rem;
 }
 label:first-of-type {
   padding-left: 0;
@@ -260,6 +260,22 @@ option {
   padding: 0.3rem 0.5rem;
 }
 
+.wrap-label {
+  display: inline-block;
+  padding: 0rem 1rem 0.5rem 1.7rem;
+  text-indent: -1.7rem;
+}
+.wrap-label:first-of-type {
+  margin-left: 1.7rem;
+}
+.wrap-label:last-of-type {
+  padding-right: 0;
+}
+.wrap-label input {
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
 .debug-mode {
   display: flex;
   margin: 1rem -0.5rem
@@ -272,23 +288,25 @@ option {
   color: #007;
   background-color: #f9f9e5;
 }
+
 .modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 80%;
-  height: 40rem;
-  padding: 2rem;
-  border: 0.1rem solid #509;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 0.2rem solid #509;
+  height: auto;
+  max-height: 40rem;
   max-width: 40rem;
+  padding: 2rem;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 80%;
   z-index: 100;
-  background-color: #fff;
 }
 .modal--show {
   transform: translate(-50%, -50%);
   transition: transform 0.5s ease-in-out 0.1s
 }
 .modal--hide {
-  transform: translate(-50%, -250%);
+  transform: translate(-50%, -450%);
   transition: transform 0.5s ease-in-out
 }

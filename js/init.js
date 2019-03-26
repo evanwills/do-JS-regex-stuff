@@ -177,6 +177,7 @@ var DoStuff = function (url) {
    * @var {string} docsURL URL for documentation for action authors
    */
   var docsURL = 'README.md'
+  // var docsURL = 'https://courses.acu.edu.au/do-js-regex-stuff/help'
 
   /**
    * @var {array} extraInputs [array] An array of objects where the key is the "name" attribute
@@ -780,7 +781,7 @@ var DoStuff = function (url) {
   function getGroupableInput (config) {
     var _wrapper = document.createElement('label')
     var _input = document.createElement('input')
-    var _label = null
+    var _labelText = document.createTextNode(config.label)
     var _id = config.id
     var _name = config.id
     var _isDefault = false
@@ -788,7 +789,6 @@ var DoStuff = function (url) {
     // assumtion is that config properties have already been
     // validated by the calling function
 
-    _label = document.createTextNode(config.label)
     try {
       _id = makeAttributeSafe(config.id + '__' + config.value)
     } catch (e) {
@@ -815,8 +815,9 @@ var DoStuff = function (url) {
       _input.setAttribute('checked', 'checked')
     }
 
+    _wrapper.className = 'wrap-label'
     _wrapper.appendChild(_input)
-    _wrapper.appendChild(_label)
+    _wrapper.appendChild(_labelText)
 
     return { wrapper: _wrapper, field: _input }
   }
@@ -1014,7 +1015,7 @@ var DoStuff = function (url) {
     _inputWrap.className = 'input-wrap'
 
     _node.appendChild(getLabel(config, !_default))
-    _inputWrap.append(_input.node)
+    _inputWrap.appendChild(_input.node)
     if (_desc !== null) {
       _inputWrap.appendChild(getDescription(config))
     }
@@ -1182,7 +1183,6 @@ var DoStuff = function (url) {
    * "Debug mode" button
    */
   function toggleDebug () {
-    console.log('inside toggleDebug()')
     if (debugMode === false) {
       debugSwitch.innerHTML = 'Disable Debug mode'
       debugSwitch.className = 'btn btn-debug btn-debug--on'
@@ -1219,7 +1219,6 @@ var DoStuff = function (url) {
   function toggleModal (e) {
     e.preventDefault()
 
-    console.log('modalOpen:', modalOpen)
     if (modalOpen === true) {
       modalBlock.className = 'modal modal--hide'
       modalMask.className = 'mask modal-mask modal-mask--hide'
