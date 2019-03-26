@@ -173,7 +173,6 @@ textarea {
   right: 0;
   top: 0;
   background-color: #000;
-  opacity: 0.6;
   transform-origin: top right;
   display: block;
   width: 110%;
@@ -184,12 +183,14 @@ textarea {
   cursor: pointer;
 }
 .mask--hide {
+  opacity: 0;
   transform: translate(102%, -102%);
-  transition: transform 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 .mask--show {
+  opacity: 0.6;
   transform: translate(-5%, 0);
-  transition: transform 0.5s ease-in-out;
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 
 form {

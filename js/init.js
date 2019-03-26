@@ -293,14 +293,16 @@ var DoStuff = function (url) {
    *             initialise the action if selected
    */
   function updateRegistry (config) {
-    if (typeof config.action !== 'string' || config.action === '') {
-      throw new Error('a "action" property that is a non-empty string. ' + typeof config.name + ' given.')
+    var tmp = invalidString('action', config)
+    if (tmp !== false) {
+      throw new Error('a "action" property that is a non-empty string. ' + tmp + ' given.')
     }
-    if (typeof config.name !== 'string' || config.name === '') {
-      throw new Error('a "name" property that is a non-empty string. ' + typeof config.name + ' given.')
+    tmp = invalidString('name', config)
+    if (tmp !== false) {
+      throw new Error('a "name" property that is a non-empty string. ' + tmp + ' given.')
     }
-    if (typeof config.func !== 'function') {
-      throw new Error('a "func" property that is a plain javascript function. ' + typeof config.name + ' given.')
+    if (typeof config.func === 'undefined' || !isFunction(config.func)) {
+      throw new Error('a "func" property that is a plain javascript function. ' + tmp + ' given.')
     }
     config.action = config.action.toLowerCase()
 
@@ -418,6 +420,46 @@ var DoStuff = function (url) {
     }
   }
 
+  //  END:
+  // ======================================================
+  // START: validation functions
+
+  function invalidString (prop, input, notEmpty) {
+    var tmp = typeof input[prop]
+    notEmpty = (typeof notEmpty === 'boolean') ? notEmpty : true
+    if (tmp !== 'string') {
+      return tmp
+    } else if (notEmpty === true && input[prop].replace(/^\s+|\s+$/g, '') === '') {
+      return 'empty string'
+    } else {
+      return false
+    }
+  }
+
+  function invalidStrNum (prop, input) {
+    var tmp = typeof input[prop]
+    if (tmp !== 'string' && tmp !== 'number') {
+      return tmp
+    } else {
+      return false
+    }
+  }
+
+  function invalidArray (prop, input) {
+    if (!Array.isArray(input[prop])) {
+      return typeof input[prop] + ' (not Array)'
+    } else if (input[prop].length === 0) {
+      return 'empty array'
+    } else {
+      return false
+    }
+  }
+
+  function isFunction (functionToCheck) {
+    return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
+  }
+
+  //  END: validation functions
   // ======================================================
   // START: extra field generators
 
@@ -437,7 +479,14 @@ var DoStuff = function (url) {
   function getLabel (config, groupLabel) {
     var _node = null
     var _element = 'label'
-    var _text = document.createTextNode(config.label)
+    var _text = null
+    var tmp = invalidString('label', config)
+
+    if (tmp !== false) {
+      throw new Error('All extra input fields must have a label property. ' + config.id + ' does not have a valid label')
+    }
+
+    _text = document.createTextNode(config.label)
 
     if (typeof groupLabel === 'boolean' && groupLabel === true) {
       _element = 'div'
@@ -470,6 +519,8 @@ var DoStuff = function (url) {
    * @returns {DOMelement} HTML span element
    */
   function getDescription (config) {
+    // Assumption here is that description was already tested for
+    // before this function was called
     var _node = document.createElement('span')
     var _text = document.createTextNode(config.description)
 
@@ -510,20 +561,18 @@ var DoStuff = function (url) {
     _node.setAttribute('id', config.id)
     _node.setAttribute('name', config.id)
 
-    if (typeof config.default === 'string') {
-      _node.value = config.default
-    }
-    if (typeof config.placeholder === 'string' && config.placeholder !== '') {
+    if (!invalidString('placeholder', config)) {
       _node.setAttribute('placeholder', config.placeholder)
     }
-    if (typeof config.pattern === 'string' && config.pattern !== '') {
+    if (!invalidString('pattern', config)) {
       _node.setAttribute('pattern', config.pattern)
     }
 
-    if (typeof URL.searchParams[config.id] === 'string') {
+    // Try and preset the default value for the text type field
+    if (!invalidString(config.id, URL.searchParams, false)) {
       _node.value = URL.searchParams[config.id]
     } else {
-      if (typeof config.default === 'string' || typeof config.default === 'number') {
+      if (!invalidStrNum('default', config)) {
         _node.value = config.default
       }
     }
@@ -579,13 +628,13 @@ var DoStuff = function (url) {
   function getNumber (config) {
     var _node = setTextInputAttributes('number', config)
 
-    if (typeof (config.min * 1) === 'number') {
+    if (isNaN(config.min) === false) {
       _node.node.setAttribute('min', config.min * 1)
     }
-    if (typeof (config.max * 1) === 'number') {
+    if (isNaN(config.max) === false) {
       _node.node.setAttribute('max', config.max * 1)
     }
-    if (typeof (config.step * 1) === 'number') {
+    if (isNaN(config.step) === false) {
       _node.node.setAttribute('step', config.step * 1)
     }
     return _node
@@ -607,6 +656,9 @@ var DoStuff = function (url) {
   function getSelectOption (_value, _label, _default) {
     var _node = document.createElement('option')
     var _text = document.createTextNode(_label)
+
+    // assumption is that parameters have already been validated
+    // by calling function
 
     _node.value = _value
     _node.appendChild(_text)
@@ -635,11 +687,26 @@ var DoStuff = function (url) {
     var _node = document.createElement('select')
     var _isDefault = false
     var a = 0
+    var tmp = false
 
     _node.setAttribute('id', config.id)
     _node.setAttribute('name', config.id)
 
+    tmp = invalidArray(config.options.length)
+    if (tmp !== false) {
+      throw new Error('getSelect() expects config to contain an options property that is a non-empty array. ' + tmp + ' given')
+    }
+
     for (a = 0; a < config.options.length; a += 1) {
+      tmp = invalidStrNum('value', config.options[a])
+      if (tmp !== false) {
+        throw new Error('getSelect() expects option ' + a + ' to have a value that is either a string or a nubmer. ' + tmp + ' given.')
+      }
+      tmp = invalidString('label', config.options[a])
+      if (tmp !== false) {
+        throw new Error('getSelect() expects option ' + a + ' to have a label that is a string. ' + tmp + ' given.')
+      }
+
       if (typeof URL.searchParams[config.id] === 'string') {
         _isDefault = (URL.searchParams[config.id] === config.options[a].value)
       } else {
@@ -666,11 +733,15 @@ var DoStuff = function (url) {
   function getGroupableInput (config) {
     var _wrapper = document.createElement('label')
     var _input = document.createElement('input')
-    var _label = document.createTextNode(config.label)
+    var _label = null
     var _id = config.id
     var _name = config.id
     var _isDefault = false
 
+    // assumtion is that config properties have already been
+    // validated by the calling function
+
+    _label = document.createTextNode(config.label)
     try {
       _id = makeAttributeSafe(config.id + '__' + config.value)
     } catch (e) {
@@ -724,8 +795,18 @@ var DoStuff = function (url) {
     var _fields = []
     var _count = 0
     var _getterFunc = null
+    var tmp = false
 
     for (a = 0; a < config.options.length; a += 1) {
+      tmp = invalidString('label', config.options[a])
+      if (tmp !== false) {
+        throw new Error('getRadio() expects option ' + a + ' to have a "label" property that is a non-empty string. ' + tmp + ' given.')
+      }
+      tmp = invalidStrNum('value', config.options[a])
+      if (tmp !== false) {
+        throw new Error('getRadio() expects option ' + a + ' to have a "value" property that is a either a string or a number. ' + tmp + ' given.')
+      }
+
       _tmp = getGroupableInput({
         id: config.id,
         type: 'radio',
@@ -774,8 +855,17 @@ var DoStuff = function (url) {
     var _count = 0
     var _getterFunc = null
     var _tmpCBID = ''
+    var tmp = false
 
     for (a = 0; a < config.options.length; a += 1) {
+      tmp = invalidString('label', config.options[a])
+      if (tmp !== false) {
+        throw new Error('getCheckbox() expects option ' + a + ' to have a "label" property that is a non-empty string. ' + tmp + ' given.')
+      }
+      tmp = invalidStrNum('value', config.options[a])
+      if (tmp !== false) {
+        throw new Error('getCheckbox() expects option ' + a + ' to have a "value" property that is a either a string or a number. ' + tmp + ' given.')
+      }
       _tmp = getGroupableInput({
         id: config.id,
         type: 'checkbox',
@@ -957,12 +1047,25 @@ var DoStuff = function (url) {
     }
   }
 
+  /**
+   * renderOutput() renders the results returned by the current
+   * action function to the appropriate field based on whether the
+   * app is in Debug Mode or not.
+   *
+   * @param {string} input string to be applied as output of the app
+   *
+   * @returns {void}
+   */
   renderOutput = function (_input) {
     inputTextarea.value = _input
   }
 
   /**
-   * doMagic() is called when the submit button is clicked.
+   * doMagic() returns a callback function with all of the variables
+   * of this scope bound into the function
+   *
+   * @returns {function} onclick callback function used by the
+   *             "Modify input" button
    */
   function doMagic () {
     return function (e) {
@@ -993,6 +1096,10 @@ var DoStuff = function (url) {
     }
   }
 
+  /**
+   * activateDebugMode() creates the HTML for debug mode plus shows
+   * and hides the debug part of the user Interface
+   */
   function activateDebugMode () {
     var label = null
 
@@ -1032,6 +1139,10 @@ var DoStuff = function (url) {
     }
   }
 
+  /**
+   * toggleDebug() callback function used as on click handler for
+   * "Debug mode" button
+   */
   function toggleDebug () {
     console.log('inside toggleDebug()')
     if (debugMode === false) {
@@ -1044,12 +1155,29 @@ var DoStuff = function (url) {
       debugMode = false
     }
     activateDebugMode()
+    hideBurger()
   }
 
   //  END:  private methods
   // ======================================================
   // START: public methods
 
+  /**
+   * DoStuff.register() registers an action, making it available for
+   * use and creating a link in the navigation.
+   *
+   * @param {object} config all the metadata for a given action.
+   *             Object has three required properties:
+   *             1. 'action' - Identifier for the action
+   *                           (used in the URL)
+   *             2. 'name' - Human readable name of the action
+   *                           (used in the heading and link)
+   *             3. 'function' - function that does the actual work
+   *                           of the action
+   *                           (used when "Modify input" is clicked)
+   *
+   * @returns {void}
+   */
   this.register = function (config) {
     try {
       updateRegistry(config)
