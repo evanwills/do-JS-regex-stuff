@@ -101,9 +101,9 @@ doStuff.register({
       label: 'Gender of chicken',
       type: 'radio',
       options: [
-        { 'value': 'male', label: 'Male (rooster)' },
-        { 'value': 'female', label: 'Female (hen)', default: true },
-        { 'value': 'other', label: 'Other' }
+        { value: 'male', label: 'Male (rooster)' },
+        { value: 'female', label: 'Female (hen)', default: true },
+        { value: 'other', label: 'Other' }
       ]
     },
     {
@@ -111,9 +111,9 @@ doStuff.register({
       label: 'Mood of the chicken',
       type: 'checkbox',
       options: [
-        { 'value': 'unsure', label: 'Chicken is confused about its identity' },
-        { 'value': 'angry', label: 'Chicken woke up on the wrong side of its purch', default: true },
-        { 'value': 'excited', label: 'Chicken is super excited', default: true }
+        { value: 'unsure', label: 'Chicken is confused about its identity' },
+        { value: 'angry', label: 'Chicken woke up on the wrong side of its purch', default: true },
+        { value: 'excited', label: 'Chicken is super excited', default: true }
       ]
     }
   ],
@@ -123,4 +123,235 @@ doStuff.register({
 })
 
 //  END:  Sample code
+// ====================================================================
+// START: heading to accordion
+
+function makeAccordion (input, extraInputs, GETvars) {
+  var heading = extraInputs.heading()
+  var multi = extraInputs.multiCollpase('multi')
+  var parent = extraInputs.parent()
+  // var content = ''
+  // var tmp = ''
+  var regexDLwrapper = new RegExp('<dl[^>]*>\\s*([\\s\\S]*?)\\s*</dl>', 'ig')
+  var regexHead = new RegExp('\\s*<h' + heading + '[^>]*>\\s*([\\s\\S]*?)\\s*</h' + heading + '>\\s*([\\s\\S]*?)\\s*(?=<h' + heading + '[^>]*>|$)', 'ig')
+  var regexDL = new RegExp('\\s*<dt[^>]*>\\s*([\\s\\S]*?)\\s*</dt>\\s*<dd[^>]*>([\\s\\S]*?)\\s*</dd>', 'ig')
+  var expand = true
+  var clean = new RegExp('(?:<div[^>]*>\\s*){2}<h2[^>]*>\\s*<a[^>]*>\\s*([\\s\\S]*?)\\s*<span[^>]*>[\\s\\S]*?</div>\\s*<div class="panel-body">\\s*([\\s\\S]*?)(?:\\s*</div>){3}', 'ig')
+  var expandMode = extraInputs.expandMode()
+  var defaultExpand = false
+
+  if (expandMode === 'closeAll') {
+    expand = false
+    defaultExpand = false
+  } else if (expandMode === 'openAll') {
+    expand = true
+    defaultExpand = true
+  }
+
+  /**
+   * getExpanded() returns an object with the expanded attributes and
+   * for both open button and panel body.
+   *
+   * @returns {object}
+   */
+  function getExpanded () {
+    var __output = {
+      expanded: '',
+      in: ''
+    }
+
+    if (expand === true) {
+      __output.expanded = ' aria-expanded="true"'
+      __output.in = ' in'
+      expand = defaultExpand
+    }
+    return __output
+  }
+
+  /**
+   * wrapAccordion() wraps all the accordion items in the accordion
+   * wrapper (with apporpriate attributes set)
+   *
+   * @param {string} input whole accordion block to be wrapped in HTML for a accordion (panel) group
+   *
+   * @returns {string} Full bootstrap compliant accordion
+   */
+  function wrapAccordion (input) {
+    var __output = ''
+    var _multi = (multi) ? ' aria-multiselectable="true"' : ''
+
+    __output = '\n<div class="panel-group" id="' + parent + '" role="tablist"' + _multi + '>\n'
+    __output += input
+    __output += '</div>'
+
+    return __output
+  }
+
+  /**
+   * makeAccordFunc() returns a string of HTML code with appropriate
+   * markup for bootstrap accordion blocks
+   *
+   * NOTE: this doesn't include makup for the 'panel-group' wrapper.
+   *       the 'panel-group' wrapper must be applied after all the
+   *       accordion blocks are generated.
+   *
+   * @param {string} match All the characters matched by the regular expression
+   * @param {string} headingTxt Heading text for the accordion block
+   * @param {string} accodionBody Body of the accordion block
+   * @param {number} offset number where abouts in the whole string the match started
+   * @param {string} whole the original string the match was found in
+   *
+   * @returns {string} marked up accordion block
+   */
+  function makeAccordFunc (match, headingTxt, accordionBody, offset, whole) {
+    var __output = ''
+    var _id = makeHumanReadableAttr(headingTxt)
+    var _expanded = getExpanded()
+
+    __output += '\t<div class="panel panel-default">\n'
+    __output += '\t\t<div class="panel-heading" role="tab" id="head-' + _id + '">\t\n'
+    __output += '\t\t\t<h' + heading + ' class="panel-title">\n'
+    __output += '\t\t\t\t<a role="button" data-toggle="collapse" data-parent="#accordion" href="#' + _id + '" ' + _expanded.expanded + ' aria-controls="' + _id + '">\n'
+    __output += '\t\t\t\t\t' + headingTxt + '\n'
+    __output += '\t\t\t\t</a>\n'
+    __output += '\t\t\t</h4>\n'
+    __output += '\t\t</div>\n'
+    __output += '\t\t<div id="' + _id + '" class="panel-collapse collapse ' + _expanded.in + '" role="tabpanel" aria-labelledby="head-' + _id + '">\n'
+    __output += '\t\t\t<div class="panel-body">\n'
+    __output += accordionBody
+    __output += '\n\t\t\t</div>\n'
+    __output += '\t\t</div>\n'
+    __output += '\t</div>\n'
+
+    return __output
+  }
+
+  /**
+   * headingFunc() finds all the headings at a specific level and
+   * wrap them and their following content in a bootstrap accordion
+   * block
+   *
+   * @param {string} _input HTML markup for text with headings.
+   *
+   * @returns {string} marked up accordion block
+   */
+  function headingFunc (_input) {
+    return wrapAccordion(_input.replace(regexHead, makeAccordFunc))
+  }
+
+  /**
+   * dlFunc() finds all the "definition titles" and
+   * "definition descriptions" a definiton list and wrap them in a
+   * bootstrap accordion block
+   *
+   * @param {string} _input HTML markup for text with headings.
+   *
+   * @returns {string} marked up accordion block
+   */
+  function dlFunc (_input) {
+    var __output = _input.replace(regexDLwrapper, '$1')
+    return wrapAccordion(__output.replace(regexDL, makeAccordFunc))
+  }
+
+  switch (extraInputs.mode()) {
+    case 'headings':
+      console.log('regexHead', regexHead)
+      console.log('regexHead.test(input)', regexHead.test(input))
+      return headingFunc(input)
+      // return ''
+      // break
+
+    case 'dl':
+      return dlFunc(input)
+      // break
+
+    case 'clean':
+      return ''
+      // break
+  }
+}
+
+doStuff.register({
+  action: 'heading2accordion',
+  description: 'Convert content to an accordion using specific headings as the separator for the accordion',
+  extraInputs: [
+    {
+      id: 'mode',
+      label: 'Convert mode',
+      type: 'radio',
+      options: [
+        {
+          value: 'headings',
+          label: 'Use headings as block delimiters',
+          default: true
+        },
+        {
+          value: 'dl',
+          label: 'Use definition list <DT>/<DD> as block delimiters'
+        // },
+        // {
+        //   // not yet implemented
+        //   value: 'clean',
+        //   label: 'Make ID\'s (and anchors) based on headings'
+        }
+      ]
+    },
+    {
+      id: 'heading',
+      label: 'Heading level',
+      type: 'select',
+      options: [
+        { value: 1, label: 'h1' },
+        { value: 2, label: 'H2', default: true },
+        { value: 3, label: 'H3' },
+        { value: 4, label: 'H4' }
+      ],
+      description: 'If "Convert mode" is "Use headings as block delimiters" content is matched based on the level of the heading specified here and also the heading level within the output HTML. If "Convert mode" is "Use definition list <DT>/<DD> as block delimiters" then this is only used to define the heading level within the output HTML.'
+    },
+    {
+      id: 'parent',
+      label: 'ID for accordion wrapper',
+      type: 'text',
+      pattern: '^[a-zA-Z_][a-zA-Z0-9_\\-]+$',
+      default: 'accordion'
+    },
+    {
+      id: 'multiCollpase',
+      label: 'Multi Collapse',
+      type: 'checkbox',
+      options: [
+        {
+          value: 'multi',
+          label: 'Allow multiple accordion blocks open at the same time.',
+          default: true
+        }
+      ]
+    },
+    {
+      id: 'expandMode',
+      label: 'Expand mode',
+      type: 'radio',
+      options: [
+        {
+          value: 'closeAll',
+          label: 'No blocks open by default'
+        },
+        {
+          value: 'openFirst',
+          label: 'Open first block only',
+          default: true
+        },
+        {
+          value: 'openAll',
+          label: 'Open ALL blocks by default'
+        }
+      ]
+    }
+  ],
+  func: makeAccordion,
+  // ignore: true,
+  name: 'Convert content to Bootstrap accordion blocks'
+})
+
+//  END:  heading to accordion
 // ====================================================================

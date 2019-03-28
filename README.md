@@ -158,7 +158,7 @@ All input types have the same way of accessing their values except checkboxes. _
 
 __NOTE:__ Checkbox values are always boolean (`TRUE` or `FALSE`)
 
-In the above code sampe we have "_Mood of the chicken_" group of checkboxes identified by `mood`. To get whether a given mood is checked we pass value for that mood to the `mood` function. e.g.
+In the above code sample we have "_Mood of the chicken_" group of checkboxes identified by `mood`. To get whether a given mood is checked we pass value for that mood to the `mood` function. e.g.
 
 ``` javascript
   var _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
@@ -199,3 +199,10 @@ Action functions get the GET variables passed an object via the third parameter 
 As an action function author, you need to test whether the GET variable exists before you use it. Otherwise, an error will be thrown and your function won't work.
 
 __NOTE:__ If the pre-processed GET variables don't work in your usecase, you can include the `rawGET` property in your registration object. This means that when the GET variables are passed to the action function you get the raw version of the variables.
+
+
+## Regular expressions
+
+Because there are somethings you can't normally do with regular Javascript RegExp regular expressions [XRegExp](http://xregexp.com/) is included.
+
+XRegExp adds a lot of very useful extra functionality to RegExp checkout the [XRegExp documentation](https://github.com/slevithan/xregexp/blob/master/README.md) for more info on how to use it.

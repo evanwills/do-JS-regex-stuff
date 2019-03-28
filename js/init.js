@@ -100,6 +100,141 @@ function getURLobject (url) {
 
   return output
 }
+// ======================================================
+// START: validation functions
+
+function invalidString (prop, input, notEmpty) {
+  var tmp = ''
+
+  if (typeof prop !== 'string') {
+    throw new Error('invalidString() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
+  }
+  if (typeof input !== 'object') {
+    throw new Error('invalidString() expects second parameter "input" to be a an object containing "' + prop + '" property. ' + typeof input + ' given.')
+  }
+
+  tmp = typeof input[prop]
+  notEmpty = (typeof notEmpty === 'boolean') ? notEmpty : true
+  if (tmp !== 'string') {
+    return tmp
+  } else if (notEmpty === true && input[prop].replace(/^\s+|\s+$/g, '') === '') {
+    return 'empty string'
+  } else {
+    return false
+  }
+}
+
+function invalidStrNum (prop, input) {
+  var tmp = ''
+
+  if (typeof prop !== 'string') {
+    throw new Error('invalidStrNum() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
+  }
+  if (typeof input !== 'object') {
+    throw new Error('invalidStrNum() expects second parameter "input" to be a an object containing "' + prop + '" property. ' + typeof input + ' given.')
+  }
+
+  tmp = typeof input[prop]
+  if (tmp !== 'string' && tmp !== 'number') {
+    return tmp
+  } else {
+    return false
+  }
+}
+
+function invalidNum (prop, input) {
+  var tmp = ''
+
+  if (typeof prop !== 'string') {
+    throw new Error('invalidNum() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
+  }
+  if (typeof input !== 'object') {
+    throw new Error('invalidNum() expects second parameter "input" to be a an object containing "' + prop + '" property. ' + typeof input + ' given.')
+  }
+
+  tmp = typeof input[prop]
+  if (tmp === 'undefined') {
+    return tmp
+  } else if (isNaN(input[prop])) {
+    return tmp + ' (is not a number)'
+  } else {
+    return false
+  }
+}
+
+function invalidArray (prop, input) {
+  if (typeof prop !== 'string') {
+    throw new Error('invalidArray() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
+  }
+  if (typeof input !== 'object') {
+    throw new Error('invalidArray() expects second parameter "input" to be a an object containing "' + prop + '" property. ' + typeof input + ' given.')
+  }
+  if (!Array.isArray(input[prop])) {
+    return typeof input[prop] + ' (not Array)'
+  } else if (input[prop].length === 0) {
+    return 'empty array'
+  } else {
+    return false
+  }
+}
+
+function isFunction (functionToCheck) {
+  return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
+}
+
+/**
+ * makeAttributeSafe() makes a string safe to be used as an ID or
+ * class name
+ *
+ * @param {string} _attr A string to be made safe to use as a HTML
+ *             class name or ID
+ *
+ * @returns {string} class name or ID safe string
+ */
+function makeAttributeSafe (_attr) {
+  var _output = ''
+  var _isValid = new RegExp('^[a-z_-]', 'i')
+  var _clean = new RegExp('[^a-z0-9_\\-]+', 'ig')
+
+  if (typeof _attr !== 'string') {
+    throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
+  }
+
+  _output = _attr.replace(_clean, '')
+
+  if (_output === '') {
+    throw new Error('makeAttributeSafe() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
+  }
+
+  if (!_isValid.test(_output)) {
+    _output = '_' + _output
+  }
+  return _output
+}
+
+function makeHumanReadableAttr (_attr) {
+  var _clean = new RegExp('[^a-z0-9_\\-]+([a-z]?)', 'ig')
+  var _isValid = new RegExp('^[a-z_-]', 'i')
+  var _output = ''
+
+  if (typeof _attr !== 'string') {
+    throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
+  }
+
+  _output = _attr.replace(_clean, function (match, p1) { return (typeof p1 !== 'undefined') ? p1.toUpperCase() : '' })
+
+  if (_output === '') {
+    throw new Error('makeHumanReadableAttr() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
+  }
+
+  if (!_isValid.test(_output)) {
+    _output = '_' + _output
+  }
+  return _output
+}
+
+//  END: validation functions
+// ======================================================
 
 /**
  *
@@ -440,75 +575,6 @@ var DoStuff = function (url) {
 
   //  END:
   // ======================================================
-  // START: validation functions
-
-  function invalidString (prop, input, notEmpty) {
-    var tmp = typeof input[prop]
-    notEmpty = (typeof notEmpty === 'boolean') ? notEmpty : true
-    if (tmp !== 'string') {
-      return tmp
-    } else if (notEmpty === true && input[prop].replace(/^\s+|\s+$/g, '') === '') {
-      return 'empty string'
-    } else {
-      return false
-    }
-  }
-
-  function invalidStrNum (prop, input) {
-    var tmp = typeof input[prop]
-    if (tmp !== 'string' && tmp !== 'number') {
-      return tmp
-    } else {
-      return false
-    }
-  }
-
-  function invalidArray (prop, input) {
-    if (!Array.isArray(input[prop])) {
-      return typeof input[prop] + ' (not Array)'
-    } else if (input[prop].length === 0) {
-      return 'empty array'
-    } else {
-      return false
-    }
-  }
-
-  function isFunction (functionToCheck) {
-    return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
-  }
-
-  /**
-   * makeAttributeSafe() makes a string safe to be used as an ID or
-   * class name
-   *
-   * @param {string} _attr A string to be made safe to use as a HTML
-   *             class name or ID
-   *
-   * @returns {string} class name or ID safe string
-   */
-  function makeAttributeSafe (_attr) {
-    var _output = ''
-    var _isValid = new RegExp('^[a-z_-]', 'i')
-    var _clean = new RegExp('[^a-z0-9_\\-]+', 'ig')
-
-    if (typeof _attr !== 'string') {
-      throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
-    }
-
-    _output = _attr.replace(_clean, _attr)
-
-    if (_output === '') {
-      throw new Error('makeAttributeSafe() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
-    }
-
-    if (!_isValid.test(_output)) {
-      _output = '_' + _output
-    }
-    return _output
-  }
-
-  //  END: validation functions
-  // ======================================================
   // START: extra field generators
 
   /**
@@ -615,6 +681,12 @@ var DoStuff = function (url) {
     if (!invalidString('pattern', config)) {
       _node.setAttribute('pattern', config.pattern)
     }
+    if (!invalidNum('size', config)) {
+      _node.setAttribute('size', config.pattern)
+    }
+    if (!invalidNum('maxlength', config)) {
+      _node.setAttribute('maxlength', config.pattern)
+    }
 
     // Try and preset the default value for the text type field
     if (!invalidString(config.id, URL.searchParams, false)) {
@@ -676,13 +748,13 @@ var DoStuff = function (url) {
   function getNumber (config) {
     var _node = setTextInputAttributes('number', config)
 
-    if (isNaN(config.min) === false) {
+    if (!invalidNum('min', config)) {
       _node.node.setAttribute('min', config.min * 1)
     }
-    if (isNaN(config.max) === false) {
+    if (!invalidNum('max', config)) {
       _node.node.setAttribute('max', config.max * 1)
     }
-    if (isNaN(config.step) === false) {
+    if (!invalidNum('step', config)) {
       _node.node.setAttribute('step', config.step * 1)
     }
     return _node
@@ -740,7 +812,7 @@ var DoStuff = function (url) {
     _node.setAttribute('id', config.id)
     _node.setAttribute('name', config.id)
 
-    tmp = invalidArray(config.options.length)
+    tmp = invalidArray('options', config)
     if (tmp !== false) {
       throw new Error('getSelect() expects config to contain an options property that is a non-empty array. ' + tmp + ' given')
     }
@@ -1306,7 +1378,7 @@ var DoStuff = function (url) {
 
   URL = getURLobject(url)
 
-  if (typeof URL.searchParams['action'] !== 'undefined') {
+  if (typeof URL.searchParams['action'] === 'string') {
     action = URL.searchParams['action'].toLowerCase()
   }
 
