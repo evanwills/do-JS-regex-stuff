@@ -1,0 +1,346 @@
+<h1 id="how_do-js-regex-stuff_works">
+	How "Do JS regex stuff" works
+</h1>
+<p>
+	So you have some dodgy text and you'd like to clean it up? Well you've come to the right place.
+</p>
+<p>
+	In the
+	<code><a href="js/action-function.js">js/action-function.js</a></code>
+	file you need to write a function that does all the stuff you need for one action.
+</p>
+<p>
+	Then you need to register that function so the app knows what to do.
+</p>
+<h2 id="the-function">
+	The function
+</h2>
+<p>
+	There are a few things you need to know about the function:
+</p>
+<ol>
+	<li>
+		The function must have a unique name (so you don't override someone else's work).
+	</li>
+	<li>
+		It must accept three parameters:
+		<ol>
+			<li><strong><code>input</code></strong>: {string} text from the main "Text to be
+				modified" textarea
+			</li>
+			<li><strong><code>extraInputs</code></strong>: {object} list of key/value pairs where the
+				key is the contents of the
+				<code>name</code>
+				attribute of the field and the value is a function that can be called to retrieve the value of that
+				field (see below for more info on extra fields that you can define when you register the function)
+			</li>
+			<li><strong><code>GETvars</code></strong>: {object} list of all supplied GET variables
+				from URL
+			</li>
+		</ol>
+	</li>
+	<li>
+		It must return a string (to be used as the replacement contents for the "Text to be modified" textarea
+	</li>
+	<li>
+		It must be a pure function (i.e. it must not make changes to variables that are not defined within the
+		function)
+	</li>
+</ol>
+<h2 id="registering-the-function">
+	Registering the function
+</h2>
+<p>
+	After you've defined the function, you need to register it by calling doStuff.register(), which accepts an
+	object with the following keys:
+</p>
+<ol>
+	<li><strong><code>function</code></strong>: {function} <em>[required]</em> The function (the
+		name of the function, not quoted)
+	</li>
+	<li><strong><code>action</code></strong>: {string} <em>[required]</em> The GET '<code>action</code>' value that tells the script that this is the right function to use
+	</li>
+	<li><strong><code>name</code></strong>: {string} <em>[required]</em> Used as the sub-title
+		when the action is selected also used as the link text for the action in the menu.
+	</li>
+	<li>
+		<code>description</code>: {string} <em>[optional (but recommended)]</em> short paragraph decribing the purpose of the function.
+	</li>
+	<li>
+		<code>docURL</code>: {string} <em>[optional]</em> URL for documentation page (must be HTTPS). Used in a popup to give
+		detailed information about the action. Including the expected input what will be changed and the expected
+		output why this needs to be done
+	</li>
+	<li>
+		<code>extraInputs</code>: {array} <em>[option]</em> list of objects for extra inputs needed for the find/replace Extra inputs
+		have the following keys:
+		<ol>
+			<li><strong><code>id</code></strong>: {string} <em>[required]</em> used to identify
+				the input (also used as the key when the '<code>extraInputs</code>' are passed to the function
+			</li>
+			<li><strong><code>label</code></strong>: {string} <em>[required]</em> text to
+				describe the field (or group of checkboxes/radio buttons)
+			</li>
+			<li>
+				<code>type</code>: {string} <em>[optional]</em> text (default), textarea, number, radio, checkbox, select (if
+				type is invalid, an error will be shown in the console)
+			</li>
+			<li>
+				<code>default</code>: {string, number} <em>[optional]</em> the default value for the input
+			</li>
+			<li>
+				<code>options</code>: {array} [required for radio, checkbox, select] list of option objects (option objects must have
+				both <strong><code>value</code></strong> & <strong><code>label</code></strong> keys.
+				It can also have a boolean
+				<code>default</code>
+				property to specify that the given option should be checked/selected by default)
+			</li>
+			<li>
+				<code>placeholder</code>: {string} <em>[optional]</em> Text displayed within the text or number field (only used for
+				text & number inputs)
+			</li>
+			<li>
+				<code>pattern</code>: {string} <em>[optional]</em> regular expression to validate the contents of the text/number
+				field (only used for text & number inputs)
+			</li>
+			<li>
+				<code>description</code>: {string} <em>[optional]</em> Information about what this field is used for. (Displayed below
+				the input field input)
+			</li>
+			<li>
+				<code>min</code>: {number} <em>[optional]</em> (number fields only) Minumum value the number field can contain
+			</li>
+			<li>
+				<code>max</code>: {number} <em>[optional]</em> (number fields only) Maximum value the number field can contain
+			</li>
+			<li>
+				<code>step</code>: {number} <em>[optional]</em> (number fields only) The amount to increment the field's value
+				up and down when using the arrow keys or number scroller
+			</li>
+		</ol>
+	</li>
+	<li>
+		<code>rawGET</code>: by default GET variables are "URL decoded" and converted to appropriate types. By specifying
+		<code>rawGET</code>
+		as
+		<code>TRUE</code>
+		the action function receives the <em>raw</em> (all strings) GET variables.
+	</li>
+</ol>
+<h2 id="using-the-values-from-extra-input-fields">
+	Using the values from extra input fields
+</h2>
+<p>
+	Say you have a action function with three <em>extra input</em> fields. One for year with the ID
+	<code>year</code>
+	and another for gender and a group of checkboxes for mood. You can get the value of
+	<code>year</code>
+	by calling
+	<code>extraInputs.year()</code>
+	and the value of gender by calling
+	<code>extraInputs.gender()</code>
+	. You can get the value for each type of mood by calling the mood function, passing the value of that mood as
+	the only parameter e.g.
+</p>
+<pre><code>function exposeChickens (input, extraInputs, GETvars) {
+  var _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
+  var _angry = extraInputs.mood('angry')
+  var _boc = 'BOC! BOC!!'
+  var _chicken = 'chicken'
+  var _excited = extraInputs.mood('excited')
+  <em>// We retrieve the value of _gender by calling the function that</em>
+  <em>// matches the ID (or name) of the input field</em>
+  var _gender = extraInputs.gender()
+  var output = ''
+  var _spring = ''
+  <em>// We do the same for _year</em>
+  var _year = extraInputs.year()
+
+  <em>// Test the gender of the chicken</em>
+  if (_gender === 'male') {
+    _chicken = 'rooster'
+    _boc = 'COCK-A-DOODLE-DO'
+  } else if (_gender === 'female') {
+    _chicken = 'hen'
+  } else if (_gender === 'other') {
+    _chicken += ' first don\'t try to pigeon hole me'
+  }
+
+  <em>// Test the Year (as defined by the user)</em>
+  if (_year >= 2018) {
+    _spring = ' spring'
+  } else if (_year < 2016) {
+    _spring = 'n old'
+    _chicken += '. Please don\'t boil me and make me into soup.'
+  }
+
+  if (_excited === true) {
+    _boc += ' BOC-OCK!!! '
+    output = ' [[' + _boc + _unsure + ' ' + _boc + _boc
+    output += 'I am a ' + _boc + _boc + _boc
+    output += _spring + ' ' + _boc + _boc + _boc + _boc
+    output += _chicken + ' ' + _boc + _boc + _boc + _boc + _boc + '!!]] '
+  } else {
+    output = ' [[' + _boc + '!!' + _unsure + ' I am a' + _spring + ' ' + _chicken + ']] '
+  }
+
+  if (_angry === true) {
+    output = output.toUpperCase()
+  }
+
+  <em>// Do the replacement and return the updated string</em>
+  return input.replace(/[aeiou]+/ig, output)
+}
+
+doStuff.register({
+  action: 'doChicken',
+  name: 'Expose the chickens',
+  func: exposeChickens,
+  extraInputs: [
+    {
+      id: 'year',
+      label: 'Year chicken was born',
+	  type: 'number',
+	  min: 2013,
+	  max: 2019,
+	  step: 1,
+	  default: 2019
+	},
+	{
+      id: 'gender',
+      label: 'Gender of chicken',
+      type: 'radio',
+      options: [
+        { 'value': 'male', label: 'Male (rooster)' },
+        { 'value': 'female', label: 'Female (hen)', default: true },
+        { 'value': 'other', label: 'Other' }
+      ]
+    },
+    {
+      id: 'mood',
+      label: 'Mood of the chicken',
+      type: 'checkbox',
+      options: [
+        { 'value': 'unsure', label: 'Chicken is confused about its identity' },
+        { 'value': 'angry', label: 'Chicken woke up on the wrong side of its purch', default: true },
+        { 'value': 'excited', label: 'Chicken is super excited', default: true }
+      ]
+    }
+  ],
+  description: 'Change all vowels into chickens'
+})</code></pre>
+<h3 id="checkbox-fields">
+	Checkbox fields
+</h3>
+<p>
+	All input types have the same way of accessing their values except
+	checkboxes. <strong>do-JS-regex-stuff</strong> is set up to allow for multiple checkbox inputs for a single
+	"field" but checkboxes are unique and each needs a unique ID, so you access whether a checkbox is checked or not
+	by passing the value to the function.
+</p>
+<p><strong>NOTE:</strong> Checkbox values are always boolean (
+	<code>TRUE</code>
+	or
+	<code>FALSE</code>
+	)
+</p>
+<p>
+	In the above code sample we have "<em>Mood of the chicken</em>" group of checkboxes identified by
+	<code>mood</code>
+	. To get whether a given mood is checked we pass value for that mood to the
+	<code>mood</code>
+	function. e.g.
+</p>
+<pre><code>var _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
+var _angry = extraInputs.mood('angry')
+var _excited = extraInputs.mood('excited')</code></pre>
+<h2 id="using-get-variables-from-the-url">
+	Using GET variables from the URL
+</h2>
+<p>
+	URL GET variables are used in two ways in <strong>do-JS-regex-stuff</strong>:
+</p>
+<ol>
+	<li>
+		GET variables are used to preset "<em>extra input</em>" fields
+	</li>
+	<li>
+		GET variables are also available within an action function
+	</li>
+</ol>
+<h3 id="pre-processing-get-variables">
+	Pre-Processing GET variables
+</h3>
+<p>
+	Where possible, the value of GET variables are converted to their appropriate javascript variable types. e.g.
+</p>
+<ul>
+	<li>
+		<code>'true'</code>
+		will be converted to boolean
+		<code>TRUE</code>
+		(case <em>insensitive</em>)
+	</li>
+	<li>
+		<code>'false'</code>
+		will be converted to boolean
+		<code>FALSE</code>
+		(case <em>insensitive</em>)
+	</li>
+	<li>
+		<code>'2019'</code>
+		will be converted to number
+		<code>2019</code>
+	</li>
+</ul>
+<p>
+	GET variables are also URL decoded. (But JSON objects are not parsed)
+</p>
+<h3 id="presetting-extra-input-fields">
+	Presetting <em>extra input</em> fields
+</h3>
+<p>
+	For text type fields, if the field's ID matches a GET variable, then the value of the GET variable is used as
+	the default value for that field.
+</p>
+<p>
+	For checkbox, radio & select fields, if the field's
+	<code>name</code>
+	matches a get variable and the field's (or option's) value matches the value of the GET variable then that
+	field/option will be checked/selected
+</p>
+<h3 id="using-get-variables-within-action-function">
+	Using GET variables within action function
+</h3>
+<p>
+	It's probably a bad idea to use GET variables within you action function because it hides functionality from the
+	user which they may or may not need to change.
+</p>
+<p>
+	However, there are times when that's exactly what you want.
+</p>
+<p>
+	Action functions get the GET variables passed an object via the third parameter when the function is called.
+</p>
+<p>
+	As an action function author, you need to test whether the GET variable exists before you use it. Otherwise, an
+	error will be thrown and your function won't work.
+</p>
+<p><strong>NOTE:</strong> If the pre-processed GET variables don't work in your usecase, you can
+	include the
+	<code>rawGET</code>
+	property in your registration object. This means that when the GET variables are passed to the action function
+	you get the raw version of the variables.
+</p>
+<h2 id="regular-expressions">
+	Regular expressions
+</h2>
+<p>
+	Because there are somethings you can't normally do with regular Javascript RegExp regular expressions <a
+		href="http://xregexp.com">XRegExp</a> is included.
+</p>
+<p>
+	XRegExp adds a lot of very useful extra functionality to RegExp checkout the <a
+		href="https://github.com/slevithan/xregexp/blob/master/README.md">XRegExp documentation</a> for more info
+	on how to use it.
+</p>

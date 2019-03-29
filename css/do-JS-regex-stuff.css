@@ -52,6 +52,10 @@ textarea {
   background-color: #b70;
   width: 100%;
 }
+.btn-debug:hover {
+  background-color: #b67300;
+  text-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.8);
+}
 .btn-help {
   background-color: #007;
   float: right;
