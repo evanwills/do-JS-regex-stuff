@@ -206,3 +206,11 @@ __NOTE:__ If the pre-processed GET variables don't work in your usecase, you can
 Because there are somethings you can't normally do with regular Javascript RegExp regular expressions [XRegExp](http://xregexp.com/) is included.
 
 XRegExp adds a lot of very useful extra functionality to RegExp checkout the [XRegExp documentation](https://github.com/slevithan/xregexp/blob/master/README.md) for more info on how to use it.
+
+
+## Validation helper function
+
+Because data validation is important so we don't break things there are a number of helper functions for validation.
+
+The following set of functions validate the existence of and data type properties of an object (useful for validating `GETvars`)
+### invalidString()

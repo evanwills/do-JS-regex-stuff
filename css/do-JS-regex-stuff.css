@@ -6,6 +6,7 @@ body {
 
 .hide { display: none; }
 .block { display: block; }
+.bold { font-weight: bold; }
 
 h1, h2 {
   margin-top: 0;
@@ -26,6 +27,13 @@ textarea {
   height: 30rem;
   box-sizing: border-box;
 }
+pre {
+  border: 0.05em solid #d799f0;
+  padding: 0.75rem;
+  background-color: #eaf8ff;
+  border-radius: 0.75rem;
+}
+code { font-size: 1rem; }
 .btn {
   border: none;
   color: #fff;
@@ -69,35 +77,39 @@ textarea {
   background-color: #000;
   height: 3rem;
   left: -3rem;
+  padding: 0;
   position: absolute;
   width: 3rem;
 }
 .btn-burger:hover {
   cursor: pointer;
 }
+
 .btn-burger::after {
-  /* content: '\2261  '; */
-  content: '\025BD ';
+  content: '\025BD';
+  cursor: pointer;
+  display: block;
   font-size: 1.5rem;
+  /* height: 3rem; */
   left: 50%;
   position: absolute;
   top: 50%;
+  transform-origin: 50% 50%;
   transform: translate(-50%, -50%) rotate(90deg);
-  transition: transform 0.35s ease-in-out;
-  cursor: pointer;
+  transition: transform 0.4s ease-in-out;
+  /* width: 3rem; */
 }
-.btn-burger--open::after {
-  /* content: '\0003E ';
-  content: '\021D2 ';
-  content: '\021DB '; */
-  transform: translate(-50%, -50%) rotate(-90deg);
-  transition: transform 0.35s ease-in-out;
+.btn-burger.btn-burger--open::after {
+  transform: translate(-50%, -50%) rotate(30deg);
+  transition: transform 0.4s ease-in-out;
 }
+.btn-burger--arrow { display: none; }
 .sr-only {
   position: absolute;
   left: -1000rem;
   top: -1000rem;
 }
+
 
 .main-nav {
   background-color: #000;
@@ -131,11 +143,19 @@ textarea {
   text-decoration: none;
   color: #000;
   display: block;
-  padding: 0.9rem 1rem;
+  padding: 0.95rem 1rem;
   position: relative;
   z-index: 1;
 }
-.menu-items li a::before {
+.menu-items li a:hover {
+  background-color: #802;
+  color: #fff;
+}
+.menu-items li a.active-action {
+  background-color: #205;
+  color: #fff;
+}
+/* .menu-items li a {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -148,7 +168,7 @@ textarea {
   z-index: 1;
   content: '';
 }
-.menu-items li a::after {
+.menu-items li a {
   color: #fff;
   opacity: 0;
   padding: 0.9rem 1rem;
@@ -160,12 +180,12 @@ textarea {
   top: 0;
   content: attr(data-title);
   z-index: 2;
-  }
-.menu-items li a:hover::before {
+} */
+.menu-items li a:hover {
   opacity: 1;
   transition: opacity 0.3s ease-in-out
 }
-.menu-items li a:hover::after {
+.menu-items li a:hover {
   opacity: 1;
   transform: scale(1);
   transition: opacity 0.3s ease-in-out transform 0.3s ease-in-out;
@@ -343,3 +363,13 @@ input {
   margin: 1.5rem 0 0;
   text-transform: uppercase;
 }
+
+.tkn { color: #007; }
+.vName { color: rgb(5, 114, 5); font-weight: bold; }
+.fName { color:rgb(206, 10, 59) ; font-weight: bold; }
+.str { color: #950; font-style: italic; }
+.num { color: #509; }
+.bool { color: #96c614; text-transform: uppercase; }
+.bkt { color: #e95}
+.comm { color: rgb(124, 156, 124); }
+.commTxt { font-family: Georgia, 'Times New Roman', Times, serif; }

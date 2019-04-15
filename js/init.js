@@ -1,3 +1,7 @@
+/* jslint browser: true */
+/* global history, invalidString, getURLobject, invalidStrNum, invalidNum, invalidArray, isFunction, makeAttributeSafe, XMLHttpRequest */
+// other global functions: makeHumanReadableAttr
+// include utility-functions.js
 
 /**
  *
@@ -21,6 +25,11 @@ var DoStuff = function (url) {
    * @var {string} actionName Human friendly name of the action
    */
   var actionName = ''
+
+  /**
+   * @var array allLinks array of navigation link DOM elements
+   */
+  var allLinks = []
 
   /**
    * @var {string} baseURL used as the main part of the URL for all
@@ -65,6 +74,11 @@ var DoStuff = function (url) {
    *             output field
    */
   var debugWrapper = null
+
+  /**
+   * @var {DOMelement} docTitle the Title element in the page header
+   */
+  var docsURL = 'docs/How_Do-JS-regex-stuff_works.html'
 
   /**
    * @var {DOMelement} docTitle the Title element in the page header
@@ -132,14 +146,6 @@ var DoStuff = function (url) {
   var modalMask = document.getElementById('modal-show-hide__mask')
 
   /**
-   * @var {DOMelement} noAction where the message explaining what is
-   *             happeing when no action has been selected and also
-   *             the place to put the action description if one has
-   *             been set.
-   */
-  var noAction = document.getElementById('no-action')
-
-  /**
    * @var {DOMelement} nav the unordered list use to house all the
    *             action links
    */
@@ -157,6 +163,19 @@ var DoStuff = function (url) {
    *              open or closed
    */
   var navOpen = false
+
+  /**
+   * @var {DOMelement} noAction where the message explaining what is
+   *             happeing when no action has been selected and also
+   *             the place to put the action description if one has
+   *             been set.
+   */
+  var noAction = document.getElementById('no-action')
+
+  /**
+   * @var {string} the name of an action set to NOT be ignored
+   */
+  var noIgnore = ''
 
   /**
    * @var {object} registry list of objects where the key is the
@@ -213,9 +232,18 @@ var DoStuff = function (url) {
    *             initialise the action if selected
    */
   function updateRegistry (config) {
-    var tmp = invalidString('action', config)
+    var tmp = false
+
+    tmp = invalidString('action', config)
     if (tmp !== false) {
       throw new Error('a "action" property that is a non-empty string. ' + tmp + ' given.')
+    }
+    if (typeof config.ignore === 'boolean' && config.ignore === true) {
+      // This action has been set to IGNORE
+      if (noIgnore !== config.action) {
+        // The user has not overridden the IGNORE directive via the URL
+        return false
+      }
     }
     tmp = invalidString('name', config)
     if (tmp !== false) {
@@ -231,6 +259,8 @@ var DoStuff = function (url) {
     // TODO: work out how to sort the registry so it's always in
     // alphabetical order (by name, not action)
     registry[config.action] = config
+
+    return true
   }
 
   /**
@@ -253,6 +283,7 @@ var DoStuff = function (url) {
     if (typeof registry[_action] === 'undefined') {
       throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string that matches a key in the registry of actions. ' + typeof _action + ' given.')
     }
+    action = _action
 
     docTitle.innerHTML = 'Do JS Regex Stuff &ndash; ' + registry[_action].name
     subTitle.className = ''
@@ -278,6 +309,14 @@ var DoStuff = function (url) {
       }
       if (a > 0) {
         customFields.className = 'custom-fields'
+      }
+    }
+
+    for (a = 0; a < allLinks.length; a += 1) {
+      if (allLinks[a].id === 'action--' + _action) {
+        allLinks[a].className = 'active-action'
+      } else {
+        allLinks[a].className = undefined
       }
     }
 
@@ -312,10 +351,10 @@ var DoStuff = function (url) {
     var linkText = null
     // var desc = null
 
-    // if (typeof registry[_action] !== 'undefined') {
-
     a = document.createElement('a')
     a.setAttribute('href', baseURL + _action + debugGet)
+    a.setAttribute('id', 'action--' + _action)
+
     linkText = document.createTextNode(registry[_action].name)
     if (typeof registry[_action].description === 'string') {
       a.setAttribute('title', registry[_action].description)
@@ -323,10 +362,10 @@ var DoStuff = function (url) {
     a.setAttribute('data-title', registry[_action].name)
     a.appendChild(linkText)
     a.onclick = getNavClickHandler(_action)
+    allLinks.push(a)
     li = document.createElement('li')
     li.appendChild(a)
 
-    // }
     return li
   }
 
@@ -939,7 +978,11 @@ var DoStuff = function (url) {
       }
       debugGet = ''
     }
-    history.pushState({ id: action }, registry[action].name, baseURL + action + debugGet)
+    if (typeof registry[action] !== 'undefined') {
+      history.pushState({ id: action }, registry[action].name, baseURL + action + debugGet)
+    } else {
+      history.pushState({ id: action }, 'debug', baseURL + action + debugGet)
+    }
   }
 
   //  END:  general private methods
@@ -960,6 +1003,7 @@ var DoStuff = function (url) {
     return function (e) {
       var success = true
       e.preventDefault()
+
       try {
         initialiseAction(_action)
       } catch (error) {
@@ -1084,20 +1128,23 @@ var DoStuff = function (url) {
    * @returns {void}
    */
   this.register = function (config) {
+    var registerOk = false
     try {
-      updateRegistry(config)
+      registerOk = updateRegistry(config)
     } catch (error) {
       console.error('DoStuff.register() expects config to contain ' + error)
       return false
     }
 
-    if (config.action === action) {
-      initialiseAction(action)
-    }
+    if (registerOk) {
+      // need to sort out making this alphabetical
+      // but this'll do for the moment
+      nav.appendChild(addToNav(config.action))
 
-    // need to sort out making this alphabetical
-    // but this'll do for the moment
-    nav.appendChild(addToNav(config.action))
+      if (config.action === action) {
+        initialiseAction(action)
+      }
+    }
   }
 
   /**
@@ -1151,6 +1198,8 @@ var DoStuff = function (url) {
       debugGet = '&debug=true'
     }
   }
+
+  noIgnore = (typeof URL.searchParams['noIgnore'] !== 'undefined') ? URL.searchParams['noIgnore'] : ''
   baseURL = URL.protocol + '//' + URL.host + URL.pathname + '?action='
 
   //  END:  proceedural part of code (constructor stuff)
