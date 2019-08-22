@@ -94,8 +94,8 @@ function exposeChickens (input, extraInputs, GETvars) {
 doStuff.register({
   action: 'doChicken',
   description: 'Change all vowels into chickens',
-  docURL: 'docs/expose-chickens.html',
-  // docURL: 'https://courses.acu.edu.au/do-js-regex-stuff/docs/expose-chickens',
+  // docURL: 'docs/expose-chickens.html',
+  docURL: 'https://courses.acu.edu.au/do-js-regex-stuff/docs/expose-chickens',
   extraInputs: [
     {
       id: 'year',
@@ -128,7 +128,7 @@ doStuff.register({
     }
   ],
   func: exposeChickens,
-  ignore: false,
+  ignore: true,
   name: 'Expose the chickens'
 })
 
@@ -284,6 +284,7 @@ function makeAccordion (input, extraInputs, GETvars) {
 doStuff.register({
   action: 'heading2accordion',
   description: 'Convert content to an accordion using specific headings as the separator for the accordion',
+  // docsULR: '',
   extraInputs: [
     {
       id: 'mode',
@@ -410,6 +411,71 @@ doStuff.register({
 
 //  END:  Syntax highlighting for JS
 // ====================================================================
+// START: Syntax highlighting for JS
+
+/**
+ * incrementH() finds all the headings in HTML code and increments or
+ * decrements the level based on the option set in
+ *  "Decrement/Increment heading importance"
+ *
+ * created by: Evan Wills
+ * created: 2019-08-22
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+function incrementH (input, extraInputs, GETvars) {
+  var find = new RegExp('<(/?)h([1-6])', 'ig')
+  var mode = Number.parseInt(extraInputs.mode())
+  var replace = function (matches, close, level) {
+    var h = '<'
+    var newLevel = (Number.parseInt(level) + mode)
+
+    // HTML only accepts headings between 1 & 6 (inclusive)
+    // make sure the output level is between 1 & 6
+    newLevel = (newLevel > 6) ? '6' : (newLevel < 1) ? 1 : newLevel
+    h += (typeof (close) !== 'string' || close !== '/') ? '' : '/'
+    h += 'h' + newLevel
+    return h
+  }
+  return input.replace(find, replace)
+}
+
+doStuff.register({
+  action: 'incrementH',
+  func: incrementH,
+  ignore: false,
+  name: 'Decrement or Increment HTML heading level by 1',
+  // docURL: 'https://courses.acu.edu.au/do-js-regex-stuff/docs/expose-chickens',
+  extraInputs: [
+    {
+      id: 'mode',
+      label: 'Decrement/Increment heading importance',
+      options: [
+        {
+          value: '1',
+          label: 'Reduce heading\'s importance',
+          default: true
+        },
+        {
+          value: '-1',
+          label: 'Increase heading\'s importance'
+        }
+      ],
+      type: 'radio'
+    }
+  ]
+})
+
+//  END:  Syntax highlighting for JS
+// ====================================================================
 
 function staffAccessCard (input, extraInputs, GETvars) {
   var baseURL = 'https://forms.acu.edu.au/public/staff_access_card'
@@ -429,6 +495,7 @@ doStuff.register({
   action: 'staffAccessCard',
   func: staffAccessCard,
   description: 'Generate a staff access card URL with email and gender bound in',
+  // docsULR: '',
   extraInputs: [
     {
       id: 'email',
@@ -451,6 +518,6 @@ doStuff.register({
       type: 'radio'
     }
   ],
-  ignore: false,
+  ignore: true,
   name: 'Staff Access Card URL'
 })
