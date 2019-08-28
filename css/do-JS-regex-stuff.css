@@ -363,6 +363,14 @@ input {
   margin: 1.5rem 0 0;
   text-transform: uppercase;
 }
+.modal img {
+  display: block;
+  width: 100%;
+  margin: 0.5em 0;
+}
+.modal li {
+  padding-bottom: 1em;
+}
 
 .tkn { color: #007; }
 .vName { color: rgb(5, 114, 5); font-weight: bold; }

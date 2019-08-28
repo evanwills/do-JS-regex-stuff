@@ -562,6 +562,8 @@ doStuff.register({
   func: matchPaymentIDs,
   ignore: false,
   name: 'Match unfinished payment IDs to confirmed payments.',
+  // docURL: 'https://courses.acu.edu.au/do-js-regex-stuff/docs/match_unfinished_payment_ids_to_confirmed_payments.',
+  docURL: 'docs/match-unfinished-payment.html',
   extraInputs: [
     {
       id: 'paymentIDs',
