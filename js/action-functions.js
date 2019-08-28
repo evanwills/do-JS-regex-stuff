@@ -411,7 +411,7 @@ doStuff.register({
 
 //  END:  Syntax highlighting for JS
 // ====================================================================
-// START: Syntax highlighting for JS
+// START: Fix heading levels when Migrating HTML from one system to another
 
 /**
  * incrementH() finds all the headings in HTML code and increments or
@@ -452,8 +452,9 @@ doStuff.register({
   action: 'incrementH',
   func: incrementH,
   ignore: false,
-  name: 'Decrement or Increment HTML heading level by 1',
-  // docURL: 'https://courses.acu.edu.au/do-js-regex-stuff/docs/expose-chickens',
+  name: 'Decrement or Increment HTML heading',
+  description: 'Fix heading levels when Migrating HTML from one system to another',
+  // docURL: '',
   extraInputs: [
     {
       id: 'mode',
@@ -475,6 +476,102 @@ doStuff.register({
 })
 
 //  END:  Syntax highlighting for JS
+// ==================================================================
+// START: Match unfinished payment IDs to confirmed payments.
+
+/**
+ * matchPaymentIDs() tries to match payment IDs from unfinished
+ * payments in form build with payment IDs supplied by Finance
+ *
+ * created by: Evan Wills
+ * created: 2019-08-28
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+function matchPaymentIDs (input, extraInputs, GETvars) {
+  var paymentIDs = []
+  var regex = new RegExp('^.*?_([0-9]+)\\s*$')
+
+  /**
+   * splitPaymentID() takes a list of payment IDs as provided by
+   * Finance and extracts the payment ID as listed in Form Build
+   *
+   * @param {string} str list of Finance payment IDs
+   * @returns {array} list of payment IDs as seen in Form Build
+   */
+  function splitPaymentID (str) {
+    var tmp = str.trim()
+    tmp = tmp.replace(regex, '$1')
+    return (isNaN(tmp)) ? '' : tmp
+  }
+
+  /**
+   * splitNclean() splits a given string on new line characters
+   *
+   * @param {string} input string to be split
+   * @returns {array} the input split by new line
+   *          (each line has leading and trailing white space stripped)
+   */
+  function splitNclean (input) {
+    var splitStr = input.split('\n')
+    return splitStr.map(splitPaymentID).filter(str => str !== '')
+  }
+
+  /**
+   * grep() builds a regular expression to find any lines starting
+   * with the input string in the main input then returns the whole
+   * line that string (or an empty string if nothing was matched)
+   *
+   * @param {string} str
+   * @return {string}
+   */
+  function grep (str) {
+    var findID = new RegExp('(?:^|[\r\n])(' + str + '\\s+[^\r\n]+)(?=[\r\n]|$)')
+    var found = input.match(findID)
+    return (found !== null) ? found[1] : ''
+  }
+
+  /**
+   * implode() takes the contents of an array and implodes it with a
+   * new line separator
+   *
+   * @param {string} accum accumulated value of the array
+   * @param {string} str current item to be appended to the output
+   * @returns {string}
+   */
+  function implode (accum, str) {
+    var sep = (accum !== '') ? '\r\n' : ''
+    return (str !== '') ? accum + sep + str : accum
+  }
+
+  paymentIDs = splitNclean(extraInputs.paymentIDs())
+
+  return paymentIDs.map(grep).filter(str => str !== '').reduce(implode, '')
+}
+
+doStuff.register({
+  action: 'matchPaymentIDs',
+  func: matchPaymentIDs,
+  ignore: false,
+  name: 'Match unfinished payment IDs to confirmed payments.',
+  extraInputs: [
+    {
+      id: 'paymentIDs',
+      label: 'Transaction Reference IDs (from finance)',
+      type: 'textarea'
+    }
+  ]
+})
+
+//  END:  Match unfinished payment IDs to confirmed payments.
 // ====================================================================
 
 function staffAccessCard (input, extraInputs, GETvars) {
