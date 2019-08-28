@@ -22,6 +22,14 @@ var DoStuff = function (url) {
   var actionFunction = null
 
   /**
+   * @var {string} actionInputLabel the label text for the textarea
+   *             where the text that is to be modified by the "app"
+   *             is put by the user and where the modified output of
+   *             the action is also put once the action has been run
+   */
+  var actionInputLabel = 'Text to be modified'
+
+  /**
    * @var {string} actionName Human friendly name of the action
    */
   var actionName = ''
@@ -110,6 +118,20 @@ var DoStuff = function (url) {
    *             is also put once the action has been run
    */
   var inputTextarea = document.getElementById('input')
+
+  /**
+   * @var {DOMelement} inputLabel the label element for the textarea
+   *             where the text that is to be modified by the "app"
+   *             is put by the user and where the modified output of
+   *             the action is also put once the action has been run
+   */
+  var inputLabel = document.getElementById('inputLabel')
+
+  /**
+   * @var {string} inputLabelText Default text used to label the main
+   *             input textarea
+   */
+  var inputLabelText = 'Text to be modified'
 
   /**
    * @var {DOMelement} inputWrapper The wrapper for the main input text area
@@ -252,6 +274,8 @@ var DoStuff = function (url) {
     if (typeof config.func === 'undefined' || !isFunction(config.func)) {
       throw new Error('a "func" property that is a plain javascript function. ' + tmp + ' given.')
     }
+    config.inputLabel = (typeof config.inputLabel !== 'string' || config.inputLabel.trim() === '') ? inputLabelText : config.inputLabel
+
     config.action = config.action.toLowerCase()
 
     config.rawGET = (typeof config.rawGET === 'boolean') ? config.rawGET : false
@@ -284,12 +308,15 @@ var DoStuff = function (url) {
       throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string that matches a key in the registry of actions. ' + typeof _action + ' given.')
     }
     action = _action
+    console.log('registry[' + _action + ']:', registry[_action])
 
     docTitle.innerHTML = 'Do JS Regex Stuff &ndash; ' + registry[_action].name
     subTitle.className = ''
     subTitle.innerHTML = registry[_action].name
     actionFunction = registry[_action].func
     someAction.className = ''
+    actionInputLabel = registry[_action].inputLabel
+    inputLabel.innerHTML = actionInputLabel
 
     if (typeof registry[_action].description === 'string' && registry[_action].description !== '') {
       noAction.innerHTML = registry[_action].description
@@ -1049,7 +1076,7 @@ var DoStuff = function (url) {
           renderOutput(output)
         } else {
           msg = document.getElementById('action-message')
-          msg.innerHTML = 'Action "' + actionName + '" had no effect on <em>Text to be modified</em>.'
+          msg.innerHTML = 'Action "' + actionName + '" had no effect on <em>' + actionInputLabel + '</em>.'
         }
       }
     }
