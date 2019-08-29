@@ -4,7 +4,7 @@
 		<meta charset="utf-8" />
 		<title>How "Do JS regex stuff" works</title>
 	</head>
-	<body>
+	<body class="modal">
 		<h1 id="how_do-js-regex-stuff_works">
 			How "Do JS regex stuff" works
 		</h1>
@@ -62,25 +62,35 @@
 			object with the following keys:
 		</p>
 		<ol>
-			<li><strong><code>function</code></strong>: {function} <em>[required]</em> The function (the
-				name of the function, not quoted)
-			</li>
-			<li><strong><code>action</code></strong>: {string} <em>[required]</em> The GET '<code>action</code>' value that tells the script that this is the right function to use
-			</li>
-			<li><strong><code>name</code></strong>: {string} <em>[required]</em> Used as the sub-title
-				when the action is selected also used as the link text for the action in the menu.
+			<li>
+				<strong><code>function</code></strong>: {function} <em>[required]</em>
+				The function (the name of the function, not quoted)
 			</li>
 			<li>
-				<code>description</code>: {string} <em>[optional (but recommended)]</em> short paragraph decribing the purpose of the function.
+				<strong><code>action</code></strong>: {string} <em>[required]</em>
+				The GET '<code>action</code>' value that tells the script that this is the right function to use
 			</li>
 			<li>
-				<code>docURL</code>: {string} <em>[optional]</em> URL for documentation page (must be HTTPS). Used in a popup to give
-				detailed information about the action. Including the expected input what will be changed and the expected
-				output why this needs to be done
+				<strong><code>name</code></strong>: {string} <em>[required]</em>
+				Used as the sub-title when the action is selected also used as the link text for the action in the menu.
 			</li>
 			<li>
-				<code>extraInputs</code>: {array} <em>[option]</em> list of objects for extra inputs needed for the find/replace Extra inputs
-				have the following keys:
+				<code>description</code>: {string} <em>[optional (but recommended)]</em>
+				short paragraph decribing the purpose of the function.
+			</li>
+			<li>
+				<code>docURL</code>: {string} <em>[optional]</em>
+				URL for documentation page (must be HTTPS). Used in a popup to give detailed information about the action.
+				Including the expected input what will be changed and the expected output why this needs to be done
+			</li>
+			<li>
+				<code>inputLabel</code>: {string} <em>[optional]</em>
+				The label that describes the main input textarea.
+				This is useful if your main content is a data source, rather than text to be modified.
+			</li>
+			<li>
+				<code>extraInputs</code>: {array} <em>[option]</em>
+				list of objects for extra inputs needed for the find/replace Extra inputs have the following keys:
 				<ol>
 					<li><strong><code>id</code></strong>: {string} <em>[required]</em> used to identify
 						the input (also used as the key when the '<code>extraInputs</code>' are passed to the function

@@ -371,6 +371,11 @@ input {
 .modal li {
   padding-bottom: 1em;
 }
+body.modal {
+  position: static;
+  margin: 0 auto;
+  border: none;
+}
 
 .tkn { color: #007; }
 .vName { color: rgb(5, 114, 5); font-weight: bold; }

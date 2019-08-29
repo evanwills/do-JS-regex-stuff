@@ -87,6 +87,7 @@ var DoStuff = function (url) {
    * @var {DOMelement} docTitle the Title element in the page header
    */
   var docsURL = 'docs/How_Do-JS-regex-stuff_works.html'
+  // var docsURL = 'https://courses.acu.edu.au/do-js-regex-stuff/docs/help'
 
   /**
    * @var {DOMelement} docTitle the Title element in the page header
