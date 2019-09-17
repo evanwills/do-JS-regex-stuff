@@ -959,6 +959,12 @@ var DoStuff = function (url) {
    */
   renderOutput = function (_input) {
     inputTextarea.value = _input
+
+    // the following automatically gives focus to the output textarea
+    inputTextarea.focus()
+    // then selects the whole contents of the textares for (manual)
+    // copying by the user
+    inputTextarea.setSelectionRange(0, _input.length)
   }
 
   /**
