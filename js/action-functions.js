@@ -579,8 +579,8 @@ doStuff.register({
 // START: URL decode/encode
 
 /**
- * matchPaymentIDs() tries to match payment IDs from unfinished
- * payments in form build with payment IDs supplied by Finance
+ * urlDecodeEncode() does a better job of URL encoding/decoding
+ * special characters than built in JS function
  *
  * created by: Evan Wills
  * created: 2019-08-28
@@ -675,6 +675,108 @@ doStuff.register({
 })
 
 //  END:  Match unfinished payment IDs to confirmed payments.
+// ====================================================================
+// START: SVG ACU Logo cleanup
+/**
+ * acuLogoClean() remove all unnecessary junk from the ACU logo
+ *
+ * created by: Evan Wills
+ * created: 2019-09-23
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+function acuLogoClean (input, extraInputs, GETvars) {
+  var a = 0
+  var output = input
+  var regexes = [
+    [
+      new RegExp('<g id="_Group_"[^>]+>', 'i'),
+      '<g class="logo-txt">'
+    ],
+    [
+      new RegExp(' class="cls-2"', 'i'),
+      '---baahh---'
+    ],
+    [
+      new RegExp(' class="cls-2"', 'ig'),
+      ''
+    ],
+    [
+      new RegExp('---baahh---', 'i'),
+      ' class="cls-2"'
+    ],
+    [
+      new RegExp(' (?:id|data-name)="[^"]+"', 'ig'),
+      ''
+    ],
+    [
+      new RegExp('</?g>', 'ig'),
+      ''
+    ],
+    [
+      new RegExp('\\s+', 'g'),
+      ' '
+    ],
+    [
+      new RegExp('(?: (?=[<,{}@/.])|([>,{};/.]) )', 'g'),
+      '$1'
+    ],
+    [
+      ' id="acu-logo"',
+      ''
+    ],
+    [
+      '</svg>',
+      '</g></svg>'
+    ],
+    [
+      'Artboard 1',
+      'Australian Catholic University (ACU)'
+    ],
+    [
+      new RegExp('(<style xmlns="http://www.w3.org/2000/svg">).*?(?=</style>)', 'i'),
+      '$1.cls-1{fill:#ed0c00;}.cls-2,.logo-txt{fill:#fff;}@media print{.logo-txt,.cls-1{fill:#3c1053;}}'
+    ],
+    [
+      new RegExp('<g class="logo-txt">', 'ig'),
+      '---blah---'
+    ],
+    [
+      new RegExp('---blah---'),
+      '<g class="logo-txt">'
+    ],
+    [
+      new RegExp('---blah---'),
+      ''
+    ]
+  ]
+
+  for (a = 0; a < regexes.length; a += 1) {
+    console.log('regexes[' + a + '][0]:', regexes[a][0], typeof regexes[a][0])
+    console.log('regexes[' + a + '][1]:', '"' + regexes[a][1] + '"', typeof regexes[a][1])
+    output = output.replace(regexes[a][0], regexes[a][1])
+  }
+  return output
+}
+
+doStuff.register({
+  action: 'acuLogoClean',
+  func: acuLogoClean,
+  ignore: false,
+  name: 'Minify ACU Logo SVG'
+  // description: 'Fix heading levels when Migrating HTML from one system to another',
+  // docURL: '',
+})
+
+//  END:  Syntax highlighting for JS
 // ====================================================================
 
 function staffAccessCard (input, extraInputs, GETvars) {
