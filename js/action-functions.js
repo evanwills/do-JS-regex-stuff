@@ -778,6 +778,7 @@ doStuff.register({
 
 //  END:  Syntax highlighting for JS
 // ====================================================================
+// START: Staff Access Card URL
 
 function staffAccessCard (input, extraInputs, GETvars) {
   var baseURL = 'https://forms.acu.edu.au/public/staff_access_card'
@@ -823,3 +824,74 @@ doStuff.register({
   ignore: true,
   name: 'Staff Access Card URL'
 })
+
+
+//  END:  Staff Access Card URL
+// ====================================================================
+// START: Fix CEG unit modal URLs
+
+/**
+ * fixCEGunitURLs() Fix CEG unit modal URLs
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+function fixCEGunitURLs (input, extraInputs, GETvars) {
+  var regex = new RegExp('https://enrolment-guides.acu.edu.au/[0-9]{4}/unit_display)?=\\?unit=)', 'ig')
+  return input.replace(regex, './?a=2318995')
+}
+
+doStuff.register({
+  action: 'fixCEGunitURLs',
+  func: fixCEGunitURLs,
+  description: 'Fix CEG unit modal URLs',
+  // docsULR: '',
+  extraInputs: [],
+  ignore: false,
+  name: 'Fix CEG unit URLs'
+})
+
+//  END:  Fix CEG unit modal URLs
+// ====================================================================
+// START:
+
+/**
+ *
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+// function functionName (input, extraInputs, GETvars) {
+// }
+
+// doStuff.register({
+//   action: '',
+//   func: functionName,
+//   description: '',
+//   // docsULR: '',
+//   extraInputs: [],
+//   ignore: false,
+//   name: ''
+// })
+//  END:
+// ====================================================================

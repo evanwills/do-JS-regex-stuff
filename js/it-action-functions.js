@@ -74,6 +74,36 @@ doStuff.register({
 
 //  END:  CEG course advice HTML
 // ====================================================================
+// START: Convert Stiecore mega-menu to Matrix mega-menu
+
+function sitecoreMM2matrixMM (input, extraInputs, GETvars) {
+  var output = input
+
+  var regexFinds = [
+    new RegExp('\\s*<button.*?</button>', 'igs')
+  ]
+
+  var regexReplaces = [
+    ''
+  ]
+
+  for (var a = 0; a < regexFinds.length; a += 1) {
+    output = output.replace(regexFinds[a], regexReplaces[a])
+  }
+
+  return output
+}
+
+doStuff.register({
+  action: 'sitecoreMM2matrixMM',
+  // description: 'Remove all whitespace from HTML Code',
+  func: sitecoreMM2matrixMM,
+  ignore: false,
+  name: 'Convert Stiecore mega-menu to Matrix mega-menu'
+})
+
+//  END:  Convert Stiecore mega-menu to Matrix mega-menu
+// ====================================================================
 // START: New Relic-ify
 
 function newRelicify (input, extraInputs, GETvars) {
