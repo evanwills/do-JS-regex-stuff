@@ -825,7 +825,6 @@ doStuff.register({
   name: 'Staff Access Card URL'
 })
 
-
 //  END:  Staff Access Card URL
 // ====================================================================
 // START: Fix CEG unit modal URLs
@@ -847,8 +846,27 @@ doStuff.register({
  * @returns {string} modified version user input
  */
 function fixCEGunitURLs (input, extraInputs, GETvars) {
-  var regex = new RegExp('https://enrolment-guides.acu.edu.au/[0-9]{4}/unit_display)?=\\?unit=)', 'ig')
-  return input.replace(regex, './?a=2318995')
+  var output = input
+  var regex = [
+    {
+      find: new RegExp('https://(?:enrolment-guides|handbook)\\.acu\\.edu\\.au/(?:handbooks/handbook_)?[0-9]{4}/unit_display(?=\\?unit=)', 'ig'),
+      replace: './?a=2318995'
+    },
+    {
+      find: RegExp('(\\&nbsp;)', 'ig'),
+      replace: ' '
+    },
+    {
+      find: RegExp('\\&amp;(?=SQ_DESIGN_NAME=modal)', 'ig'),
+      replace: '&'
+    }
+  ]
+
+  for (var a = 0; a < regex.length; a += 1) {
+    output = output.replace(regex[a].find, regex[a].replace)
+  }
+
+  return output
 }
 
 doStuff.register({
@@ -863,7 +881,137 @@ doStuff.register({
 
 //  END:  Fix CEG unit modal URLs
 // ====================================================================
-// START:
+// START: fixPoliciesAnchorLinks
+
+/**
+ * Make sure invalid anchors and ToC are converted to valid links and
+ * anchors
+ *
+ * created by: Evan Wills
+ * created: 2020-08-04
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+function fixPoliciesAnchorLinksV1 (input, extraInputs, GETvars) {
+  let output = input
+  let labelsAndIDs = []
+
+  const anchorIDs = new RegExp('<h([1-5])(?: id="([^"]+)")>((?:[0-9]+\\.?)+\\s*)(.*?)\\s*(?=</h\\1>)', 'ig')
+  const anchorLinks = new RegExp('<a(?:\\s+(title|href)="(#?)([^"]+)")(?:\\s+(title|href)="(#?)([^"]+)")?>([^<]+)(?=</a>)', 'ig')
+
+  /**
+   * Make a sure string only contains alpha-numeric characters,
+   * hyphens & underscores
+   *
+   * @param {string} subID string to be used as the Sub-ID for a link
+   *
+   * @returns {string}
+   */
+  const makeIdSafeSub = (subID) => {
+    if (typeof subID === 'undefined') {
+      return ''
+    }
+
+    subID = subID.replace(/^[^a-z0-9]+|[^a-z0-9]+$/ig, '')
+
+    return subID.replace(/[^a-z0-9_\\-]+/ig, '-')
+  }
+
+  /**
+   * Make ID safe as HTML ID
+   *
+   * @param {string} id           ID string to be cleaned
+   * @param {number} headingLevel
+   *
+   * @returns {string}
+   */
+  const makeIdSafe = (id, subID) => {
+    let output = id.trim()
+
+    output = output.replace(/[^a-z0-9]+/ig, '-')
+    output = 'a' + makeIdSafeSub(subID) + '__' + output.toLowerCase()
+
+    return output
+  }
+
+  /**
+   * Find all the headings in a policy and create new IDs for them
+   *
+   * @param {string} whole   Whole matched pattern
+   * @param {string} level   Heading level
+   * @param {string} id      ID for heading
+   * @param {string} num     Hierarchical number of heading
+   * @param {string} heading Heading text
+   *
+   * @returns {string}
+   */
+  const updateHeadings = (whole, level, id, num, heading) => {
+
+    const _id = makeIdSafe(heading, id)
+
+    if (labelsAndIDs.indexOf(_id) === -1) {
+      labelsAndIDs.push(_id)
+    }
+
+    return '<a id="' + _id + '" name="' + _id + '" class="sticky-safe-anchor">&nbsp;</a><h' + level + '>' + num + heading
+  }
+
+  /**
+   * Update the links in the Table of Contents
+   *
+   * @param {string} whole      Whole matched pattern
+   * @param {string} attribute1 First attribute name
+   * @param {string} hash1      First attribute hash character
+   * @param {string} value1     First attribute value
+   * @param {string} attribute2 Second attribute name
+   * @param {string} hash2      Second attribute hash character
+   * @param {string} value2     Second attribute value
+   * @param {string} linkText   Link text
+   *
+   * @returns {string}
+   */
+  const updateLinks = (whole, attribute1, hash1, value1, attribute2, hash2, value2, linkText) => {
+    if (hash1 === '#' || hash2 === '#') {
+      if (value1 !== 'top' && value2 !== 'top') {
+        const subID = (hash1 === '#') ? value1 : value2
+        // console.log('tmpID:', tmpID)
+        const _id = makeIdSafe(linkText, subID)
+
+        if (labelsAndIDs.indexOf(_id) >= 0) {
+          return '<a href="#' + _id + '">' + linkText
+        }
+      }
+    }
+    return whole
+  }
+
+  output = output.replace(anchorIDs, updateHeadings)
+  output = output.replace(anchorLinks, updateLinks)
+
+  return output
+}
+
+doStuff.register({
+  action: 'fixPoliciesAnchorLinksV1',
+  func: fixPoliciesAnchorLinksV1,
+  description: '',
+  // docsULR: '',
+  extraInputs: [],
+  ignore: false,
+  name: 'Fix policy anchor links'
+})
+
+//  END: fixPoliciesAnchorLinksV1
+// ====================================================================
+// START: DUMMY action
 
 /**
  *
@@ -893,5 +1041,6 @@ doStuff.register({
 //   ignore: false,
 //   name: ''
 // })
-//  END:
+
+//  END: DUMMY action
 // ====================================================================
