@@ -954,7 +954,6 @@ function fixPoliciesAnchorLinksV1 (input, extraInputs, GETvars) {
    * @returns {string}
    */
   const updateHeadings = (whole, level, id, num, heading) => {
-
     const _id = makeIdSafe(heading, id)
 
     if (labelsAndIDs.indexOf(_id) === -1) {
