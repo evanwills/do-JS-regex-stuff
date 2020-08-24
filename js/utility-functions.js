@@ -182,6 +182,9 @@ function isFunction (functionToCheck) {
   return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
 }
 
+//  END: validation functions
+// ======================================================
+
 /**
  * makeAttributeSafe() makes a string safe to be used as an ID or
  * class name
@@ -233,5 +236,50 @@ function makeHumanReadableAttr (_attr) {
   return _output
 }
 
-//  END: validation functions
-// ======================================================
+/**
+ * Run multiple regular expressions sequentially on a single string
+ *
+ * @param {string} input       The string which all the regexs are to
+ *                             be applied
+ * @param {array}  findReplace List of Find/Replace pairs where the
+ *                             find property will be converted into
+ *                             a RegExp object
+ * @param {string} flags       RegExp flags to be passed for all
+ *                             regexes
+ *
+ * @returns {string} Updated string
+ */
+function regexReplaceAll (input, findReplace, flags) {
+  if (typeof input !== 'string') {
+    console.error('regexReplaceAll() expects first parameter "input" to be a string. ' + typeof input + ' given.')
+  }
+  if (!Array.isArray(findReplace)) {
+    console.error('regexReplaceAll() expects parameter second "findReplace" to be an array. ' + typeof findReplace + ' given.')
+  }
+  let _output = input
+
+  const _flags = (typeof flags !== 'string') ? 'ig' : flags
+  try {
+    const _tmp = new RegExp('^.', _flags)
+  } catch (e) {
+    console.error('regexReplaceAll() expects third paremeter "flags" to be a string containing valid RegExp flags')
+  }
+
+  for (let a = 0; a < findReplace.length; a += 1) {
+    if (typeof findReplace[a].find !== 'string' || (typeof findReplace[a].replace !== 'string' && !isFunction(findReplace[a].replace))) {
+      console.group('findReplace[' + a + ']')
+      console.log('findReplace[' + a + ']:', findReplace[a])
+      console.error('regexReplaceAll() expects findReplace[' + a + '] to be a valid find/replace object. It is missing either a "find" or "replace" property')
+      console.groupEnd()
+    }
+    let _regex = null
+    try {
+      _regex = new RegExp(findReplace[a].find, _flags)
+    } catch (e) {
+      console.error('regexReplaceAll() expects findReplace[' + a + '].find to contain a valid regular expression. It had the following error: "' + e.message + '"')
+    }
+    _output = _output.replace(_regex, findReplace[a].replace)
+  }
+
+  return _output
+}

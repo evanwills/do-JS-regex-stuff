@@ -1,5 +1,5 @@
 /* jslint browser: true */
-/* global doStuff */
+/* global doStuff regexReplaceAll */
 
 // other global functions available:
 //   invalidString, invalidStrNum, invalidNum, invalidArray, makeAttributeSafe, isFunction, makeHumanReadableAttr
@@ -180,63 +180,104 @@ doStuff.register({
  * @returns {string} modified version user input
  */
 function fixSassLintIssues (input, extraInputs, GETvars) {
+  /**
+   * Convert pixel values to REMs with accuracy of up to 2 decimal
+   * places.
+   *
+   * @param {string} whole    Whole match
+   * @param {string} preSpace Leading white space
+   * @param {string} value    Numeric value to be converted
+   *
+   * @returns {string} rem unit version of initial value
+   */
   const fixSinglePix = (whole, preSpace, value) => {
-    const output = Math.round((value / extraInputs.remValue()) * 100) / 100
+    let output = Math.round((value / extraInputs.remValue()) * 100) / 100
+    output = output + ''
+    output = output.replace(/^0+/, '')
     return preSpace + output + 'rem'
   }
+
+  /**
+   * Convert multiple pixel values to REMs for a given CSS property
+   *
+   * @param {string} whole Pixel values for CSS property
+   *
+   * @returns {string} Converted property value
+   */
   const fixMultiPix = (whole) => {
     return whole.replace(/(\s+-?)([0-9]+)px/ig, fixSinglePix)
   }
+
+  /**
+   * @constant colour Brand colour hex values and variable names
+   */
   const colours = [
-    { find: new RegExp('#ed0c00', 'ig'), replace: '$red--100' },
-    { find: new RegExp('#d00a00', 'ig'), replace: '$red--120' },
-    { find: new RegExp('#f15047', 'ig'), replace: '$red--80' },
-    { find: new RegExp('#f57c75', 'ig'), replace: '$red--60' },
-    { find: new RegExp('#f8a7a3', 'ig'), replace: '$red--40' },
-    { find: new RegExp('#fcd3d1', 'ig'), replace: '$red--20' },
-    { find: new RegExp('#3c1053', 'ig'), replace: '$purple--100' },
-    { find: new RegExp('#260b34', 'ig'), replace: '$purple--120' },
-    { find: new RegExp('#634075', 'ig'), replace: '$purple--80' },
-    { find: new RegExp('#8a7098', 'ig'), replace: '$purple--60' },
-    { find: new RegExp('#b19fba', 'ig'), replace: '$purple--40' },
-    { find: new RegExp('#d8cfdd', 'ig'), replace: '$purple--20' },
-    { find: new RegExp('#e03c31', 'ig'), replace: '$health-sciences' },
-    { find: new RegExp('#007932', 'ig'), replace: '$education-arts' },
-    { find: new RegExp('#bc333b', 'ig'), replace: '$law-business' },
-    { find: new RegExp('#702082', 'ig'), replace: '$theology-philosophy' },
-    { find: new RegExp('#B8A8C1', 'ig'), replace: '$testimonial-text' },
-    { find: new RegExp('#ccc', 'ig'), replace: '$grey' },
-    // { find: new RegExp('#747474', 'ig'), replace: '$text-colour' },
-    // { find: new RegExp('#747474', 'ig'), replace: '$grey-border' },
-    { find: new RegExp('#3d3935', 'ig'), replace: '$dark-brown' },
-    { find: new RegExp('#8c857b', 'ig'), replace: '$stone' },
-    { find: new RegExp('#e8e3db', 'ig'), replace: '$sand' },
-    { find: new RegExp('#747474', 'ig'), replace: '$dark-grey' },
-    { find: new RegExp('#eeeeee', 'ig'), replace: '$light-grey' },
-    { find: new RegExp('#fafafa', 'ig'), replace: '$x-light-grey' },
-    // { find: new RegExp('#fff', 'ig'), replace: '$body-bg' },
-    // { find: new RegExp('#fff', 'ig'), replace: '$text-colour-light' },
-    { find: new RegExp('#3d3935', 'ig'), replace: '$charcoal--100' },
-    { find: new RegExp('#252320', 'ig'), replace: '$charcoal--120' },
-    { find: new RegExp('#000', 'ig'), replace: '$black' },
-    { find: new RegExp('#747474', 'ig'), replace: '$black--80' },
-    { find: new RegExp('#ccc', 'ig'), replace: '$black--40' },
-    { find: new RegExp('#eee', 'ig'), replace: '$black--20' },
-    { find: new RegExp('#fafafa', 'ig'), replace: '$black--10' }
+    { find: '#ed0c00', replace: '$red--100' },
+    { find: '#d00a00', replace: '$red--120' },
+    { find: '#f15047', replace: '$red--80' },
+    { find: '#f57c75', replace: '$red--60' },
+    { find: '#f8a7a3', replace: '$red--40' },
+    { find: '#fcd3d1', replace: '$red--20' },
+    { find: '#3c1053', replace: '$purple--100' },
+    { find: '#260b34', replace: '$purple--120' },
+    { find: '#634075', replace: '$purple--80' },
+    { find: '#8a7098', replace: '$purple--60' },
+    { find: '#b19fba', replace: '$purple--40' },
+    { find: '#d8cfdd', replace: '$purple--20' },
+    { find: '#e03c31', replace: '$health-sciences' },
+    { find: '#007932', replace: '$education-arts' },
+    { find: '#bc333b', replace: '$law-business' },
+    { find: '#702082', replace: '$theology-philosophy' },
+    { find: '#B8A8C1', replace: '$testimonial-text' },
+    { find: '#ccc', replace: '$grey' },
+    // { find: '#747474', replace: '$text-colour' },
+    // { find: '#747474', replace: '$grey-border' },
+    { find: '#3d3935', replace: '$dark-brown' },
+    { find: '#8c857b', replace: '$stone' },
+    { find: '#e8e3db', replace: '$sand' },
+    { find: '#747474', replace: '$dark-grey' },
+    { find: '#eeeeee', replace: '$light-grey' },
+    { find: '#fafafa', replace: '$x-light-grey' },
+    // { find: '#fff', replace: '$body-bg' },
+    // { find: '#fff', replace: '$text-colour-light' },
+    { find: '#3d3935', replace: '$charcoal--100' },
+    { find: '#252320', replace: '$charcoal--120' },
+    { find: '#000', replace: '$black' },
+    { find: '#747474', replace: '$black--80' },
+    { find: '#ccc', replace: '$black--40' },
+    { find: '#eee', replace: '$black--20' },
+    { find: '#fafafa', replace: '$black--10' }
   ]
 
-  console.log('extraInputs.doColours():', extraInputs.doColours())
-  console.log('typeof extraInputs.doColours():', typeof extraInputs.doColours())
-  let output = input.replace(/(\s+-?[0-9]+px)+(?=\s+|;)/ig, fixMultiPix)
-  // console.log('input:', input)
-  // console.log('output:', output)
+  /**
+   * @constant {array} mainModifiers A list of find/replace objects
+   *                                 "find" contains a string that is
+   *                                 converted to a RegExp object
+   */
+  const mainModifiers = [
+    { find: '(\\s+-?[0-9]+px)+(?=\\s+|;)', replace: fixMultiPix },
+    { find: '0(?:px|r?em)', replace: '0' },
+    { find: '0(\\.[0-9]+)', replace: '$1' },
+    { find: '(border\\s*:\\s*0\\s*(?=;)', replace: 'border: none' },
+    {
+      find: '(margin|padding)\\s*:\\s*([0-9.]+(?:r?em|px)?)(?:\\s+\\2){3}\\s*(?=;)',
+      replace: '$1: $2'
+    },
+    {
+      find: '(margin|padding)\\s*:\\s*([0-9.]+(?:r?em|px)?)\\s*([0-9.]+(?:r?em|px)?)\\s+\\2\\s+\\3\\s*(?=;)',
+      replace: '$1: $2 $3'
+    },
+    {
+      find: '(margin|padding)\\s*:\\s*([0-9.]+(?:r?em|px)?)\\s*([0-9.]+(?:r?em|px)?)\\s*([0-9.]+(?:r?em|px)?)\\s+\\3\\s*(?=;)',
+      replace: '$1: $2 $3 $4'
+    }
+    // { find: new RegExp('', 'ig'), replace: '' },
+  ]
+
+  let output = regexReplaceAll(input, mainModifiers)
 
   if (extraInputs.doColours() === true) {
-    for (let a = 0; a < colours.length; a += 1) {
-      console.log('colours[' + a + '].find:', colours[a].find)
-      console.log('colours[' + a + '].replace:', colours[a].replace)
-      output = output.replace(colours[a].find, colours[a].replace)
-    }
+    output = regexReplaceAll(output, colours)
   }
   return output
 }
