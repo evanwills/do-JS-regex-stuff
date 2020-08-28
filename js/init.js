@@ -22,6 +22,17 @@ var DoStuff = function (url) {
   var actionFunction = null
 
   /**
+   * @var {array} actionGroups list of action groups user has access to
+   */
+  var actionGroups = []
+
+  /**
+   * @var {string} actionGroupsGet comma separated list of action
+   *            groups the user has access to (to be appended to the URL's GET string)
+   */
+  var actionGroupsGet = ''
+
+  /**
    * @var {string} actionInputLabel the label text for the textarea
    *             where the text that is to be modified by the "app"
    *             is put by the user and where the modified output of
@@ -35,7 +46,7 @@ var DoStuff = function (url) {
   var actionName = ''
 
   /**
-   * @var array allLinks array of navigation link DOM elements
+   * @var {array} allLinks array of navigation link DOM elements
    */
   var allLinks = []
 
@@ -95,9 +106,10 @@ var DoStuff = function (url) {
   var docTitle = document.getElementById('doc-title')
 
   /**
-   * @var {array} extraInputs [array] An array of objects where the key is the "name" attribute
-   *      for an input field and the value is a function that returns
-   *      the value for that input field
+   * @var {array} extraInputs [array] An array of objects where the
+   *      key is the "name" attribute for an input field and the
+   *      value is a function that returns the value for that input
+   *      field
    */
   var extraInputs = {}
 
@@ -256,6 +268,21 @@ var DoStuff = function (url) {
    */
   function updateRegistry (config) {
     var tmp = false
+
+    tmp = invalidString('group', config, false)
+
+    if (tmp === false) {
+      tmp = config.group.trim().toLowerCase()
+      if (tmp !== '' && !validGroupName(tmp)) {
+        throw new Error('Action group name must be a string between 2 and 20 characters long, must start with at least two alphabetical characters and can contain only alpha numeric characters and hyphens. "' + tmp + '" does not meet these requirements')
+      }
+
+      if (actionGroups.indexOf(tmp) === -1) {
+        // This action is not in one of the groups the user has access
+        // to. Ignore it
+        return false
+      }
+    }
 
     tmp = invalidString('action', config)
     if (tmp !== false) {
@@ -1141,6 +1168,36 @@ var DoStuff = function (url) {
     }
   }
 
+  /**
+   * Test whether a group name is valid or not.
+   *
+   * @param {string} groupName Name of action group
+   *
+   * @returns {boolean} True if group name is valid
+   */
+  function validGroupName (groupName) {
+    const _regex = new RegExp('^[a-z]{2}[0-9a-z-]{0,18}$')
+    return _regex.test(groupName.trim().toLowerCase())
+  }
+
+  /**
+   * Add a new group name to the list of groups the user wants
+   * access to
+   *
+   * @param {array}  groupList list of already registered groups
+   * @param {string} groupName New group name to be added to
+   *                           registry
+   *
+   * @returns {array}
+   */
+  function addToGroup (actionGroupList, groupName) {
+    const tmpGroup = groupName.trim().toLowerCase()
+    if (validGroupName(tmpGroup) && actionGroupList.indexOf(tmpGroup) === -1) {
+      actionGroupList.push(tmpGroup)
+    }
+    return actionGroupList
+  }
+
   //  END:  callback functions
   // ======================================================
   // START: public methods
@@ -1221,20 +1278,44 @@ var DoStuff = function (url) {
 
   URL = getURLobject(url)
 
-  if (typeof URL.searchParams['action'] === 'string') {
-    action = URL.searchParams['action'].toLowerCase()
+  if (typeof URL.searchParams.action === 'string') {
+    action = URL.searchParams.action.toLowerCase()
   }
 
-  if (typeof URL.searchParams['debug'] !== 'undefined') {
-    debugMode = (URL.searchParams['debug'] === true || URL.searchParams['debug'] === 1)
+  if (typeof URL.searchParams.debug !== 'undefined') {
+    debugMode = (URL.searchParams.debug === true || URL.searchParams.debug === 1)
 
     if (debugMode === true) {
       debugGet = '&debug=true'
     }
   }
 
-  noIgnore = (typeof URL.searchParams['noIgnore'] !== 'undefined') ? URL.searchParams['noIgnore'] : ''
-  baseURL = URL.protocol + '//' + URL.host + URL.pathname + '?action='
+  console.log('typeof actionGroups:', typeof actionGroups)
+  console.log('actionGroups:', actionGroups)
+  if (typeof URL.searchParams.group !== 'undefined') {
+    actionGroups = addToGroup(actionGroups, URL.searchParams.group)
+  }
+
+  if (typeof URL.searchParams.groups !== 'undefined' && URL.searchParams.groups !== '') {
+    const groupsList = URL.searchParams.groups.split(',')
+
+    for (let a = 0; a < groupsList.length; a += 1) {
+      actionGroups = addToGroup(actionGroups, groupsList[a])
+    }
+  }
+
+  if (actionGroups.length > 0) {
+    actionGroupsGet = 'groups='
+    let sep = ''
+    for (let a = 0; a < actionGroups.length; a += 1) {
+      actionGroupsGet += sep + actionGroups[a]
+      sep = ','
+    }
+    actionGroupsGet += '&'
+  }
+
+  noIgnore = (typeof URL.searchParams.noIgnore !== 'undefined') ? URL.searchParams.noIgnore : ''
+  baseURL = URL.protocol + '//' + URL.host + URL.pathname + '?' + actionGroupsGet + 'action='
 
   //  END:  proceedural part of code (constructor stuff)
   // ======================================================

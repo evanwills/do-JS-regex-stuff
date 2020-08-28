@@ -103,6 +103,18 @@ function getURLobject (url) {
 // ======================================================
 // START: validation functions
 
+/**
+ * Test whether an object contains a given property and the value
+ * of that property is a string
+ *
+ * @param {string} prop
+ * @param {object} input
+ *
+ * @returns {false,string} If the value is a string then it is NOT
+ *                         invalid. Otherwise the value's data type
+ *                         returned (so it can be used when
+ *                         reporting erros).
+ */
 function invalidString (prop, input, notEmpty) {
   var tmp = ''
 
@@ -117,13 +129,25 @@ function invalidString (prop, input, notEmpty) {
   notEmpty = (typeof notEmpty === 'boolean') ? notEmpty : true
   if (tmp !== 'string') {
     return tmp
-  } else if (notEmpty === true && input[prop].replace(/^\s+|\s+$/g, '') === '') {
+  } else if (notEmpty === true && input[prop].trim() === '') {
     return 'empty string'
   } else {
     return false
   }
 }
 
+/**
+ * Test whether an object contains a given property and the value
+ * of that property is either a string or a number
+ *
+ * @param {string} prop
+ * @param {object} input
+ *
+ * @returns {false,string} If the value is a string or number then
+ *                         it is NOT invalid. Otherwise the value's
+ *                         data type returned (so it can be used when
+ *                         reporting errors).
+ */
 function invalidStrNum (prop, input) {
   var tmp = ''
 
@@ -142,6 +166,18 @@ function invalidStrNum (prop, input) {
   }
 }
 
+/**
+ * Test whether an object contains a given property and the value
+ * of that property is a number
+ *
+ * @param {string} prop
+ * @param {object} input
+ *
+ * @returns {false,string} If the value is a number then it is NOT
+ *                         invalid. Otherwise the value's data type
+ *                         returned (so it can be used when
+ *                         reporting errors).
+ */
 function invalidNum (prop, input) {
   var tmp = ''
 
@@ -162,6 +198,18 @@ function invalidNum (prop, input) {
   }
 }
 
+/**
+ * Test whether an object contains a given property and the value
+ * of that property is an array
+ *
+ * @param {string} prop
+ * @param {object} input
+ *
+ * @returns {false,string} If the value is an array then it is NOT
+ *                         invalid. Otherwise the value's data type
+ *                         returned (so it can be used when
+ *                         reporting errors).
+ */
 function invalidArray (prop, input) {
   if (typeof prop !== 'string') {
     throw new Error('invalidArray() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
@@ -178,8 +226,30 @@ function invalidArray (prop, input) {
   }
 }
 
+/**
+ * Check whether something is a Function
+ *
+ * @param {mixed} functionToCheck function
+ *
+ * @returns {boolean} TRUE if the input is a Function
+ */
 function isFunction (functionToCheck) {
   return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
+}
+
+/**
+ * Test whether a variable is iterable
+ *
+ * @param {mixed} value to be tested
+ *
+ * @return {boolean} True if input is an array or iterable object
+ */
+function isIterable (input) {
+  // checks for null and undefined
+  if (input == null) {
+    return false
+  }
+  return typeof input[Symbol.iterator] === 'function'
 }
 
 //  END: validation functions
@@ -215,6 +285,15 @@ function makeAttributeSafe (_attr) {
   return _output
 }
 
+/**
+ * makeHumanReadableAttr() makes a string safe to be used as an ID or
+ * class name
+ *
+ * @param {string} _attr A string to be made safe to use as a HTML
+ *             class name or ID
+ *
+ * @returns {string} class name or ID safe string
+ */
 function makeHumanReadableAttr (_attr) {
   var _clean = new RegExp('[^a-z0-9_\\-]+([a-z]?)', 'ig')
   var _isValid = new RegExp('^[a-z_-]', 'i')
@@ -245,16 +324,16 @@ function makeHumanReadableAttr (_attr) {
  *                             find property will be converted into
  *                             a RegExp object
  * @param {string} flags       RegExp flags to be passed for all
- *                             regexes
+ *                             regexes (default is `ig`)
  *
  * @returns {string} Updated string
  */
-function regexReplaceAll (input, findReplace, flags) {
+function multiRegexReplace (input, findReplace, flags) {
   if (typeof input !== 'string') {
-    console.error('regexReplaceAll() expects first parameter "input" to be a string. ' + typeof input + ' given.')
+    console.error('multiRegexReplace() expects first parameter "input" to be a string. ' + typeof input + ' given.')
   }
-  if (!Array.isArray(findReplace)) {
-    console.error('regexReplaceAll() expects parameter second "findReplace" to be an array. ' + typeof findReplace + ' given.')
+  if (!Array.isArray(findReplace) && !isIterable(findReplace)) {
+    console.error('multiRegexReplace() expects parameter second "findReplace" to be an array. ' + typeof findReplace + ' given.')
   }
   let _output = input
 
@@ -262,23 +341,37 @@ function regexReplaceAll (input, findReplace, flags) {
   try {
     const _tmp = new RegExp('^.', _flags)
   } catch (e) {
-    console.error('regexReplaceAll() expects third paremeter "flags" to be a string containing valid RegExp flags')
+    console.error('multiRegexReplace() expects third paremeter "flags" to be a string containing valid RegExp flags')
   }
 
-  for (let a = 0; a < findReplace.length; a += 1) {
-    if (typeof findReplace[a].find !== 'string' || (typeof findReplace[a].replace !== 'string' && !isFunction(findReplace[a].replace))) {
-      console.group('findReplace[' + a + ']')
-      console.log('findReplace[' + a + ']:', findReplace[a])
-      console.error('regexReplaceAll() expects findReplace[' + a + '] to be a valid find/replace object. It is missing either a "find" or "replace" property')
+  let a = 0
+  for (const pair in findReplace) {
+    // console.group('findreplace[' + a + ']')
+    // console.log('findreplace[' + a + ']:', pair)
+
+    if (typeof pair.find !== 'string' || (typeof pair.replace !== 'string' && !isFunction(pair.replace))) {
+      console.group('findreplace[' + a + ']')
+      console.log('pair:', pair)
+      console.error('multiRegexReplace() expects pair to be a valid find/replace object. It is missing either a "find" or "replace" property')
       console.groupEnd()
     }
+
     let _regex = null
+
     try {
-      _regex = new RegExp(findReplace[a].find, _flags)
+      _regex = new RegExp(pair.find, _flags)
     } catch (e) {
-      console.error('regexReplaceAll() expects findReplace[' + a + '].find to contain a valid regular expression. It had the following error: "' + e.message + '"')
+      console.error('multiRegexReplace() expects findReplace[' + a + '].find to contain a valid regular expression. It had the following error: "' + e.message + '"')
     }
-    _output = _output.replace(_regex, findReplace[a].replace)
+
+    // console.log('_regex:', _regex)
+    // console.log('findreplace[' + a + '].replace:', pair.replace)
+    // console.log('_regex.test(_output):', _regex.test(_output))
+    // console.log('_regex.match(_output):', _regex.match(_output))
+    // console.groupEnd()
+
+    _output = _output.replace(_regex, pair.replace)
+    a += 1
   }
 
   return _output

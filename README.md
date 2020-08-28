@@ -63,16 +63,16 @@ After you've defined the function, you need to register it by calling doStuff.re
 Say you have a action function with three _extra input_ fields. One for year with the ID `year` and another for gender and a group of checkboxes for mood. You can get the value of `year` by calling `extraInputs.year()` and the value of gender by calling `extraInputs.gender()`. You can get the value for each type of mood by calling the mood function, passing the value of that mood as the only parameter  e.g.
 
 ``` javascript
-function exposeChickens (input, extraInputs, GETvars) {
-  var _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
-  var _angry = extraInputs.mood('angry')
-  var _boc = 'BOC! BOC!!'
+const exposeChickens = (input, extraInputs, GETvars) => {
+  let _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
+  let _angry = extraInputs.mood('angry')
+  let _boc = 'BOC! BOC!!'
   var _chicken = 'chicken'
   var _excited = extraInputs.mood('excited')
   // We retrieve the value of _gender by calling the function that
   // matches the ID (or name) of the input field
   var _gender = extraInputs.gender()
-  var output = ''
+  let output = ''
   var _spring = ''
   // We do the same for _year
   var _year = extraInputs.year()
@@ -213,4 +213,100 @@ XRegExp adds a lot of very useful extra functionality to RegExp checkout the [XR
 Because data validation is important so we don't break things there are a number of helper functions for validation.
 
 The following set of functions validate the existence of and data type properties of an object (useful for validating `GETvars`)
-### invalidString()
+
+### `invalidString(prop, input, notEmpty) : false, string`
+
+This is a shortcut function to see if an object contains a property and if that property's value is a string. 
+
+It returns `FALSE` if the property does exist and is a string. Otherwise it returns the data type of input or "empty string" if the propety exists and is a string but is empty (and `notEmpty` is *not* false).
+
+### `invalidNum(prop, input) : false, string`
+
+Basically the same as `invalidString()` but for numbers
+
+### `invalidStrNum(prop, input)`
+
+Basically the same as `invalidString()` but accepts numbers and strings (although empty strings are allowed)
+
+### `invalidArray(prop, input, notEmpty) : false, string`
+
+Basically the same as `invalidString()` but for arrays (empty arrays are considered invalid)
+
+### `isFunction(functionToCheck) : boolean`
+
+Test whether a value is a function
+
+
+
+## Utilitty functions
+
+### `multiRegexReplace(input, findReplace, flags) : string`
+
+The most common use of this tool is to apply multiple regular expessions consecutively to string. 
+
+* `input` is a single string to which all the regular expressions 
+          are applied
+* `findReplace` is an list of find/replace objects. 
+          Each *find/replace* object must have a `find` property
+          which is converted into a Regular Expression object by
+          passing it as the first parameter to RegExp().<br />
+          Each *find/replace* object must also have a `replace` 
+          property which is the replacement string (or function) to passed as 
+          the second parameter to input.replace()
+* `flags` are RegExp flags passed as the second parameter to RegExp()
+          __NOTE:__ the same flags are passed for every regular 
+          expression
+          __NOTE ALSO:__ 'ig' are the default flags if nothing is 
+          passed.
+
+#### sample:
+
+```javascript
+function headerCells(whole, table, trOpen, headerCells, trClose, tbody) {
+  return wrapper + '<thead>' + trOpen + 
+    headerCells.replace(/<(\/?)td([^>]*)>/ig, '<$1th$2>') + 
+    trClose + '</thead><tbody>' + tbody + '</tbody>'
+}
+
+var findReplace = [
+  { // bold to strong
+    find: '<(/?)b([^>]*)>', // becomes: new RegExp('<(/?)b([^>]*)>', 'igm')
+    replace: '<$1strong$2>'
+  },
+  { // convert first row of table to table header
+    find: '(<table[^>]*>)(\s+<tr[^>]*>)(.*?)(</tr>)(.*?)(?=<table>)',
+    replace: headerCells
+  },
+  { // Faculty acronym to full faculty name
+    find: 'FEA',
+    replace: 'Faculty of Education and Arts'
+  }
+]
+
+output = multiRegexReplace(input, findReplace, 'igm')
+```
+or, if you'd prefer to name each find/replace pair
+```javascript
+function headerCells(whole, table, trOpen, headerCells, trClose, tbody) {
+  return wrapper + '<thead>' + trOpen + 
+    headerCells.replace(/<(\/?)td([^>]*)>/ig, '<$1th$2>') + 
+    trClose + '</thead><tbody>' + tbody + '</tbody>'
+}
+
+var findReplace = {
+  bold: { // bold to strong
+    find: '<(/?)b([^>]*)>',
+    replace: '<$1strong$2>'
+  },
+  cell: { // table cell to table header cell
+    find: '(<table[^>]*>)(\s+<tr[^>]*>)(.*?)(</tr>)(.*?)(?=<table>)',
+    replace: headerCells
+  },
+  acro: { // Faculty acronym to full faculty name
+    find: 'FEA',
+    replace: 'Faculty of Education and Arts'
+  }
+]
+
+output = multiRegexReplace(input, findReplace, 'igm')
+```

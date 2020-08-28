@@ -112,8 +112,9 @@ code { font-size: 1rem; }
 
 
 .main-nav {
-  background-color: #000;
+  bottom: 0;
   max-width: 20rem;
+  /* overflow-x: visible; */
   position: fixed;
   right: -20rem;
   top: 0;
@@ -123,6 +124,8 @@ code { font-size: 1rem; }
   z-index: 2;
 }
 .main-nav--show {
+  overflow-y: auto;
+  /* background-color: #000; */
   transform: translateX(-20rem);
   transition: transform 0.4s ease-in-out;
 }

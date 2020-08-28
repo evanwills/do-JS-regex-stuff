@@ -1,5 +1,5 @@
 /* jslint browser: true */
-/* global doStuff, makeHumanReadableAttr */
+/* global doStuff, makeHumanReadableAttr, multiRegexReplace */
 
 // other global functions available:
 //   invalidString, invalidStrNum, invalidNum, invalidArray, makeAttributeSafe, isFunction
@@ -40,19 +40,20 @@
  *
  * @returns {string} modified version user input
  */
-function exposeChickens (input, extraInputs, GETvars) {
-  var _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
-  var _angry = extraInputs.mood('angry')
-  var _boc = 'BOC! BOC!!'
-  var _chicken = 'chicken'
-  var _excited = extraInputs.mood('excited')
+const exposeChickens = (input, extraInputs, GETvars) => {
+  const _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
+  const _angry = extraInputs.mood('angry')
+  const _excited = extraInputs.mood('excited')
   // We retrieve the value of _gender by calling the function that
   // matches the ID (or name) of the input field
-  var _gender = extraInputs.gender()
-  var output = ''
-  var _spring = ''
+  const _gender = extraInputs.gender()
+  const _year = extraInputs.year()
+
+  let _boc = 'BOC! BOC!!'
+  let _chicken = 'chicken'
+  let output = ''
+  let _spring = ''
   // We do the same for _year
-  var _year = extraInputs.year()
 
   // Test the gender of the chicken
   if (_gender === 'male') {
@@ -136,19 +137,19 @@ doStuff.register({
 // ====================================================================
 // START: heading to accordion
 
-function makeAccordion (input, extraInputs, GETvars) {
-  var heading = extraInputs.heading()
-  var multi = extraInputs.multiCollpase('multi')
-  var parent = extraInputs.parent()
+const makeAccordion = (input, extraInputs, GETvars) => {
+  const heading = extraInputs.heading()
+  const multi = extraInputs.multiCollpase('multi')
+  const parent = extraInputs.parent()
   // var content = ''
   // var tmp = ''
-  var regexDLwrapper = new RegExp('<dl[^>]*>\\s*([\\s\\S]*?)\\s*</dl>', 'ig')
-  var regexHead = new RegExp('\\s*<h' + heading + '[^>]*>\\s*([\\s\\S]*?)\\s*</h' + heading + '>\\s*([\\s\\S]*?)\\s*(?=<h' + heading + '[^>]*>|$)', 'ig')
-  var regexDL = new RegExp('\\s*<dt[^>]*>\\s*([\\s\\S]*?)\\s*</dt>\\s*<dd[^>]*>([\\s\\S]*?)\\s*</dd>', 'ig')
-  var expand = true
+  const regexDLwrapper = new RegExp('<dl[^>]*>\\s*([\\s\\S]*?)\\s*</dl>', 'ig')
+  const regexHead = new RegExp('\\s*<h' + heading + '[^>]*>\\s*([\\s\\S]*?)\\s*</h' + heading + '>\\s*([\\s\\S]*?)\\s*(?=<h' + heading + '[^>]*>|$)', 'ig')
+  const regexDL = new RegExp('\\s*<dt[^>]*>\\s*([\\s\\S]*?)\\s*</dt>\\s*<dd[^>]*>([\\s\\S]*?)\\s*</dd>', 'ig')
+  let expand = true
   // var clean = new RegExp('(?:<div[^>]*>\\s*){2}<h2[^>]*>\\s*<a[^>]*>\\s*([\\s\\S]*?)\\s*<span[^>]*>[\\s\\S]*?</div>\\s*<div class="panel-body">\\s*([\\s\\S]*?)(?:\\s*</div>){3}', 'ig')
-  var expandMode = extraInputs.expandMode()
-  var defaultExpand = false
+  const expandMode = extraInputs.expandMode()
+  let defaultExpand = false
 
   if (expandMode === 'closeAll') {
     expand = false
@@ -164,8 +165,8 @@ function makeAccordion (input, extraInputs, GETvars) {
    *
    * @returns {object}
    */
-  function getExpanded () {
-    var __output = {
+  const getExpanded = () => {
+    const __output = {
       expanded: '',
       in: ''
     }
@@ -186,9 +187,9 @@ function makeAccordion (input, extraInputs, GETvars) {
    *
    * @returns {string} Full bootstrap compliant accordion
    */
-  function wrapAccordion (input) {
-    var __output = ''
-    var _multi = (multi) ? ' aria-multiselectable="true"' : ''
+  const wrapAccordion = (input) => {
+    const _multi = (multi) ? ' aria-multiselectable="true"' : ''
+    let __output = ''
 
     __output = '\n<div class="panel-group" id="' + parent + '" role="tablist"' + _multi + '>\n'
     __output += input
@@ -213,10 +214,10 @@ function makeAccordion (input, extraInputs, GETvars) {
    *
    * @returns {string} marked up accordion block
    */
-  function makeAccordFunc (match, headingTxt, accordionBody, offset, whole) {
-    var __output = ''
-    var _id = makeHumanReadableAttr(headingTxt)
-    var _expanded = getExpanded()
+  const makeAccordFunc = (match, headingTxt, accordionBody, offset, whole) => {
+    let __output = ''
+    const _id = makeHumanReadableAttr(headingTxt)
+    const _expanded = getExpanded()
 
     __output += '\t<div class="panel panel-default">\n'
     __output += '\t\t<div class="panel-heading" role="tab" id="head-' + _id + '">\t\n'
@@ -245,7 +246,7 @@ function makeAccordion (input, extraInputs, GETvars) {
    *
    * @returns {string} marked up accordion block
    */
-  function headingFunc (_input) {
+  const headingFunc = (_input) => {
     return wrapAccordion(_input.replace(regexHead, makeAccordFunc))
   }
 
@@ -258,8 +259,8 @@ function makeAccordion (input, extraInputs, GETvars) {
    *
    * @returns {string} marked up accordion block
    */
-  function dlFunc (_input) {
-    var __output = _input.replace(regexDLwrapper, '$1')
+  const dlFunc = (_input) => {
+    const __output = _input.replace(regexDLwrapper, '$1')
     return wrapAccordion(__output.replace(regexDL, makeAccordFunc))
   }
 
@@ -369,37 +370,46 @@ doStuff.register({
 // START: Syntax highlighting for JS
 
 function jsSyntaxHighlight (input, extraInputs, GETvars) {
-  var find = [
-    '([a-z0-9_]+(?:\\[(?:\'.*?\'|[a-z0-9_.])\\]|\\.[a-z0-9_]+)*)(?=\\s*\\()', // 0 function name
-    '([a-z0-9_]+(?:\\[(?:\'.*?\'|[a-z0-9_.])\\]|\\.[a-z0-9_]+)*)(?=\\s*[,:=+)])', // 1 variable name
-    '(^|\\s)(function|var|return|if|else)(?=\\s)', // 2 token
-    '(\\s)(?:<em>)?//(.*?)(?:</em>)?(?=[\r\n])', // 3 comment
-    '([0-9]+)', // 4 number
-    '(true|false)', // 5 boolean
-    '(\\s|\\()(\'[^\']*\')(?=\\s|\\)|,)', // 6 string
-    '([\\[\\]{}()]+)', // 7 brackets
-    '<span class="vName">(<span class="(?:num|bool|str)">.*?</span>|class)</span>' // 8 fix
+  const findReplace = [
+    { // 0 function name
+      find: '([a-z0-9_]+(?:\\[(?:\'.*?\'|[a-z0-9_.])\\]|\\.[a-z0-9_]+)*)(?=\\s*\\()',
+      replace: '<span class="fName">$1</span>'
+    },
+    { // 1 variable name
+      find: '([a-z0-9_]+(?:\\[(?:\'.*?\'|[a-z0-9_.])\\]|\\.[a-z0-9_]+)*)(?=\\s*[,:=+)])',
+      replace: '<span class="vName">$1</span>'
+    },
+    { // 2 token
+      find: '(^|\\s)(function|var|return|if|else)(?=\\s)',
+      replace:'$1<span class="tkn">$2</span>'
+    },
+    { // 3 comment
+      find: '(\\s)(?:<em>)?//(.*?)(?:</em>)?(?=[\r\n])',
+      replace: '$1<span class="comm">//<span class="commTxt">$2</span></span>'
+    },
+    { // 4 number
+      find: '([0-9]+)',
+      replace: '<span class="num">$1</span>'
+    },
+    { // 5 boolean
+      find: '(true|false)',
+      replace: '<span class="bool">$1</span>'
+    },
+    { // 6 string
+      find: '(\\s|\\()(\'[^\']*\')(?=\\s|\\)|,)',
+      replace: '$1<span class="str">$2</span>'
+    },
+    { // 7 brackets
+      find: '([\\[\\]{}()]+)',
+      replace: '<span class="bkt">$1</span>'
+    },
+    { // 8 fix
+      find: '<span class="vName">(<span class="(?:num|bool|str)">.*?</span>|class)</span>',
+      replace: '$1'
+    }
   ]
-  var replace = [
-    '<span class="fName">$1</span>', // 0
-    '<span class="vName">$1</span>', // 1
-    '$1<span class="tkn">$2</span>', // 2
-    '$1<span class="comm">//<span class="commTxt">$2</span></span>', // 3
-    '<span class="num">$1</span>', // 4
-    '<span class="bool">$1</span>', // 5
-    '$1<span class="str">$2</span>', // 6
-    '<span class="bkt">$1</span>', // 7
-    '$1'
-  ]
-  var output = input
-  var tmp = null
-  var a = 0
 
-  for (a = 0; a < find.length; a += 1) {
-    tmp = new RegExp(find[a], 'ig')
-    output = output.replace(tmp, replace[a])
-  }
-  return output
+  return multiRegexReplace(input, findReplace)
 }
 
 doStuff.register({
@@ -560,7 +570,7 @@ function matchPaymentIDs (input, extraInputs, GETvars) {
 doStuff.register({
   action: 'matchPaymentIDs',
   func: matchPaymentIDs,
-  ignore: false,
+  ignore: true,
   name: 'Match unfinished payment IDs to confirmed payments.',
   // docURL: 'https://courses.acu.edu.au/do-js-regex-stuff/docs/match_unfinished_payment_ids_to_confirmed_payments.',
   docURL: 'docs/match-unfinished-payment.html',
@@ -770,6 +780,7 @@ function acuLogoClean (input, extraInputs, GETvars) {
 doStuff.register({
   action: 'acuLogoClean',
   func: acuLogoClean,
+  group: 'mer',
   ignore: false,
   name: 'Minify ACU Logo SVG'
   // description: 'Fix heading levels when Migrating HTML from one system to another',

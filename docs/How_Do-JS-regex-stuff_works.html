@@ -84,6 +84,16 @@
 				Including the expected input what will be changed and the expected output why this needs to be done
 			</li>
 			<li>
+				<code>ignore</code>: {boolean} <em>[optional] (default: <code>FALSE</code>)</em>
+				If the <code>ignore</code> property is included in the action config and ignore is <code>TRUE</code> that action will not be available for use and will not show up in the menu
+			</li>
+			<li>
+				<code>group</code>: {string} <em>[optional]</em>
+				Name of the group that owns the action.
+				Used for restricting access/visibility of actions.<br />
+				<strong>NOTE:</strong> If the <code>group</code> parameter is in the URL, and it matches the group in the action config then the group will be available.
+			</li>
+			<li>
 				<code>inputLabel</code>: {string} <em>[optional]</em>
 				The label that describes the main input textarea.
 				This is useful if your main content is a data source, rather than text to be modified.
@@ -148,30 +158,26 @@
 			Using the values from extra input fields
 		</h2>
 		<p>
-			Say you have a action function with three <em>extra input</em> fields. One for year with the ID
-			<code>year</code>
-			and another for gender and a group of checkboxes for mood. You can get the value of
-			<code>year</code>
-			by calling
-			<code>extraInputs.year()</code>
-			and the value of gender by calling
-			<code>extraInputs.gender()</code>
-			. You can get the value for each type of mood by calling the mood function, passing the value of that mood as
-			the only parameter e.g.
+			Say you have an action function with three <em>extra input</em> fields.
+			One for year with the ID <code>year</code> and another for gender and a group of checkboxes for mood.
+			You can get the value of <code>year</code> by calling <code>extraInputs.year()</code>
+			and the value of gender by calling <code>extraInputs.gender()</code>.
+			You can get the value for each type of mood by calling the mood function,
+			passing the value of that mood as the only parameter e.g.
 		</p>
 		<pre><code><span class="tkn">function</span> <span class="fName">exposeChickens</span> <span class="bkt">(</span><span class="vName">input</span>, <span class="vName">extraInputs</span>, <span class="vName">GETvars</span><span class="bkt">)</span> <span class="bkt">{</span>
-  <span class="tkn">var</span> <span class="vName">_unsure</span> = <span class="bkt">(</span><span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'unsure'</span><span class="bkt">))</span> ? <span class="str">' I think'</span> : <span class="str">''</span>
-  <span class="tkn">var</span> <span class="vName">_angry</span> = <span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'angry'</span><span class="bkt">)</span>
-  <span class="tkn">var</span> <span class="vName">_boc</span> = <span class="str">'BOC! BOC!!'</span>
-  <span class="tkn">var</span> <span class="vName">_chicken</span> = <span class="str">'chicken'</span>
-  <span class="tkn">var</span> <span class="vName">_excited</span> = <span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'excited'</span><span class="bkt">)</span>
+  <span class="tkn">let</span> <span class="vName">_unsure</span> = <span class="bkt">(</span><span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'unsure'</span><span class="bkt">))</span> ? <span class="str">' I think'</span> : <span class="str">''</span>
+  <span class="tkn">let</span> <span class="vName">_angry</span> = <span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'angry'</span><span class="bkt">)</span>
+  <span class="tkn">let</span> <span class="vName">_boc</span> = <span class="str">'BOC! BOC!!'</span>
+  <span class="tkn">let</span> <span class="vName">_chicken</span> = <span class="str">'chicken'</span>
+  <span class="tkn">let</span> <span class="vName">_excited</span> = <span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'excited'</span><span class="bkt">)</span>
   <span class="comm">// <span class="commTxt">We retrieve the value of _gender by calling the function that</span></span>
   <span class="comm">// <span class="commTxt">matches the <span class="vName">ID</span> (or <span class="vName">name</span>) of the input field</span></span>
-  <span class="tkn">var</span> <span class="vName">_gender</span> = <span class="fName">extraInputs.gender</span><span class="bkt">()</span>
-  <span class="tkn">var</span> <span class="vName">output</span> = <span class="str">''</span>
-  <span class="tkn">var</span> <span class="vName">_spring</span> = <span class="str">''</span>
+  <span class="tkn">let</span> <span class="vName">_gender</span> = <span class="fName">extraInputs.gender</span><span class="bkt">()</span>
+  <span class="tkn">let</span> <span class="vName">output</span> = <span class="str">''</span>
+  <span class="tkn">let</span> <span class="vName">_spring</span> = <span class="str">''</span>
   <span class="comm">// <span class="commTxt">We do the same for _year</span></span>
-  <span class="tkn">var</span> <span class="vName">_year</span> = <span class="fName">extraInputs.year</span><span class="bkt">()</span>
+  <span class="tkn">let</span> <span class="vName">_year</span> = <span class="fName">extraInputs.year</span><span class="bkt">()</span>
 
   <span class="comm">// <span class="commTxt">Test the gender of the chicken</span></span>
   <span class="fName">if</span> <span class="bkt">(</span><span class="vName">_gender</span> === <span class="str">'male'</span><span class="bkt">)</span> <span class="bkt">{</span>
@@ -404,5 +410,11 @@ var _excited = extraInputs.mood('excited')</code></pre>
 				href="https://github.com/slevithan/xregexp/blob/master/README.md">XRegExp documentation</a> for more info
 			on how to use it.
 		</p>
+
+		<h2 id="utility-functions">Utility and helper functions</h2>
+
+		<h3>multiRegexReplace()</h3>
+
+		One of the things this tool is used for is applying multiple regular expressions sequentially to a given
 	</body>
 </html>
