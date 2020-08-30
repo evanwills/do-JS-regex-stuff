@@ -1,13 +1,16 @@
 /* jslint browser: true */
-/* global history, invalidString, getURLobject, invalidStrNum, invalidNum, invalidArray, isFunction, makeAttributeSafe, XMLHttpRequest */
+/* global history, invalidString, getURLobject, invalidStrNum, invalidNum, invalidArray, isFunction, makeAttributeSafe, getRemoteActionFunc, XMLHttpRequest, remote */
 // other global functions: makeHumanReadableAttr
 // include utility-functions.js
 
 /**
- *
- * @param {string} url document.location string for the URL of the page
+ * Constructor for Do
+ * @param {string}  url    document.location string for the URL of
+ *                         the page
+ * @param {boolean} remote Whether or not to allow remote actions
+ *                         from this source
  */
-var DoStuff = function (url) {
+function DoStuff (url, _remote) {
   /**
    * @var {string} action what the "app" is app is doing at the moment
    *
@@ -44,6 +47,12 @@ var DoStuff = function (url) {
    * @var {string} actionName Human friendly name of the action
    */
   var actionName = ''
+
+  /**
+   * @var {boolean} allowRemote Whether or not to allow remote
+   *              requests
+   */
+  let allowRemote = false
 
   /**
    * @var {array} allLinks array of navigation link DOM elements
@@ -288,6 +297,7 @@ var DoStuff = function (url) {
     if (tmp !== false) {
       throw new Error('a "action" property that is a non-empty string. ' + tmp + ' given.')
     }
+
     if (typeof config.ignore === 'boolean' && config.ignore === true) {
       // This action has been set to IGNORE
       if (noIgnore !== config.action) {
@@ -295,13 +305,27 @@ var DoStuff = function (url) {
         return false
       }
     }
+
     tmp = invalidString('name', config)
     if (tmp !== false) {
       throw new Error('a "name" property that is a non-empty string. ' + tmp + ' given.')
     }
-    if (typeof config.func === 'undefined' || !isFunction(config.func)) {
-      throw new Error('a "func" property that is a plain javascript function. ' + tmp + ' given.')
+
+    config.remote = (typeof config.remote === 'boolean' && config.remote === true)
+
+    if (config.remote === false) {
+      if (typeof config.func === 'undefined' || !isFunction(config.func)) {
+        throw new Error('a "func" property that is a plain javascript function. ' + tmp + ' given.')
+      }
+    } else {
+      if (allowRemote === false) {
+        console.warn('All remote actions are blocked from this host')
+        return false
+      } else if (baseURL.substring(0, 4) !== 'http') {
+        console.warn('URL (' + baseURL + ') does not point to a remote origin and is likely to be blocked by the browser.')
+      }
     }
+
     config.inputLabel = (typeof config.inputLabel !== 'string' || config.inputLabel.trim() === '') ? inputLabelText : config.inputLabel
 
     config.action = config.action.toLowerCase()
@@ -341,7 +365,12 @@ var DoStuff = function (url) {
     docTitle.innerHTML = 'Do JS Regex Stuff &ndash; ' + registry[_action].name
     subTitle.className = ''
     subTitle.innerHTML = registry[_action].name
-    actionFunction = registry[_action].func
+
+    if (typeof registry[_action].remote !== 'boolean' || registry[_action].remote === false) {
+      actionFunction = registry[_action].func
+    } else {
+      actionFunction = getRemoteActionFunc(registry[_action], baseURL)
+    }
     someAction.className = ''
     actionInputLabel = registry[_action].inputLabel
     inputLabel.innerHTML = actionInputLabel
@@ -1184,9 +1213,10 @@ var DoStuff = function (url) {
    * Add a new group name to the list of groups the user wants
    * access to
    *
-   * @param {array}  groupList list of already registered groups
-   * @param {string} groupName New group name to be added to
-   *                           registry
+   * @param {array}  actionGroupList list of already registered
+   *                                 groups
+   * @param {string} groupName       New group name to be added to
+   *                                 registry
    *
    * @returns {array}
    */
@@ -1314,6 +1344,8 @@ var DoStuff = function (url) {
     actionGroupsGet += '&'
   }
 
+  allowRemote = (typeof _remote !== 'boolean') ? true : _remote
+
   noIgnore = (typeof URL.searchParams.noIgnore !== 'undefined') ? URL.searchParams.noIgnore : ''
   baseURL = URL.protocol + '//' + URL.host + URL.pathname + '?' + actionGroupsGet + 'action='
 
@@ -1321,8 +1353,10 @@ var DoStuff = function (url) {
   // ======================================================
 }
 
+const tmpRemote = (typeof remote !== 'boolean' || remote === true)
+
 /**
  * @var doStuff global object to allow functions to be registered
  *              (and to do all the stuff required to make this work)
  */
-var doStuff = new DoStuff(window.location)
+const doStuff = new DoStuff(window.location, tmpRemote)

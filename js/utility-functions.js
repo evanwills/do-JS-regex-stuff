@@ -1,4 +1,5 @@
-
+/* jslint browser: true */
+/* global XMLHttpRequest */
 /**
  * polyfil for new URL() call (but with better GET and hash parsing)
  * (see: https://developer.mozilla.org/en-US/docs/Web/API/URL/URL)
@@ -227,6 +228,29 @@ function invalidArray (prop, input) {
 }
 
 /**
+ * Test whether an object contains a given property and the value
+ * of that property is a boolean
+ *
+ * @param {string} prop
+ * @param {object} input
+ *
+ * @returns {false,string} If the value is a boolean then it is NOT
+ *                         invalid. Otherwise the value's data type
+ *                         returned (so it can be used when
+ *                         reporting errors).
+ */
+function invalidBool (prop, input) {
+  if (typeof prop !== 'string') {
+    throw new Error('invalidArray() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
+  }
+  if (typeof input !== 'object') {
+    throw new Error('invalidArray() expects second parameter "input" to be a an object containing "' + prop + '" property. ' + typeof input + ' given.')
+  }
+
+  return (typeof input[prop] !== 'boolean') ? typeof input[prop] : false
+}
+
+/**
  * Check whether something is a Function
  *
  * @param {mixed} functionToCheck function
@@ -375,4 +399,82 @@ function multiRegexReplace (input, findReplace, flags) {
   }
 
   return _output
+}
+
+/**
+ *
+ * @param {object} config
+ * @param {string} url
+ * @returns {function}
+ */
+const getRemoteActionFunc = (config, url) => {
+  // set up remote action
+  const userFields = []
+  const xhr = XMLHttpRequest()
+  /**
+   * Callback function to be passed to
+   * @param {string} input
+   * @param {string} output
+   */
+  const xhrChange = (input, output) => () => {
+    if (this.status >= 200 && this.status < 300) {
+      // What do when the request is successful
+      console.log('success!', this)
+      let tmp = {}
+      try {
+        tmp = JSON.parse(this.response)
+      } catch (e) {
+        console.error(config.action + ' returned an invalid response', e)
+        tmp = { output: input }
+      }
+      output = tmp.input
+    } else {
+      // What do when the request fails
+      console.log('The request failed!')
+    }
+
+    // Code that should run regardless of the request status
+    // console.log('This always runs...');
+  }
+
+  for (let a = 0; a < config.extraInputs.length; a += 1) {
+    userFields.push(config.extraInputs[a].id)
+  }
+
+  // ----------------------------------------
+  // start remote func
+
+  return (input, _extraInputs, GETvars) => {
+    const post = {
+      input: input
+    }
+    const wrapper = document.getElementById('input-wrapper')
+    const GETvarKeys = Object.keys(GETvars)
+    let output = input
+
+    wrapper.className = 'input-wrapper not-waiting'
+    wrapper.className = 'input-wrapper waiting'
+
+    for (let a = 0; a < GETvarKeys.length; a += 1) {
+      post[GETvarKeys[a]] = GETvars[GETvarKeys[a]]
+    }
+    for (let a = 0; a < userFields.length; a += 1) {
+      post[userFields[a]] = _extraInputs[userFields[a]]()
+    }
+    console.log('post:', post)
+
+    xhr.onreadystatechange = xhrChange(input, output)
+
+    xhr.open('post', url + config.action)
+    xhr.send(JSON.stringify(post))
+
+    wrapper.className = 'input-wrapper not-waiting'
+    setTimeout(() => {
+      wrapper.className = 'input-wrapper'
+    }, 300)
+
+    return output
+  }
+  // END remote func
+  // ----------------------------------------
 }
