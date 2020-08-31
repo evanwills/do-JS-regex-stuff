@@ -63,7 +63,7 @@ class Base64 extends RegexAction
 
     protected $postKeys = array('mode');
 
-    protected $encode = true;
+    private $_encode = true;
 
     /**
      * Get any form fields that should be rendered before the main
@@ -78,7 +78,7 @@ class Base64 extends RegexAction
 
         $mode = $this->getVarOrDefault('mode', $postVars, 'true');
 
-        $this->encode = ($mode !== 'false');
+        $this->_encode = (trim($mode) !== 'false');
     }
 
     /**
@@ -110,9 +110,18 @@ class Base64 extends RegexAction
      */
     public function modify($input)
     {
-        return ($this->encode)
-            ? base64_encode($input)
-            : base64_decode($input);
+        if ($this->_encode) {
+            return base64_encode($input);
+        } else {
+            $output = base64_decode($input, true);
+            if ($output === false) {
+                $this->error = 'Input contained invalid Base64 '.
+                    'content. Could not decode input.';
+                return '';
+            } else {
+                return $output;
+            }
+        }
     }
 }
 

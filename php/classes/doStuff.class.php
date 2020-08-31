@@ -222,6 +222,8 @@ class DoStuff
             $output['success'] = ($error === '');
             if ($output['success']) {
                 $output['output'] = $input;
+            } else {
+                $output['error'] = $error;
             }
         }
 

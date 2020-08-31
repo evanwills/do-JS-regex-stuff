@@ -10,10 +10,10 @@
  *                (except the hash can be before or after
  *                 the GET string)
  */
-function getURLobject (url) {
-  var urlParts
-  var i = 0
-  var output = {
+const getURLobject = (url) => {
+  let urlParts
+  let i = 0
+  const output = {
     hash: '',
     host: '',
     hostname: '',
@@ -28,10 +28,10 @@ function getURLobject (url) {
     searchParamsRaw: {},
     username: ''
   }
-  var key = ''
-  var tmp = ''
-  var reg
-  var _url = ''
+  let key = ''
+  let tmp = ''
+  let reg
+  let _url = ''
 
   if (typeof url === 'string') {
     _url = url
@@ -39,7 +39,7 @@ function getURLobject (url) {
     _url = url.href
   }
 
-  function cleanGET (input) {
+  const cleanGET = (input) => {
     var _output = decodeURI(input)
 
     if (_output.toLowerCase() === 'true') {
@@ -116,8 +116,8 @@ function getURLobject (url) {
  *                         returned (so it can be used when
  *                         reporting erros).
  */
-function invalidString (prop, input, notEmpty) {
-  var tmp = ''
+const invalidString = (prop, input, notEmpty) => {
+  let tmp = ''
 
   if (typeof prop !== 'string') {
     throw new Error('invalidString() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
@@ -149,8 +149,8 @@ function invalidString (prop, input, notEmpty) {
  *                         data type returned (so it can be used when
  *                         reporting errors).
  */
-function invalidStrNum (prop, input) {
-  var tmp = ''
+const invalidStrNum = (prop, input) => {
+  let tmp = ''
 
   if (typeof prop !== 'string') {
     throw new Error('invalidStrNum() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
@@ -179,8 +179,8 @@ function invalidStrNum (prop, input) {
  *                         returned (so it can be used when
  *                         reporting errors).
  */
-function invalidNum (prop, input) {
-  var tmp = ''
+const invalidNum = (prop, input) => {
+  let tmp = ''
 
   if (typeof prop !== 'string') {
     throw new Error('invalidNum() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
@@ -211,7 +211,7 @@ function invalidNum (prop, input) {
  *                         returned (so it can be used when
  *                         reporting errors).
  */
-function invalidArray (prop, input) {
+const invalidArray = (prop, input) => {
   if (typeof prop !== 'string') {
     throw new Error('invalidArray() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
   }
@@ -239,7 +239,7 @@ function invalidArray (prop, input) {
  *                         returned (so it can be used when
  *                         reporting errors).
  */
-function invalidBool (prop, input) {
+const invalidBool = (prop, input) => {
   if (typeof prop !== 'string') {
     throw new Error('invalidArray() expects first parameter "prop" to be a string matching the name of a property in the object. ' + typeof prop + ' given.')
   }
@@ -257,7 +257,7 @@ function invalidBool (prop, input) {
  *
  * @returns {boolean} TRUE if the input is a Function
  */
-function isFunction (functionToCheck) {
+const isFunction = (functionToCheck) => {
   return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
 }
 
@@ -268,7 +268,7 @@ function isFunction (functionToCheck) {
  *
  * @return {boolean} True if input is an array or iterable object
  */
-function isIterable (input) {
+const isIterable = (input) => {
   // checks for null and undefined
   if (input == null) {
     return false
@@ -288,10 +288,10 @@ function isIterable (input) {
  *
  * @returns {string} class name or ID safe string
  */
-function makeAttributeSafe (_attr) {
-  var _output = ''
-  var _isValid = new RegExp('^[a-z_-]', 'i')
-  var _clean = new RegExp('[^a-z0-9_\\-]+', 'ig')
+const makeAttributeSafe = (_attr) => {
+  const _isValid = new RegExp('^[a-z_-]', 'i')
+  const _clean = new RegExp('[^a-z0-9_\\-]+', 'ig')
+  let _output = ''
 
   if (typeof _attr !== 'string') {
     throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
@@ -318,16 +318,18 @@ function makeAttributeSafe (_attr) {
  *
  * @returns {string} class name or ID safe string
  */
-function makeHumanReadableAttr (_attr) {
-  var _clean = new RegExp('[^a-z0-9_\\-]+([a-z]?)', 'ig')
-  var _isValid = new RegExp('^[a-z_-]', 'i')
-  var _output = ''
+const makeHumanReadableAttr = (_attr) => {
+  const _clean = new RegExp('[^a-z0-9_\\-]+([a-z]?)', 'ig')
+  const _isValid = new RegExp('^[a-z_-]', 'i')
+  let _output = ''
 
   if (typeof _attr !== 'string') {
     throw new Error('makeAttributeSafe() expects only parameter "_attr" to be a non-empty string. ' + typeof _attr + ' given.')
   }
 
-  _output = _attr.replace(_clean, function (match, p1) { return (typeof p1 !== 'undefined') ? p1.toUpperCase() : '' })
+  _output = _attr.replace(_clean, (match, p1) => {
+    return (typeof p1 !== 'undefined') ? p1.toUpperCase() : ''
+  })
 
   if (_output === '') {
     throw new Error('makeHumanReadableAttr() expects only parameter "_attr" to be string that can be used as an HTML class name or ID. "' + _attr + '" cannot be used. After cleaning, it became an empty string.')
@@ -363,7 +365,7 @@ function makeHumanReadableAttr (_attr) {
  *
  * @returns {string} Updated string
  */
-function multiRegexReplace (input, findReplace, flags) {
+const multiRegexReplace = (input, findReplace, flags) => {
   if (typeof input !== 'string') {
     console.error('multiRegexReplace() expects first parameter "input" to be a string. ' + typeof input + ' given.')
   }
@@ -417,15 +419,30 @@ function multiRegexReplace (input, findReplace, flags) {
   return _output
 }
 
+/**
+ *
+ * @param {string} url      URL for
+ * @param {object} postData
+ *
+ * @returns {Promise}
+ */
 const callRemoteAction = async (url, postData) => {
   const makePost = (data) => {
     const keys = Object.keys(data)
     let output = ''
     let sep = ''
+    let hasInput = false
     for (let a = 0; a < keys.length; a += 1) {
       const key = keys[a]
-      output += sep + key + '=' + encodeURI(data[key])
-      sep = '&'
+      if (key !== 'input') {
+        output += sep + key + '=' + encodeURI(data[key])
+        sep = '&'
+      } else {
+        hasInput = true
+      }
+    }
+    if (hasInput) {
+      output += sep + 'input=' + encodeURI(data.input)
     }
     return output
   }
@@ -440,9 +457,11 @@ const callRemoteAction = async (url, postData) => {
       // 'Content-Type': 'application/json'
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    redirect: 'follow', // manual, *follow, error
-    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    body: 'data=' + JSON.stringify(postData) // body data type must match "Content-Type" header
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer',
+    // body data type must match "Content-Type" header
+    // body: 'data=' + JSON.stringify(postData)
+    body: makePost(postData)
   })
   return response.json() // parses JSON response into native JavaScript objects
 }
@@ -469,7 +488,7 @@ const getRemoteActionFunc = (config, url) => {
   // ----------------------------------------
   // start remote func
 
-  return (input, _extraInputs, GETvars) => {
+  return async (input, _extraInputs, GETvars) => {
     const post = {
       input: input
     }
@@ -491,16 +510,18 @@ const getRemoteActionFunc = (config, url) => {
     console.log('output:', output)
     console.log('url:', url + config.action)
 
-    callRemoteAction(url + config.action, post).then((data) => {
-      output = data
+    await callRemoteAction(url + config.action, post).then((data) => {
+      console.log('data:', data)
+      console.log('this:', this)
+      output = data.output
+
+      wrapper.className = 'input-wrapper not-waiting'
+      setTimeout(() => {
+        wrapper.className = 'input-wrapper'
+      }, 300)
     })
 
     console.log('output:', output)
-
-    wrapper.className = 'input-wrapper not-waiting'
-    setTimeout(() => {
-      wrapper.className = 'input-wrapper'
-    }, 300)
 
     return output
   }

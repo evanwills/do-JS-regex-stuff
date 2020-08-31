@@ -16,24 +16,24 @@ function DoStuff (url, _remote) {
    *
    * It's used to identify the function to be used to modify the input
    */
-  var action = ''
+  let action = ''
 
   /**
    * @var {function} actionFunction the function to be called when
    *               modifying the input
    */
-  var actionFunction = null
+  let actionFunction = null
 
   /**
    * @var {array} actionGroups list of action groups user has access to
    */
-  var actionGroups = []
+  let actionGroups = []
 
   /**
    * @var {string} actionGroupsGet comma separated list of action
    *            groups the user has access to (to be appended to the URL's GET string)
    */
-  var actionGroupsGet = ''
+  let actionGroupsGet = ''
 
   /**
    * @var {string} actionInputLabel the label text for the textarea
@@ -41,12 +41,12 @@ function DoStuff (url, _remote) {
    *             is put by the user and where the modified output of
    *             the action is also put once the action has been run
    */
-  var actionInputLabel = 'Text to be modified'
+  let actionInputLabel = 'Text to be modified'
 
   /**
    * @var {string} actionName Human friendly name of the action
    */
-  var actionName = ''
+  let actionName = ''
 
   /**
    * @var {boolean} allowRemote Whether or not to allow remote
@@ -57,18 +57,18 @@ function DoStuff (url, _remote) {
   /**
    * @var {array} allLinks array of navigation link DOM elements
    */
-  var allLinks = []
+  const allLinks = []
 
   /**
    * @var {string} baseURL used as the main part of the URL for all
    *             links
    */
-  var baseURL = ''
+  let baseURL = ''
 
   /**
    * @var {DOMelement} customFields the un-ordered list element
    */
-  var customFields = document.getElementById('custom-fields')
+  const customFields = document.getElementById('custom-fields')
 
   /**
    * @var {DOMelement} debugField textarea field used to output the
@@ -77,42 +77,42 @@ function DoStuff (url, _remote) {
    * Useful when you're creating a new action and you want to use
    * the same input over and over again.
    */
-  var debugField = null
+  let debugField = null
 
   /**
    * @var {string} debugGet string to be appended to the URL of all
-   *             links when in debug mode it adds a GET variable to
+   *             links when in debug mode it adds a GET letiable to
    *             the URL
    */
-  var debugGet = ''
+  let debugGet = ''
 
   /**
    * @var {boolean} debugMode whether the script is in "Debug Mode"
    */
-  var debugMode = false
+  let debugMode = false
 
   /**
    * @var {DOMelement} debugSwitch button toggling between debug and
    *             non-debug modes
    */
-  var debugSwitch = null
+  let debugSwitch = null
 
   /**
    * @var {DOMelement} debugWrapper Element that wraps the debug
    *             output field
    */
-  var debugWrapper = null
+  let debugWrapper = null
 
   /**
    * @var {DOMelement} docTitle the Title element in the page header
    */
-  var docsURL = 'docs/How_Do-JS-regex-stuff_works.html'
-  // var docsURL = 'https://courses.acu.edu.au/do-js-regex-stuff/docs/help'
+  const docsURL = 'docs/How_Do-JS-regex-stuff_works.html'
+  // let docsURL = 'https://courses.acu.edu.au/do-js-regex-stuff/docs/help'
 
   /**
    * @var {DOMelement} docTitle the Title element in the page header
    */
-  var docTitle = document.getElementById('doc-title')
+  const docTitle = document.getElementById('doc-title')
 
   /**
    * @var {array} extraInputs [array] An array of objects where the
@@ -120,23 +120,23 @@ function DoStuff (url, _remote) {
    *      value is a function that returns the value for that input
    *      field
    */
-  var extraInputs = {}
+  const extraInputs = {}
 
   /**
    * @var {object} GET list of URL GET variables
    */
-  var GET = {}
+  let GET = {}
 
   /**
    * @var {string} getPart GET variable part of URL
    */
-  var getPart = ''
+  let getPart = ''
 
   /**
    * @var {DOMelement} helpBtn the help button that links to
    *             documentation about an action
    */
-  var helpBtn = document.getElementById('help')
+  const helpBtn = document.getElementById('help')
 
   /**
    * @var {DOMelement} inputTextarea the textarea element where the
@@ -144,7 +144,7 @@ function DoStuff (url, _remote) {
    *             the user and where the modified output of the action
    *             is also put once the action has been run
    */
-  var inputTextarea = document.getElementById('input')
+  const inputTextarea = document.getElementById('input')
 
   /**
    * @var {DOMelement} inputLabel the label element for the textarea
@@ -152,66 +152,65 @@ function DoStuff (url, _remote) {
    *             is put by the user and where the modified output of
    *             the action is also put once the action has been run
    */
-  var inputLabel = document.getElementById('inputLabel')
+  const inputLabel = document.getElementById('inputLabel')
 
   /**
    * @var {string} inputLabelText Default text used to label the main
    *             input textarea
    */
-  var inputLabelText = 'Text to be modified'
+  let inputLabelText = 'Text to be modified'
 
   /**
    * @var {DOMelement} inputWrapper The wrapper for the main input text area
    */
-  var inputWrapper = document.getElementById('input-wrapper')
+  const inputWrapper = document.getElementById('input-wrapper')
 
   /**
    * @var {DOMelement} mask a button element stretched across the
    *             whole visible window area that when clicked on
    *             closes the navingation (berger) menu
    */
-  var mask = document.getElementById('nav-show-hide__mask')
+  const mask = document.getElementById('nav-show-hide__mask')
 
   /**
    * @var {DOMelement} menuShowHide the button used for showing and
    *             hiding the navigation menue
    */
-  var menuShowHide = document.getElementById('nav-show-hide')
+  const menuShowHide = document.getElementById('nav-show-hide')
 
   /**
    * @var {boolean} modalOpen whether or not the modal is currently open
    */
-  var modalOpen = false
+  let modalOpen = false
 
   /**
    * @var {DOMelement} modalBlock the the block in which modal content is
    *             inserted when the help button is clicked
    */
-  var modalBlock = document.getElementById('modal')
+  const modalBlock = document.getElementById('modal')
 
   /**
    * @var {DOMelement} modalMask the clickable background
    */
-  var modalMask = document.getElementById('modal-show-hide__mask')
+  const modalMask = document.getElementById('modal-show-hide__mask')
 
   /**
    * @var {DOMelement} nav the unordered list use to house all the
    *             action links
    */
-  var nav = document.getElementById('menu-items')
+  const nav = document.getElementById('menu-items')
 
   /**
-   var mask = document.getElementById('nav-show-hide__mask')
    * @var {DOMelement} navWrap the wrapping element for the
    *             navigation (Berger) Menu
    */
-  var navWrap = document.getElementById('main-nav')
+  const navWrap = document.getElementById('main-nav')
 
   /**
    * @var {boolean} navOpen whether or not the nav (burger menu) is
    *              open or closed
    */
-  var navOpen = false
+  let navOpen = false
 
   /**
    * @var {DOMelement} noAction where the message explaining what is
@@ -219,51 +218,45 @@ function DoStuff (url, _remote) {
    *             the place to put the action description if one has
    *             been set.
    */
-  var noAction = document.getElementById('no-action')
+  const noAction = document.getElementById('no-action')
 
   /**
    * @var {string} the name of an action set to NOT be ignored
    */
-  var noIgnore = ''
+  let noIgnore = ''
 
   /**
    * @var {object} registry list of objects where the key is the
    *             action name and the value is all the metadata for
    *             the action plus the action function
    */
-  var registry = {}
+  const registry = {}
 
   /**
    * @var {string} URL for XHR requests
    */
-  var remoteURL = ''
+  let remoteURL = ''
 
-  /**
-   * @var {DOMelement} renderOuput textarea used to render the output
-   *             of an action when in Debug mode
-   */
-  var renderOutput = null
-
-  // var customFields = document.getElementById('some-action')
+  // const customFields = document.getElementById('some-action')
 
   /**
    * @var {DOMelement} someAction the main form element where all
    *             the cool stuff happens
    */
-  var someAction = document.getElementById('some-action')
+  const someAction = document.getElementById('some-action')
 
   /**
    * @var {DOMelement} subTitle the page's main H2 element
    *
    * Used to set house the action's name in the main page content
    */
-  var subTitle = document.getElementById('sub-title')
+  const subTitle = document.getElementById('sub-title')
 
   /**
    * @var {DOMelement} submit the submit button used to trigger an
    *             action to modify the user's input
    */
-  var submit = document.getElementById('submit')
+  const submit = document.getElementById('submit')
 
   /**
    * @var object URL contains all the parts of a URL, making it easy
@@ -272,7 +265,7 @@ function DoStuff (url, _remote) {
    * In this case it's used to create the base URL used for all links
    * plus provide easy access to GET variables.
    */
-  var URL = null
+  let URL = null
 
   //  END:  object (private) properties
   // ======================================================
@@ -285,8 +278,8 @@ function DoStuff (url, _remote) {
    *             action's function and all the metadata needed to
    *             initialise the action if selected
    */
-  function updateRegistry (config) {
-    var tmp = false
+  const updateRegistry = (config) => {
+    let tmp = false
 
     tmp = invalidString('group', config, false)
 
@@ -358,10 +351,10 @@ function DoStuff (url, _remote) {
    *
    * @returns {void}
    */
-  function initialiseAction (_action) {
-    var a = 0
-    var _docsURL = ''
-    var request = new XMLHttpRequest()
+  const initialiseAction = (_action) => {
+    let a = 0
+    let _docsURL = ''
+    const request = new XMLHttpRequest()
 
     if (typeof _action !== 'string') {
       throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string. ' + typeof _action + ' given.')
@@ -439,11 +432,11 @@ function DoStuff (url, _remote) {
    *                 is to be created
    * @returns {void}
    */
-  function addToNav (_action) {
-    var li = null
-    var a = null
-    var linkText = null
-    // var desc = null
+  const addToNav = (_action) => {
+    let li = null
+    let a = null
+    let linkText = null
+    // let desc = null
 
     a = document.createElement('a')
     a.setAttribute('href', baseURL + _action + debugGet)
@@ -480,11 +473,11 @@ function DoStuff (url, _remote) {
    * @returns {DOMelement} HTML Label element used for simple
    *             description of form field
    */
-  function getLabel (config, groupLabel) {
-    var _node = null
-    var _element = 'label'
-    var _text = null
-    var tmp = invalidString('label', config)
+  const getLabel = (config, groupLabel) => {
+    const tmp = invalidString('label', config)
+    let _node = null
+    let _element = 'label'
+    let _text = null
 
     if (tmp !== false) {
       throw new Error('All extra input fields must have a label property. ' + config.id + ' does not have a valid label')
@@ -522,11 +515,11 @@ function DoStuff (url, _remote) {
    *             textarea element
    * @returns {DOMelement} HTML span element
    */
-  function getDescription (config) {
+  const getDescription = (config) => {
     // Assumption here is that description was already tested for
     // before this function was called
-    var _node = document.createElement('span')
-    var _text = document.createTextNode(config.description)
+    const _node = document.createElement('span')
+    const _text = document.createTextNode(config.description)
 
     _node.setAttribute('id', config.action + 'Desc')
     _node.className = 'input-description'
@@ -548,9 +541,9 @@ function DoStuff (url, _remote) {
    *          * "getter" - A function used by the developer to get
    *                     the current value of the radio field
    */
-  function setTextInputAttributes (nodeType, config) {
-    var textTypes = ['text', 'textarea', 'number', 'email']
-    var _node = null
+  const setTextInputAttributes = (nodeType, config) => {
+    const textTypes = ['text', 'textarea', 'number', 'email']
+    let _node = null
 
     if (textTypes.indexOf(nodeType) === -1) {
       throw new Error('DoStuff.setTextInputAttributes() expects first parameter "noteType" to be a string matching the name of a valid HTML text type input field')
@@ -602,7 +595,7 @@ function DoStuff (url, _remote) {
    *          * "getter" - A function used by the developer to get
    *                     the current value of the radio field
    */
-  function getTextarea (config) {
+  const getTextarea = (config) => {
     return setTextInputAttributes('textarea', config)
   }
 
@@ -619,7 +612,7 @@ function DoStuff (url, _remote) {
    *          * "getter" - A function used by the developer to get
    *                     the current value of the radio field
    */
-  function getText (inputType, config) {
+  const getText = (inputType, config) => {
     return setTextInputAttributes(inputType, config)
   }
 
@@ -635,8 +628,8 @@ function DoStuff (url, _remote) {
    *          * "getter" - a function used by the developer to get
    *                     the current value of the radio field
    */
-  function getNumber (config) {
-    var _node = setTextInputAttributes('number', config)
+  const getNumber = (config) => {
+    const _node = setTextInputAttributes('number', config)
 
     if (!invalidNum('min', config)) {
       _node.node.setAttribute('min', config.min * 1)
@@ -663,9 +656,9 @@ function DoStuff (url, _remote) {
    *          * "getter" - a function used by the developer to get
    *                     the current value of the radio field
    */
-  function getSelectOption (_value, _label, _default) {
-    var _node = document.createElement('option')
-    var _text = document.createTextNode(_label)
+  const getSelectOption = (_value, _label, _default) => {
+    const _node = document.createElement('option')
+    const _text = document.createTextNode(_label)
 
     // assumption is that parameters have already been validated
     // by calling function
@@ -693,11 +686,11 @@ function DoStuff (url, _remote) {
    *          * "getter" - a function used by the developer to get
    *                     the current value of the radio field
    */
-  function getSelect (config) {
-    var _node = document.createElement('select')
-    var _isDefault = false
-    var a = 0
-    var tmp = false
+  const getSelect = (config) => {
+    const _node = document.createElement('select')
+    let _isDefault = false
+    let a = 0
+    let tmp = false
 
     _node.setAttribute('id', config.id)
     _node.setAttribute('name', config.id)
@@ -740,13 +733,13 @@ function DoStuff (url, _remote) {
    *          * "field" - a DOM node representing the actual input
    *                     field
    */
-  function getGroupableInput (config) {
-    var _wrapper = document.createElement('label')
-    var _input = document.createElement('input')
-    var _labelText = document.createTextNode(config.label)
-    var _id = config.id
-    var _name = config.id
-    var _isDefault = false
+  const getGroupableInput = (config) => {
+    const _wrapper = document.createElement('label')
+    const _input = document.createElement('input')
+    const _labelText = document.createTextNode(config.label)
+    let _id = config.id
+    let _name = config.id
+    let _isDefault = false
 
     // assumtion is that config properties have already been
     // validated by the calling function
@@ -798,14 +791,14 @@ function DoStuff (url, _remote) {
    *          * "getter" - a function used by the developer to get
    *                     the current value of the radio field
    */
-  function getRadio (config) {
-    var _wrapper = document.createElement('p')
-    var _tmp = null
-    var a = 0
-    var _fields = []
-    var _count = 0
-    var _getterFunc = null
-    var tmp = false
+  const getRadio = (config) => {
+    const _wrapper = document.createElement('p')
+    const _fields = []
+    let _tmp = null
+    let a = 0
+    let _count = 0
+    let _getterFunc = null
+    let tmp = false
 
     for (a = 0; a < config.options.length; a += 1) {
       tmp = invalidString('label', config.options[a])
@@ -831,8 +824,7 @@ function DoStuff (url, _remote) {
     _count = _fields.length
 
     _getterFunc = function () {
-      var i = 0
-      for (i = 0; i < _count; i += 1) {
+      for (let i = 0; i < _count; i += 1) {
         if (_fields[i].checked) {
           return _fields[i].value
         }
@@ -857,15 +849,15 @@ function DoStuff (url, _remote) {
    *          * "getter" - a function used by the developer to get
    *                     the current value of the radio field
    */
-  function getCheckbox (config) {
-    var _wrapper = document.createElement('p')
-    var _tmp = null
-    var a = 0
-    var _fields = {}
-    var _count = 0
-    var _getterFunc = null
-    var _tmpCBID = ''
-    var tmp = false
+  const getCheckbox = (config) => {
+    const _wrapper = document.createElement('p')
+    const _fields = {}
+    let _tmp = null
+    let _count = 0
+    let _getterFunc = null
+    let _tmpCBID = ''
+    let a = 0
+    let tmp = false
 
     for (a = 0; a < config.options.length; a += 1) {
       tmp = invalidString('label', config.options[a])
@@ -921,12 +913,12 @@ function DoStuff (url, _remote) {
    *              * A field (or group of fields) and
    *              * A field description of the field's purpose (if available)
    */
-  function getSingleExtraInput (config) {
-    var _node = document.createElement('li')
-    var _inputWrap = document.createElement('div')
-    var _input = null
-    var _desc = null
-    var _default = true
+  const getSingleExtraInput = (config) => {
+    const _node = document.createElement('li')
+    const _inputWrap = document.createElement('div')
+    let _input = null
+    let _desc = null
+    let _default = true
 
     config.id = makeAttributeSafe(config.id)
 
@@ -996,7 +988,7 @@ function DoStuff (url, _remote) {
    * hideBurger() click handler for when burger is open and user
    * clicks on a close button
    */
-  function hideBurger () {
+  const hideBurger = () => {
     menuShowHide.className = 'btn btn-burger'
     navWrap.className = 'main-nav'
     mask.className = 'mask mask--hide'
@@ -1007,7 +999,7 @@ function DoStuff (url, _remote) {
    * showBurger() click handler for when burger is closed and user
    * clicks on the burger button
    */
-  function showBurger () {
+  const showBurger = () => {
     navWrap.className = 'main-nav main-nav--show'
     menuShowHide.className = 'btn btn-burger btn-burger--open'
     mask.className = 'mask mask--show'
@@ -1023,7 +1015,7 @@ function DoStuff (url, _remote) {
    *
    * @returns {void}
    */
-  renderOutput = function (_input) {
+  let renderOutput = (_input) => {
     inputTextarea.value = _input
 
     // the following automatically gives focus to the output textarea
@@ -1037,8 +1029,8 @@ function DoStuff (url, _remote) {
    * activateDebugMode() creates the HTML for debug mode plus shows
    * and hides the debug part of the user Interface
    */
-  function activateDebugMode () {
-    var label = null
+  const activateDebugMode = () => {
+    let label = null
 
     if (debugMode === true && action !== '') {
       if (debugField === null) {
@@ -1063,7 +1055,7 @@ function DoStuff (url, _remote) {
       debugWrapper.className = 'main-input'
       inputWrapper.className = 'input-wrapper debug-mode'
 
-      renderOutput = function (_input) {
+      renderOutput = (_input) => {
         debugField.value = _input
       }
       debugGet = '&debug=true'
@@ -1073,7 +1065,7 @@ function DoStuff (url, _remote) {
         debugWrapper.className = 'main-input hide'
       }
 
-      renderOutput = function (_input) {
+      renderOutput = (_input) => {
         inputTextarea.value = _input
       }
       debugGet = ''
@@ -1099,9 +1091,9 @@ function DoStuff (url, _remote) {
    * @returns {function} calback to be passed to the onclick event
    *             handler
    */
-  function getNavClickHandler (_action) {
-    return function (e) {
-      var success = true
+  const getNavClickHandler = (_action) => {
+    return (e) => {
+      let success = true
       e.preventDefault()
 
       try {
@@ -1126,21 +1118,22 @@ function DoStuff (url, _remote) {
    * @returns {function} onclick callback function used by the
    *             "Modify input" button
    */
-  function doMagic () {
-    return function (e) {
+  const doMagic = () => {
+    return async (e) => {
       e.preventDefault()
 
-      var output = ''
-      var msg = null
-      var input = ''
-      // var extraInputs = {}
+      let output = ''
+      let msg = null
+      let input = ''
+      // const extraInputs = {}
 
       if (actionFunction !== null) {
         // extraInputs = getExtraInputs()
         input = inputTextarea.value
         output = input
+
         try {
-          output = actionFunction(output, extraInputs, GET)
+          output = await actionFunction(output, extraInputs, GET)
         } catch (e) {
           console.error('Action "' + actionName + '" failed due to error: "' + e + '"')
         }
@@ -1159,7 +1152,7 @@ function DoStuff (url, _remote) {
    * toggleDebug() callback function used as on click handler for
    * "Debug mode" button
    */
-  function toggleDebug () {
+  const toggleDebug = () => {
     if (debugMode === false) {
       debugSwitch.innerHTML = 'Disable Debug mode'
       debugSwitch.className = 'btn btn-debug btn-debug--on'
@@ -1179,7 +1172,7 @@ function DoStuff (url, _remote) {
    *
    * @param {Event} e the click event that triggered this callback
    */
-  function bergerShowHide (e) {
+  const bergerShowHide = (e) => {
     if (navOpen === true) {
       hideBurger()
     } else {
@@ -1187,13 +1180,13 @@ function DoStuff (url, _remote) {
     }
   }
 
-  function resetDoStuff (e) {
+  const resetDoStuff = (e) => {
     e.preventDefault()
     renderOutput('')
     initialiseAction(action)
   }
 
-  function toggleModal (e) {
+  const toggleModal = (e) => {
     e.preventDefault()
 
     if (modalOpen === true) {
@@ -1214,7 +1207,7 @@ function DoStuff (url, _remote) {
    *
    * @returns {boolean} True if group name is valid
    */
-  function validGroupName (groupName) {
+  const validGroupName = (groupName) => {
     const _regex = new RegExp('^[a-z]{2}[0-9a-z-]{0,48}$')
     return _regex.test(groupName.trim().toLowerCase())
   }
@@ -1230,7 +1223,7 @@ function DoStuff (url, _remote) {
    *
    * @returns {array}
    */
-  function addToGroup (actionGroupList, groupName) {
+  const addToGroup = (actionGroupList, groupName) => {
     const tmpGroup = groupName.trim().toLowerCase()
     if (validGroupName(tmpGroup) && actionGroupList.indexOf(tmpGroup) === -1) {
       actionGroupList.push(tmpGroup)
@@ -1259,7 +1252,7 @@ function DoStuff (url, _remote) {
    * @returns {void}
    */
   this.register = function (config) {
-    var registerOk = false
+    let registerOk = false
     try {
       registerOk = updateRegistry(config)
     } catch (error) {
@@ -1282,8 +1275,8 @@ function DoStuff (url, _remote) {
    * render() does all the last minute stuff to make this app work
    */
   this.render = function () {
-    var li = document.createElement('li')
-    var resetBtn = document.getElementById('reset')
+    const li = document.createElement('li')
+    const resetBtn = document.getElementById('reset')
     menuShowHide.onclick = bergerShowHide
     mask.onclick = bergerShowHide
 
