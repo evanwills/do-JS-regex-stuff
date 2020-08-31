@@ -41,6 +41,8 @@ abstract class RegexAction implements IRegexAction
      */
     static protected $action = '';
 
+    private $_action = '';
+
     /**
      * Name of the group intended to use this action
      *
@@ -217,7 +219,7 @@ abstract class RegexAction implements IRegexAction
      *
      * @return string
      */
-    static final public function getTitle()
+    static public function getTitle()
     {
         return self::$title;
     }
@@ -237,7 +239,17 @@ abstract class RegexAction implements IRegexAction
      *
      * @return string
      */
-    static final public function getAction()
+    static public function getAction()
+    {
+        return self::$action;
+    }
+
+    /**
+     * Get the title for this action
+     *
+     * @return string
+     */
+    public function action()
     {
         return self::$action;
     }
@@ -275,6 +287,16 @@ abstract class RegexAction implements IRegexAction
     static final public function getDescription()
     {
         return self::$description;
+    }
+
+    /**
+     * Get name of group this action belongs to
+     *
+     * @return string
+     */
+    final public function getGroup()
+    {
+        return self::$group;
     }
 
     /**
@@ -460,10 +482,3 @@ abstract class RegexAction implements IRegexAction
 }
 
 // $doStuff->register('ActionName');
-
-// $doStuff->register(
-//     ActionName::getAction(),
-//     ActionName::getTitle(),
-//     ActionName::getGroup(),
-//     ActionName::isDisabled()
-// );

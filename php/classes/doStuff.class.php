@@ -81,15 +81,38 @@ class DoStuff
                     );
                 }
             }
+
             if ($ok === true) {
                 $this->_getAction = strtolower($getVars['action']);
             }
         }
-        if (array_key_exists('group', $getVars)
-            && strlen($getVars['group']) < 32
-        ) {
-            $this->_group = $getVars['group'];
+        if (array_key_exists('groups', $getVars)) {
+            $tmp = explode(',', $getVars['group']);
+            for ($a = 0; $a < count($tmp); $a += 1) {
+                $group = $this->_cleanGroupName($tmp[$a]);
+                if ($group !== '') {
+                    $this->_groups[] = $group;
+                }
+                unset($group);
+            }
+            unset($a);
+        } elseif (array_key_exists('group', $getVars)) {
+            $group = $this->_cleanGroupName($getVars['group']);
+            if ($group !== '') {
+                $this->_groups[] = $group;
+            }
+            unset($group);
         }
+    }
+
+    /**
+     * Get the name of the current action
+     *
+     * @return string
+     */
+    public function getActionName()
+    {
+        return $this->_action;
     }
 
     /**
@@ -117,15 +140,15 @@ class DoStuff
             );
         }
 
+        $action = $actionClass::getAction();
         try {
             $this->_validateAction($actionClass::getAction());
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
 
-        $action = $actionClass::getAction();
         $title = $actionClass::getTitle();
-        $group = $actionClass::getGroup();
+        $group = $this->_cleanGroupName($actionClass::getGroupName());
         $disabled = $actionClass::isDisabled();
 
         if ($disabled !== true) {
@@ -137,7 +160,7 @@ class DoStuff
                 // Anyone can use it
                 // Include it in the list of available actions
                 $this->_allActions[$_action] = $title;
-            } elseif ($this->_group === $group) {
+            } elseif (in_array($group, $this->_groups)) {
                 // This is group specific
                 // The current request's group matches this the
                 // action's group so include it in the list of
@@ -158,7 +181,7 @@ class DoStuff
      * @param array $postVars Contents of the $_POST variable
      * @param array $getVars  Contents of the $_GET variable
      *
-     * @return IAction,false
+     * @return IRegexAction,IAction,false
      */
     public function initAction($postVars, $getVars)
     {
@@ -176,15 +199,33 @@ class DoStuff
     /**
      * Perform action on user input
      *
-     * @param string $input User supplied main input
+     * @param string       $input  User supplied main input
+     * @param IRegexAction $action Current action object
      *
      * @return string
      */
-    public function modify($input)
+    public function getJSON($input, IRegexAction $action)
     {
-        $output = $input;
+        $output = array(
+            'success' => ($this->_error === ''),
+            'action' => $action->getAction(),
+            // 'group' => $action->getGroup(),
+            'error' => $this->_error,
+            'output' => ''
+        );
+        $group = $action->getGroup();
+        if ($group !== '') {
+            $output['group'] = $group;
+        }
+        if ($output['success']) {
+            $error = $action->getError();
+            $output['success'] = ($error === '');
+            if ($output['success']) {
+                $output['output'] = $input;
+            }
+        }
 
-        return $output;
+        return json_encode($output);
     }
 
     /**
@@ -235,14 +276,27 @@ class DoStuff
                 '$action to be a non-empty string'
             );
         }
-        if (!preg_match('`^[A-Z][a-zA-Z0-9]{9,49}$'.$i.'`', $action)) {
+        if (!preg_match('`^[A-Z][a-zA-Z0-9-]{0,48}$`'.$i, $action)) {
             throw new Exception(
-                'Action name is invalid. '.
+                'Action name ("'.$action.'") is invalid. '.
                 'Action name must start with start with a capital letter, '.
                 'must be at between 10 and 50 characters long and '.
                 'must only contain alpha-numeric characters'
             );
         }
         return true;
+    }
+
+    /**
+     * Make sure group names only have valid characters.
+     *
+     * @param string $groupName Name of group to use.
+     *
+     * @return string Sanitised group name
+     */
+    private function _cleanGroupName($groupName)
+    {
+        $tmp = strtolower(preg_replace('`[^a-z0-9-]+`i', '', $groupName));
+        return (preg_match('`^[a-z]{2}[0-9a-z-]{0,18}$`', $tmp)) ? $tmp : '';
     }
 }

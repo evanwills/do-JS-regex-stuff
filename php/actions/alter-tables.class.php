@@ -36,7 +36,7 @@ class AlterTable extends RegexAction
      *
      * @var string
      */
-    static private $_title = 'Add table contraints';
+    static protected $title = 'Add table contraints';
 
     /**
      * Action string used to call the do stuff class
@@ -45,14 +45,14 @@ class AlterTable extends RegexAction
      *
      * @var string
      */
-    static private $_action = 'AlterTable';
+    static protected $action = 'AlterTable';
 
     /**
      * Description for this action
      *
      * @var string
      */
-    static private $_description = 'Use this action class '.
+    static protected $description = 'Use this action class '.
         'as the template code for any new actions';
 
     protected $getKeys = array();
@@ -73,6 +73,26 @@ class AlterTable extends RegexAction
         parent::__construct($postVars, $getVars);
 
         // Initialise extra input fields here
+    }
+
+    /**
+     * Get the title for this action
+     *
+     * @return string
+     */
+    static public function getTitle()
+    {
+        return self::$title;
+    }
+
+    /**
+     * Get the title for this action
+     *
+     * @return string
+     */
+    static public function getAction()
+    {
+        return self::$action;
     }
 
     /**

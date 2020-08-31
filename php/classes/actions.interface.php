@@ -60,7 +60,21 @@ interface IRegexAction
      *
      * @return string
      */
+    public function action();
+
+    /**
+     * Get the group name for this action
+     *
+     * @return string
+     */
     static public function getGroupName();
+
+    /**
+     * Get the group name for this action
+     *
+     * @return string
+     */
+    public function getGroup();
 
     /**
      * Whether or not this action is disabled

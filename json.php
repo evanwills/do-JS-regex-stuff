@@ -11,14 +11,32 @@
  * @link     https://test-webapps.acu.edu.au/mini-apps/do-regex-stuff/
  */
 
-require_once __DIR__.'bootstrap.inc.php';
+if (!array_key_exists('test', $_GET)) {
+    header('Content-Type: application/json');
+}
+
+require_once __DIR__.'/php/bootstrap.inc.php';
 
 $action = $doStuff->initAction($_POST, $_GET);
-
 if ($action !== false) {
     $input = '';
-    if (array_key_exists('input', $_POST)) {
-        $input = $_POST['input'];
-        $output = $action->modify($input);
+    if (array_key_exists('input', $_GET)) {
+        $input = $action->modify($_GET['input']);
+        echo $doStuff->getJSON($input, $action);
+        exit;
+    } else {
+        $actionName = $doStuff->getActionName();
+        $errorMsg = 'No input supplied';
     }
+} else {
+    $actionName = '';
+    $errorMsg = 'Could not find valid action';
 }
+
+echo json_encode(
+    array(
+        'success' => false,
+        'action' => $actionName,
+        'error' => $errorMsg
+    )
+);

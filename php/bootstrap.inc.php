@@ -94,12 +94,13 @@ if (!function_exists('debug')) {
 // ==================================================================
 
 define('ACTIONS_DIR', __DIR__.'/actions/');
+define('CLASSES_DIR', __DIR__.'/classes/');
 
-require_once __DIR__.'/classes/doStuff.class.php';
+require_once CLASSES_DIR.'doStuff.class.php';
 
 $doStuff = new DoStuff($_GET);
 
-require_once __DIR__.'/actions-base.class.php';
+require_once CLASSES_DIR.'actions-base.class.php';
 
 $actionFiles = scandir(ACTIONS_DIR);
 
