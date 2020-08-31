@@ -15,16 +15,25 @@ doStuff.register({
         {
           value: 'true',
           label: 'Encode',
-          checked: true
+          default: true
         },
         {
           value: 'false',
-          label: 'Decode',
-          checked: false
+          label: 'Decode'
         }
       ],
       type: 'radio'
     }
   ],
+  remote: true
+})
+
+doStuff.register({
+  action: 'BackwardsSort',
+  description: 'Sort a (line separated) list of text by from the end of the line (rather than the begining).',
+  // group: 'it',
+  // ignore: true,
+  name: 'Backwards sort',
+  extraInputs: [],
   remote: true
 })

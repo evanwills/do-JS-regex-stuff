@@ -36,7 +36,7 @@ class Base64 extends RegexAction
      *
      * @var string
      */
-    static protected $title = 'Base64 encode/decode';
+    public const TITLE = 'Base64 encode/decode';
 
     /**
      * Action string used to call the do stuff class
@@ -45,7 +45,14 @@ class Base64 extends RegexAction
      *
      * @var string
      */
-    static protected $action = 'Base64';
+    public const ACTION = 'Base64';
+
+    /**
+     * Description for this action
+     *
+     * @var string
+     */
+    public const DESCRIPTION = '';
 
     /**
      * Whether or not to disable this action
@@ -53,13 +60,6 @@ class Base64 extends RegexAction
      * @var boolean
      */
     static protected $disable = true;
-
-    /**
-     * Description for this action
-     *
-     * @var string
-     */
-    static protected $description = '';
 
     protected $postKeys = array('mode');
 
@@ -79,26 +79,6 @@ class Base64 extends RegexAction
         $mode = $this->getVarOrDefault('mode', $postVars, 'true');
 
         $this->_encode = (trim($mode) !== 'false');
-    }
-
-    /**
-     * Get the title for this action
-     *
-     * @return string
-     */
-    static public function getTitle()
-    {
-        return self::$title;
-    }
-
-    /**
-     * Get the title for this action
-     *
-     * @return string
-     */
-    static public function getAction()
-    {
-        return self::$action;
     }
 
     /**

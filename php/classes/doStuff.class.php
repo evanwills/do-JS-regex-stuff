@@ -112,7 +112,7 @@ class DoStuff
      */
     public function getActionName()
     {
-        return $this->_action;
+        return $this->_action::ACTION;
     }
 
     /**
@@ -140,9 +140,9 @@ class DoStuff
             );
         }
 
-        $action = $actionClass::getAction();
+        $action = $actionClass::ACTION;
         try {
-            $this->_validateAction($actionClass::getAction());
+            $this->_validateAction($action);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -186,14 +186,14 @@ class DoStuff
     public function initAction($postVars, $getVars)
     {
         if (is_null($this->_actionObject)) {
-            if ($this->_action !== '') {
+            if ($this->_action !== '' && class_exists($this->_action)) {
                 $className = $this->_action;
                 $this->_actionObject = new $className($postVars, $getVars);
-
-                return $this->_actionObject;
+            } else {
+                return false;
             }
         }
-        return false;
+        return $this->_actionObject;
     }
 
     /**
@@ -208,7 +208,7 @@ class DoStuff
     {
         $output = array(
             'success' => ($this->_error === ''),
-            'action' => $action->getAction(),
+            'action' => $this->_action::ACTION,
             // 'group' => $action->getGroup(),
             'error' => $this->_error,
             'output' => ''

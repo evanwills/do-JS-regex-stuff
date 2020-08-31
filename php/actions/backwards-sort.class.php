@@ -34,7 +34,7 @@ class BackwardsSort extends RegexAction
      *
      * @var string
      */
-    static protected $title = 'Backwards sort';
+    public const TITLE = 'Backwards sort';
 
     /**
      * Action string used to call the do stuff class
@@ -43,14 +43,14 @@ class BackwardsSort extends RegexAction
      *
      * @var string
      */
-    static protected $action = 'BackwardsSort';
+    public const ACTION = 'BackwardsSort';
 
     /**
      * Description for this action
      *
      * @var string
      */
-    static protected $description = '';
+    public const DESCRIPTION = '';
 
     /**
      * Get any form fields that should be rendered before the main
@@ -64,26 +64,6 @@ class BackwardsSort extends RegexAction
         parent::__construct($postVars, $getVars);
 
         // Initialise extra input fields here
-    }
-
-    /**
-     * Get the title for this action
-     *
-     * @return string
-     */
-    static public function getTitle()
-    {
-        return self::$title;
-    }
-
-    /**
-     * Get the title for this action
-     *
-     * @return string
-     */
-    static public function getAction()
-    {
-        return self::$action;
     }
 
     /**
