@@ -1,5 +1,5 @@
 /* jslint browser: true */
-/* global XMLHttpRequest */
+/* global XMLHttpRequest fetch */
 /**
  * polyfil for new URL() call (but with better GET and hash parsing)
  * (see: https://developer.mozilla.org/en-US/docs/Web/API/URL/URL)
@@ -347,6 +347,17 @@ function makeHumanReadableAttr (_attr) {
  * @param {array}  findReplace List of Find/Replace pairs where the
  *                             find property will be converted into
  *                             a RegExp object
+ *                             findReplace object:
+ *                             ```javascript
+ *                             {
+ *                               find:    (required)
+ *                                        [regular expression string]
+ *                               replace: (required)
+ *                                        [replacement string]
+ *                               flags:   (optional)
+ *                                        [Override flags for this regex]
+ *                             }
+ *                             ```
  * @param {string} flags       RegExp flags to be passed for all
  *                             regexes (default is `ig`)
  *
@@ -361,11 +372,13 @@ function multiRegexReplace (input, findReplace, flags) {
   }
   let _output = input
 
-  const _flags = (typeof flags !== 'string') ? 'ig' : flags
-  try {
-    const _tmp = new RegExp('^.', _flags)
-  } catch (e) {
-    console.error('multiRegexReplace() expects third paremeter "flags" to be a string containing valid RegExp flags')
+  const getValidFlags = (_flag) => {
+    return _flags.replace(/[^gimsuy]+/g, '')
+  }
+
+  const _flags = (typeof flags === 'string') ? getValidFlags(flags) : 'ig'
+  if (flags !== _flags) {
+    console.warn('multiRegexReplace() expects third parameter "flags" to contain ')
   }
 
   let a = 0
@@ -382,8 +395,11 @@ function multiRegexReplace (input, findReplace, flags) {
 
     let _regex = null
 
+    // use override flags if available
+    const tmpFlags = (typeof pair.flags === 'string') ? getValidFlags(pair.flags) : _flags
+
     try {
-      _regex = new RegExp(pair.find, _flags)
+      _regex = new RegExp(pair.find, tmpFlags)
     } catch (e) {
       console.error('multiRegexReplace() expects findReplace[' + a + '].find to contain a valid regular expression. It had the following error: "' + e.message + '"')
     }
@@ -401,45 +417,54 @@ function multiRegexReplace (input, findReplace, flags) {
   return _output
 }
 
+const callRemoteAction = async (url, postData) => {
+  const makePost = (data) => {
+    const keys = Object.keys(data)
+    let output = ''
+    let sep = ''
+    for (let a = 0; a < keys.length; a += 1) {
+      const key = keys[a]
+      output += sep + key + '=' + encodeURI(data[key])
+      sep = '&'
+    }
+    return output
+  }
+
+  // Default options are marked with *
+  const response = await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    cache: 'no-cache',
+    credentials: 'same-origin',
+    headers: {
+      // 'Content-Type': 'application/json'
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    redirect: 'follow', // manual, *follow, error
+    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+    body: 'data=' + JSON.stringify(postData) // body data type must match "Content-Type" header
+  })
+  return response.json() // parses JSON response into native JavaScript objects
+}
+
 /**
+ * Generate an action function for a remote action
  *
- * @param {object} config
- * @param {string} url
+ * @param {object} config Action config
+ * @param {string} url    URL for XHR call
+ *
  * @returns {function}
  */
 const getRemoteActionFunc = (config, url) => {
   // set up remote action
   const userFields = []
-  const xhr = XMLHttpRequest()
-  /**
-   * Callback function to be passed to
-   * @param {string} input
-   * @param {string} output
-   */
-  const xhrChange = (input, output) => () => {
-    if (this.status >= 200 && this.status < 300) {
-      // What do when the request is successful
-      console.log('success!', this)
-      let tmp = {}
-      try {
-        tmp = JSON.parse(this.response)
-      } catch (e) {
-        console.error(config.action + ' returned an invalid response', e)
-        tmp = { output: input }
-      }
-      output = tmp.input
-    } else {
-      // What do when the request fails
-      console.log('The request failed!')
-    }
-
-    // Code that should run regardless of the request status
-    // console.log('This always runs...');
-  }
 
   for (let a = 0; a < config.extraInputs.length; a += 1) {
     userFields.push(config.extraInputs[a].id)
   }
+
+  console.log('config:', config)
+  console.log('url:', url + config.action)
 
   // ----------------------------------------
   // start remote func
@@ -458,15 +483,19 @@ const getRemoteActionFunc = (config, url) => {
     for (let a = 0; a < GETvarKeys.length; a += 1) {
       post[GETvarKeys[a]] = GETvars[GETvarKeys[a]]
     }
+
     for (let a = 0; a < userFields.length; a += 1) {
       post[userFields[a]] = _extraInputs[userFields[a]]()
     }
-    console.log('post:', post)
 
-    xhr.onreadystatechange = xhrChange(input, output)
+    console.log('output:', output)
+    console.log('url:', url + config.action)
 
-    xhr.open('post', url + config.action)
-    xhr.send(JSON.stringify(post))
+    callRemoteAction(url + config.action, post).then((data) => {
+      output = data
+    })
+
+    console.log('output:', output)
 
     wrapper.className = 'input-wrapper not-waiting'
     setTimeout(() => {
@@ -475,6 +504,7 @@ const getRemoteActionFunc = (config, url) => {
 
     return output
   }
+
   // END remote func
   // ----------------------------------------
 }

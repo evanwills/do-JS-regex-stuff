@@ -20,8 +20,10 @@ require_once __DIR__.'/php/bootstrap.inc.php';
 $action = $doStuff->initAction($_POST, $_GET);
 if ($action !== false) {
     $input = '';
-    if (array_key_exists('input', $_GET)) {
-        $input = $action->modify($_GET['input']);
+    if (array_key_exists('data', $_POST)) {
+        $data = json_decode($_POST['data'], true);
+
+        $input = $action->modify($data['input']);
         echo $doStuff->getJSON($input, $action);
         exit;
     } else {
@@ -37,6 +39,9 @@ echo json_encode(
     array(
         'success' => false,
         'action' => $actionName,
-        'error' => $errorMsg
+        'error' => $errorMsg,
+        'post' => $_POST,
+        'get' => $_GET,
+        'request' => $_REQUEST
     )
 );

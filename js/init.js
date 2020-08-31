@@ -128,6 +128,11 @@ function DoStuff (url, _remote) {
   var GET = {}
 
   /**
+   * @var {string} getPart GET variable part of URL
+   */
+  var getPart = ''
+
+  /**
    * @var {DOMelement} helpBtn the help button that links to
    *             documentation about an action
    */
@@ -229,6 +234,11 @@ function DoStuff (url, _remote) {
   var registry = {}
 
   /**
+   * @var {string} URL for XHR requests
+   */
+  var remoteURL = ''
+
+  /**
    * @var {DOMelement} renderOuput textarea used to render the output
    *             of an action when in Debug mode
    */
@@ -283,7 +293,7 @@ function DoStuff (url, _remote) {
     if (tmp === false) {
       tmp = config.group.trim().toLowerCase()
       if (tmp !== '' && !validGroupName(tmp)) {
-        throw new Error('Action group name must be a string between 2 and 20 characters long, must start with at least two alphabetical characters and can contain only alpha numeric characters and hyphens. "' + tmp + '" does not meet these requirements')
+        throw new Error('Action group name must be a string between 2 and 50 characters long, must start with at least two alphabetical characters and can contain only alpha numeric characters and hyphens. "' + tmp + '" does not meet these requirements')
       }
 
       if (actionGroups.indexOf(tmp) === -1) {
@@ -369,7 +379,7 @@ function DoStuff (url, _remote) {
     if (typeof registry[_action].remote !== 'boolean' || registry[_action].remote === false) {
       actionFunction = registry[_action].func
     } else {
-      actionFunction = getRemoteActionFunc(registry[_action], baseURL)
+      actionFunction = getRemoteActionFunc(registry[_action], remoteURL)
     }
     someAction.className = ''
     actionInputLabel = registry[_action].inputLabel
@@ -1205,7 +1215,7 @@ function DoStuff (url, _remote) {
    * @returns {boolean} True if group name is valid
    */
   function validGroupName (groupName) {
-    const _regex = new RegExp('^[a-z]{2}[0-9a-z-]{0,18}$')
+    const _regex = new RegExp('^[a-z]{2}[0-9a-z-]{0,48}$')
     return _regex.test(groupName.trim().toLowerCase())
   }
 
@@ -1347,7 +1357,10 @@ function DoStuff (url, _remote) {
   allowRemote = (typeof _remote !== 'boolean') ? true : _remote
 
   noIgnore = (typeof URL.searchParams.noIgnore !== 'undefined') ? URL.searchParams.noIgnore : ''
-  baseURL = URL.protocol + '//' + URL.host + URL.pathname + '?' + actionGroupsGet + 'action='
+  baseURL = URL.protocol + '//' + URL.host + URL.pathname
+  getPart = '?' + actionGroupsGet + 'action='
+  remoteURL = baseURL + 'json.php' + getPart
+  baseURL += getPart
 
   //  END:  proceedural part of code (constructor stuff)
   // ======================================================
