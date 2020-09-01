@@ -191,7 +191,7 @@ code { font-size: 1rem; }
 .menu-items li a:hover {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 0.3s ease-in-out transform 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 .mask {

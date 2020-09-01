@@ -1,16 +1,18 @@
 /* jslint browser: true */
-/* global history, invalidString, getURLobject, invalidStrNum, invalidNum, invalidArray, isFunction, makeAttributeSafe, getRemoteActionFunc, XMLHttpRequest, remote */
+/* global history, invalidString, getURLobject, invalidStrNum, invalidNum, invalidArray, isFunction, makeAttributeSafe, getRemoteActionFunc, XMLHttpRequest, remote, docsURL */
 // other global functions: makeHumanReadableAttr
 // include utility-functions.js
 
 /**
- * Constructor for Do
+ * Constructor for Do-JS-Regex-Stuff
+ *
  * @param {string}  url    document.location string for the URL of
  *                         the page
  * @param {boolean} remote Whether or not to allow remote actions
  *                         from this source
+ * @param {string}  docs   URL for documentation for Do-JS-Regex-Stuff
  */
-function DoStuff (url, _remote) {
+function DoStuff (url, _remote, docs) {
   /**
    * @var {string} action what the "app" is app is doing at the moment
    *
@@ -104,9 +106,9 @@ function DoStuff (url, _remote) {
   let debugWrapper = null
 
   /**
-   * @var {DOMelement} docTitle the Title element in the page header
+   * @var {string} docsURL URL for Documentation.
    */
-  const docsURL = 'docs/How_Do-JS-regex-stuff_works.html'
+  let docsURL = 'docs/How_Do-JS-regex-stuff_works.html'
   // let docsURL = 'https://courses.acu.edu.au/do-js-regex-stuff/docs/help'
 
   /**
@@ -312,6 +314,12 @@ function DoStuff (url, _remote) {
     tmp = invalidString('name', config)
     if (tmp !== false) {
       throw new Error('a "name" property that is a non-empty string. ' + tmp + ' given.')
+    }
+    actionName = config.name
+
+    tmp = invalidString('inputLable', config)
+    if (tmp === false) {
+      inputLabelText = config.inputLabel
     }
 
     config.remote = (typeof config.remote === 'boolean' && config.remote === true)
@@ -1311,6 +1319,10 @@ function DoStuff (url, _remote) {
 
   URL = getURLobject(url)
 
+  if (typeof docs === 'string' && docs !== '') {
+    docsURL = docs
+  }
+
   if (typeof URL.searchParams.action === 'string') {
     action = URL.searchParams.action.toLowerCase()
   }
@@ -1323,8 +1335,6 @@ function DoStuff (url, _remote) {
     }
   }
 
-  console.log('typeof actionGroups:', typeof actionGroups)
-  console.log('actionGroups:', actionGroups)
   if (typeof URL.searchParams.group !== 'undefined') {
     actionGroups = addToGroup(actionGroups, URL.searchParams.group)
   }
@@ -1352,7 +1362,7 @@ function DoStuff (url, _remote) {
   noIgnore = (typeof URL.searchParams.noIgnore !== 'undefined') ? URL.searchParams.noIgnore : ''
   baseURL = URL.protocol + '//' + URL.host + URL.pathname
   getPart = '?' + actionGroupsGet + 'action='
-  remoteURL = baseURL + 'json.php' + getPart
+  remoteURL = baseURL.replace(/(.*\/)[^\\/]+/ig, '$1') + 'json.php' + getPart
   baseURL += getPart
 
   //  END:  proceedural part of code (constructor stuff)
@@ -1360,9 +1370,10 @@ function DoStuff (url, _remote) {
 }
 
 const tmpRemote = (typeof remote !== 'boolean' || remote === true)
+const tmpDocsURL = (typeof docsURL === 'string' && docsURL !== '') ? docsURL : 'docs/How_Do-JS-regex-stuff_works.html'
 
 /**
  * @var doStuff global object to allow functions to be registered
  *              (and to do all the stuff required to make this work)
  */
-const doStuff = new DoStuff(window.location, tmpRemote)
+const doStuff = new DoStuff(window.location, tmpRemote, tmpDocsURL)
