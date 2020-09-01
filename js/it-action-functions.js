@@ -364,17 +364,6 @@ doStuff.register({
   // docsULR: '',
   inputLabel: 'scss code to be modified',
   extraInputs: [{
-  //   id: 'doColours',
-  //   label: 'Convert colour HEX values to variables',
-  //   options: [
-  //     {
-  //       label: 'convert',
-  //       value: 'true'
-  //     }
-  //   ],
-  //   type: 'checkbox'
-  // },
-  // {
     id: 'remValue',
     label: 'Pixel value of 1rem',
     default: 16,

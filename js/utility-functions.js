@@ -101,6 +101,468 @@ const getURLobject = (url) => {
 
   return output
 }
+
+// ======================================================
+// START: DOM creation functions
+
+/**
+ * getLabel() returns a field's label DOMelement (for semantic and
+ * accessible form fields)
+ *
+ * @param {object} config all the metadata required to create a
+ *             label element. Object requires "id" & "label"
+ *             properties
+ * @param {boolean} groupLabel If the label is for a group of input
+ *             fields the the returned node will be a <DIV> instead
+ *             of a label
+ * @returns {DOMelement} HTML Label element used for simple
+ *             description of form field
+ */
+const getLabel = (config, groupLabel) => {
+  const tmp = invalidString('label', config)
+  let _node = null
+  let _element = 'label'
+  let _text = null
+
+  if (tmp !== false) {
+    throw new Error('All extra input fields must have a label property. ' + config.id + ' does not have a valid label')
+  }
+
+  _text = document.createTextNode(config.label)
+
+  if (typeof groupLabel === 'boolean' && groupLabel === true) {
+    _element = 'div'
+  } else {
+    groupLabel = false
+  }
+
+  _node = document.createElement(_element)
+  _node.className = 'custom-fields--label'
+  _node.setAttribute('id', 'group-' + config.id)
+
+  if (groupLabel === false) {
+    // only relavent for single input fields
+    // (not radio or checkbox)
+    _node.setAttribute('for', config.id)
+  }
+
+  _node.appendChild(_text)
+
+  return _node
+}
+
+/**
+ * getDescription() returns a span DOMelement containing a longer
+ * description of the purpose of a form fieldd (for semantic and
+ * accessible form fields)
+ *
+ * @param {object} config all the metadata required to create a
+ *             textarea element
+ * @returns {DOMelement} HTML span element
+ */
+const getDescription = (config) => {
+  // Assumption here is that description was already tested for
+  // before this function was called
+  const _node = document.createElement('span')
+  const _text = document.createTextNode(config.description)
+
+  _node.setAttribute('id', config.action + 'Desc')
+  _node.className = 'input-description'
+  _node.appendChild(_text)
+
+  return _node
+}
+
+/**
+ * setTextInputAttributes() returns an form field DOM element
+ *
+ * @param {string} nodeType type of input to be created
+ * @param {object} config all the metadata required to create a
+ *             textarea element
+ * @param {object} url    URL object containing all the metadata of
+ *             the request URI (including GET variables)
+ *
+ * @returns {object} Object with two properties:
+ *          * "node" - A DOM node containing a sematically correct
+ *                     text type field and
+ *          * "getter" - A function used by the developer to get
+ *                     the current value of the radio field
+ */
+const setTextInputAttributes = (nodeType, config, url) => {
+  const textTypes = ['text', 'textarea', 'number', 'email']
+  let _node = null
+
+  if (textTypes.indexOf(nodeType) === -1) {
+    throw new Error('DoStuff.setTextInputAttributes() expects first parameter "noteType" to be a string matching the name of a valid HTML text type input field')
+  }
+  if (nodeType === 'textarea') {
+    _node = document.createElement('textarea')
+  } else {
+    _node = document.createElement('input')
+    _node.setAttribute('type', nodeType)
+  }
+
+  _node.setAttribute('id', config.id)
+  _node.setAttribute('name', config.id)
+
+  if (!invalidString('placeholder', config)) {
+    _node.setAttribute('placeholder', config.placeholder)
+  }
+  if (!invalidString('pattern', config)) {
+    _node.setAttribute('pattern', config.pattern)
+  }
+  if (!invalidNum('size', config)) {
+    _node.setAttribute('size', config.pattern)
+  }
+  if (!invalidNum('maxlength', config)) {
+    _node.setAttribute('maxlength', config.pattern)
+  }
+
+  // Try and preset the default value for the text type field
+  if (!invalidString(config.id, URL.searchParams, false)) {
+    _node.value = url.searchParams[config.id]
+  } else {
+    if (!invalidStrNum('default', config)) {
+      _node.value = config.default
+    }
+  }
+
+  return { node: _node, getter: function () { return _node.value } }
+}
+
+/**
+ * getTextarea() returns a textarea DOMelement
+ *
+ * @param {object} config all the metadata required to create a
+ *             textarea element
+ * @param {object} url    URL object containing all the metadata of
+ *             the request URI (including GET variables)
+ *
+ * @returns {object} Object with two properties:
+ *          * "node" - A DOM node containing a sematically correct
+ *                     text area field and
+ *          * "getter" - A function used by the developer to get
+ *                     the current value of the radio field
+ */
+const getTextarea = (config, url) => {
+  return setTextInputAttributes('textarea', config, url)
+}
+
+/**
+ * getText() returns a text input DOMelement
+ *
+ * @param {string} inputType The type of text input field
+ * @param {object} config All the metadata required to create a
+ *             textarea element
+ * @param {object} url    URL object containing all the metadata of
+ *             the request URI (including GET variables)
+ *
+ * @returns {object} Object with two properties:
+ *          * "node" - A DOM node containing a sematically correct
+ *                     text input field and
+ *          * "getter" - A function used by the developer to get
+ *                     the current value of the radio field
+ */
+const getText = (inputType, config, url) => {
+  return setTextInputAttributes(inputType, config, url)
+}
+
+/**
+ * getNumber() returns a numbers input DOMelement
+ *
+ * @param {object} config all the metadata required to create a
+ *             textarea element
+ * @param {object} url    URL object containing all the metadata of
+ *             the request URI (including GET variables)
+ *
+ * @returns {object} object with two properties:
+ *          * "node" - a DOM node containing a sematically correct
+ *                     number input field and
+ *          * "getter" - a function used by the developer to get
+ *                     the current value of the radio field
+ */
+const getNumber = (config, url) => {
+  const _node = setTextInputAttributes('number', config, url)
+
+  if (!invalidNum('min', config)) {
+    _node.node.setAttribute('min', config.min * 1)
+  }
+  if (!invalidNum('max', config)) {
+    _node.node.setAttribute('max', config.max * 1)
+  }
+  if (!invalidNum('step', config)) {
+    _node.node.setAttribute('step', config.step * 1)
+  }
+  return _node
+}
+
+/**
+ * getSelectOption() returns a single select option to be appended
+ * to a select field
+ *
+ * @param {object} config all the metadata required to create a
+ *             textarea element
+ *
+ * @returns {object} object with two properties:
+ *          * "node" - a DOM node containing a sematically correct
+ *                     radio or checkbox input field and
+ *          * "getter" - a function used by the developer to get
+ *                     the current value of the radio field
+ */
+const getSelectOption = (_value, _label, _default) => {
+  const _node = document.createElement('option')
+  const _text = document.createTextNode(_label)
+
+  // assumption is that parameters have already been validated
+  // by calling function
+
+  _node.value = _value
+  _node.appendChild(_text)
+
+  if (typeof _default === 'boolean' && _default === true) {
+    _node.setAttribute('selected', 'selected')
+  }
+
+  return _node
+}
+
+/**
+ * getSelect() returns a full select field with all specified
+ * options
+ *
+ * @param {object} config all the metadata required to create
+ *             a textarea element
+ * @param {object} url    URL object containing all the metadata of
+ *             the request URI (including GET variables)
+ *
+ * @returns {object} object with two properties:
+ *          * "node" - a DOM node containing a sematically correct
+ *                     radio or checkbox input field and
+ *          * "getter" - a function used by the developer to get
+ *                     the current value of the radio field
+ */
+const getSelect = (config, url) => {
+  const _node = document.createElement('select')
+  let _isDefault = false
+  let a = 0
+  let tmp = false
+
+  _node.setAttribute('id', config.id)
+  _node.setAttribute('name', config.id)
+
+  tmp = invalidArray('options', config)
+  if (tmp !== false) {
+    throw new Error('getSelect() expects config to contain an options property that is a non-empty array. ' + tmp + ' given')
+  }
+
+  for (a = 0; a < config.options.length; a += 1) {
+    tmp = invalidStrNum('value', config.options[a])
+    if (tmp !== false) {
+      throw new Error('getSelect() expects option ' + a + ' to have a value that is either a string or a nubmer. ' + tmp + ' given.')
+    }
+    tmp = invalidString('label', config.options[a])
+    if (tmp !== false) {
+      throw new Error('getSelect() expects option ' + a + ' to have a label that is a string. ' + tmp + ' given.')
+    }
+
+    if (typeof url.searchParams[config.id] === 'string') {
+      _isDefault = (url.searchParams[config.id] === config.options[a].value)
+    } else {
+      _isDefault = (typeof config.options[a].default === 'boolean') ? config.options[a].default : false
+    }
+
+    _node.appendChild(getSelectOption(config.options[a].value, config.options[a].label, _isDefault))
+  }
+  return { node: _node, getter: function () { return _node.value } }
+}
+
+/**
+ * getGroupableInput() builds either checkbox or radio input fields
+ *
+ * @param {object} config object containing metadata required for
+ *             building a radio or checkbox field
+ * @param {object} url    URL object containing all the metadata of
+ *             the request URI (including GET variables)
+ *
+ * @returns {object} object with two properties:
+ *          * "wrapper" - a DOM node containing a sematically
+ *                     correct radio or checkbox input field and
+ *          * "field" - a DOM node representing the actual input
+ *                     field
+ */
+const getGroupableInput = (config, url) => {
+  const _wrapper = document.createElement('label')
+  const _input = document.createElement('input')
+  const _labelText = document.createTextNode(config.label)
+  let _id = config.id
+  let _name = config.id
+  let _isDefault = false
+
+  // assumtion is that config properties have already been
+  // validated by the calling function
+
+  try {
+    _id = makeAttributeSafe(config.id + '__' + config.value)
+  } catch (e) {
+    console.warn('could not convert "' + config.label + '" to an ID')
+  }
+
+  _input.setAttribute('type', config.type)
+
+  if (config.type === 'checkbox') {
+    _name = _id
+  }
+
+  _input.setAttribute('name', _name)
+  _input.setAttribute('id', _id)
+  _input.setAttribute('value', config.value)
+
+  if (typeof url.searchParams[_name] === 'string') {
+    _isDefault = (url.searchParams[_name] === config.value)
+  } else {
+    _isDefault = config.default
+  }
+
+  if (_isDefault === true) {
+    _input.setAttribute('checked', 'checked')
+  }
+
+  _wrapper.className = 'wrap-label'
+  _wrapper.appendChild(_input)
+  _wrapper.appendChild(_labelText)
+
+  return { wrapper: _wrapper, field: _input }
+}
+
+/**
+ * getRadio() returns a semantically correct input group containing
+ *            a (developer defined) number of radio input fields
+ *            which all share the same "name" attribute
+ *
+ * @param {object} config object containing metadata required for
+ *             building a group of radio fields
+ * @param {object} url    URL object containing all the metadata of
+ *             the request URI (including GET variables)
+ *
+ * @returns {object} object with two properties:
+ *          * "node" - a DOM node containing a sematically correct
+ *                     group of radio input fields and
+ *          * "getter" - a function used by the developer to get
+ *                     the current value of the radio field
+ */
+const getRadio = (config, url) => {
+  const _wrapper = document.createElement('p')
+  const _fields = []
+  let _tmp = null
+  let a = 0
+  let _count = 0
+  let _getterFunc = null
+  let tmp = false
+
+  for (a = 0; a < config.options.length; a += 1) {
+    tmp = invalidString('label', config.options[a])
+    if (tmp !== false) {
+      throw new Error('getRadio() expects option ' + a + ' to have a "label" property that is a non-empty string. ' + tmp + ' given.')
+    }
+    tmp = invalidStrNum('value', config.options[a])
+    if (tmp !== false) {
+      throw new Error('getRadio() expects option ' + a + ' to have a "value" property that is a either a string or a number. ' + tmp + ' given.')
+    }
+
+    _tmp = getGroupableInput({
+      id: config.id,
+      type: 'radio',
+      label: config.options[a].label,
+      value: config.options[a].value,
+      default: (typeof config.options[a].default === 'boolean' && config.options[a].default === true)
+    }, url)
+
+    _wrapper.appendChild(_tmp.wrapper)
+    _fields.push(_tmp.field)
+  }
+  _count = _fields.length
+
+  _getterFunc = function () {
+    for (let i = 0; i < _count; i += 1) {
+      if (_fields[i].checked) {
+        return _fields[i].value
+      }
+    }
+    return false
+  }
+
+  return { node: _wrapper, getter: _getterFunc }
+}
+
+/**
+ * getCheckbox() returns a semantically correct input group
+ *            containing a (developer defined) number of checkbox
+ *            input fields
+ *
+ * @param {object} config object containing metadata required for
+ *             building a group of checkbox fields
+ * @param {object} url    URL object containing all the metadata of
+ *             the request URI (including GET variables)
+ *
+ * @returns {object} object with two properties:
+ *          * "node" - a DOM node containing a sematically correct
+ *                     group of checkbox input fields and
+ *          * "getter" - a function used by the developer to get
+ *                     the current value of the radio field
+ */
+const getCheckbox = (config, url) => {
+  const _wrapper = document.createElement('p')
+  const _fields = {}
+  let _tmp = null
+  let _count = 0
+  let _getterFunc = null
+  let _tmpCBID = ''
+  let a = 0
+  let tmp = false
+
+  for (a = 0; a < config.options.length; a += 1) {
+    tmp = invalidString('label', config.options[a])
+    if (tmp !== false) {
+      throw new Error('getCheckbox() expects option ' + a + ' to have a "label" property that is a non-empty string. ' + tmp + ' given.')
+    }
+    tmp = invalidStrNum('value', config.options[a])
+    if (tmp !== false) {
+      throw new Error('getCheckbox() expects option ' + a + ' to have a "value" property that is a either a string or a number. ' + tmp + ' given.')
+    }
+    _tmp = getGroupableInput({
+      id: config.id,
+      type: 'checkbox',
+      label: config.options[a].label,
+      value: config.options[a].value,
+      default: (typeof config.options[a].default === 'boolean' && config.options[a].default === true)
+    }, url)
+
+    _wrapper.appendChild(_tmp.wrapper)
+    _tmpCBID = config.options[a].value
+    _fields[_tmpCBID] = _tmp.field
+  }
+  _count = a
+
+  if (_count === 1) {
+    _getterFunc = (box) => {
+      return _fields[_tmpCBID].checked
+    }
+  } else {
+    _getterFunc = (box) => {
+      if (typeof box !== 'string') {
+        throw new Error('getter Function for "' + config.label + '" requires only parameter "box" to be a string that matches the value of a checkbox in the "' + config.id + '" group. ' + typeof box + ' given.')
+      } else if (typeof _fields[box] === 'undefined') {
+        throw new Error('Could not find checkbox matching "' + box + '" in "' + config.id + '" group.')
+      }
+
+      return _fields[box].checked
+    }
+  }
+
+  return { node: _wrapper, getter: _getterFunc }
+}
+
+//  END:  DOM creation functions
 // ======================================================
 // START: validation functions
 

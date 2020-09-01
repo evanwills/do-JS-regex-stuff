@@ -211,7 +211,8 @@ class DoStuff
             'action' => $this->_action::ACTION,
             // 'group' => $action->getGroup(),
             'error' => $this->_error,
-            'output' => ''
+            'output' => '',
+            'extraOutputs' => false
         );
         $group = $action->getGroup();
         if ($group !== '') {
@@ -222,6 +223,7 @@ class DoStuff
             $output['success'] = ($error === '');
             if ($output['success']) {
                 $output['output'] = $input;
+                $output['extraOutputs'] = $action->extraOutputs();
             } else {
                 $output['error'] = $error;
             }
