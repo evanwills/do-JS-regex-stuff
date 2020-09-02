@@ -194,10 +194,26 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
    * @returns {string} rem unit version of initial value
    */
   const fixSinglePix = (whole, preSpace, value) => {
-    let output = Math.round((value / remPixels) * 100) / 100
-    output = output + ''
-    output = output.replace(/^0+/, '')
-    return preSpace + output + 'rem'
+    const mediaPx = {
+      320: '$mobile-width',
+      480: '$screen-xs',
+      510: '$content-width-xs',
+      690: '$content-width-sm',
+      768: '$screen-sm',
+      930: '$content-width-md',
+      992: '$screen-md',
+      1140: '$content-width-lg',
+      1200: '$screen-lg'
+    }
+    const key = (value * 1)
+    if (typeof mediaPx[key] === 'string') {
+      return mediaPx[key]
+    } else {
+      let output = Math.round((value / remPixels) * 100) / 100
+      output = output + ''
+      output = output.replace(/^0+/, '')
+      return preSpace + output + 'rem'
+    }
   }
 
   /**
