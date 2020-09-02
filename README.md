@@ -1,4 +1,8 @@
-# How "Do JS regex stuff" works
+# "Do JS regex stuff"
+
+
+
+## How "Do JS regex stuff" works
 
 So you have some dodgy text and you'd like to clean it up? Well you've come to the right place.
 

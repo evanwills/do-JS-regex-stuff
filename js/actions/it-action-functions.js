@@ -121,8 +121,6 @@ function newRelicify (input, extraInputs, GETvars) {
   var output = input
   var tmp = null
 
-  // console.log('input:', input)
-
   className = className.replace(/^\s+|\s+$/g, '')
 
   if (className !== '') {
@@ -183,6 +181,8 @@ doStuff.register({
  * @returns {string} modified version user input
  */
 function fixSassLintIssues (input, extraInputs, GETvars) {
+  const remPixels = extraInputs.remValue()
+
   /**
    * Convert pixel values to REMs with accuracy of up to 2 decimal
    * places.
@@ -194,7 +194,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
    * @returns {string} rem unit version of initial value
    */
   const fixSinglePix = (whole, preSpace, value) => {
-    let output = Math.round((value / extraInputs.remValue()) * 100) / 100
+    let output = Math.round((value / remPixels) * 100) / 100
     output = output + ''
     output = output.replace(/^0+/, '')
     return preSpace + output + 'rem'
@@ -241,9 +241,6 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     if (_other === value) {
       // This is not a value we care about.
       // Hand it back unchanged
-      console.log('value:', value)
-      console.log('_colour:', _colour)
-      console.log('_other:', _other)
       return cleanWhole(whole)
     }
 
@@ -253,12 +250,6 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     }
 
     const _isLight = (_colour === '#fff' || _colour === '#ffffff')
-
-    console.log('whole:', '"' + whole + '"')
-    console.log('_wholeProp:', '"' + _wholeProp + '"')
-    console.log('_mainProp:', '"' + _mainProp + '"')
-    console.log('_colour:', '"' + _colour + '"')
-    console.log('_isLight:', '"' + _isLight + '"')
 
     let _colourVar = ''
 

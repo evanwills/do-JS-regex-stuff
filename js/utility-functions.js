@@ -219,7 +219,7 @@ const setTextInputAttributes = (nodeType, config, url) => {
   }
 
   // Try and preset the default value for the text type field
-  if (!invalidString(config.id, URL.searchParams, false)) {
+  if (!invalidString(config.id, url.searchParams, false)) {
     _node.value = url.searchParams[config.id]
   } else {
     if (!invalidStrNum('default', config)) {
@@ -944,9 +944,6 @@ const getRemoteActionFunc = (config, url) => {
     userFields.push(config.extraInputs[a].id)
   }
 
-  console.log('config:', config)
-  console.log('url:', url + config.action)
-
   // ----------------------------------------
   // start remote func
 
@@ -969,12 +966,7 @@ const getRemoteActionFunc = (config, url) => {
       post[userFields[a]] = _extraInputs[userFields[a]]()
     }
 
-    console.log('output:', output)
-    console.log('url:', url + config.action)
-
     await callRemoteAction(url + config.action, post).then((data) => {
-      console.log('data:', data)
-      console.log('this:', this)
       output = data.output
 
       wrapper.className = 'input-wrapper not-waiting'
@@ -982,8 +974,6 @@ const getRemoteActionFunc = (config, url) => {
         wrapper.className = 'input-wrapper'
       }, 300)
     })
-
-    console.log('output:', output)
 
     return output
   }

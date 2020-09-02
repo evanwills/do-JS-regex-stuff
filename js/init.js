@@ -372,7 +372,6 @@ function DoStuff (url, _remote, docs) {
       throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string that matches a key in the registry of actions. ' + typeof _action + ' given.')
     }
     action = _action
-    console.log('registry[' + _action + ']:', registry[_action])
 
     docTitle.innerHTML = 'Do JS Regex Stuff &ndash; ' + registry[_action].name
     subTitle.className = ''
@@ -490,7 +489,7 @@ function DoStuff (url, _remote, docs) {
 
     config.id = makeAttributeSafe(config.id)
 
-    switch (config.type) {
+    switch (config.type.toLowerCase()) {
       case 'select':
         _input = getSelect(config, url)
         break
