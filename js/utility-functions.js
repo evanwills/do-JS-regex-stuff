@@ -864,7 +864,13 @@ const multiRegexReplace = (input, findReplace, flags) => {
     try {
       _regex = new RegExp(pair.find, tmpFlags)
     } catch (e) {
+      console.group('findreplace[' + a + ']')
+      console.log('pair:', pair)
+      console.log('pair.find:', pair.find)
+      console.log('tmpFlags:', tmpFlags)
+      console.log('_regex:', _regex)
       console.error('multiRegexReplace() expects findReplace[' + a + '].find to contain a valid regular expression. It had the following error: "' + e.message + '"')
+      console.groupEnd()
     }
 
     _output = _output.replace(_regex, pair.replace)

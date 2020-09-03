@@ -129,7 +129,8 @@ doStuff.register({
     }
   ],
   func: exposeChickens,
-  ignore: true,
+  group: 'evan',
+  ignore: false,
   name: 'Expose the chickens'
 })
 

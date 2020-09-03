@@ -340,7 +340,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
    *                                 converted to a RegExp object
    */
   const mainModifiers = [
-    { find: '([\\s:]+-?[0-9]+px)+(?=\\s+|;)', replace: fixMultiPix },
+    { find: '([\\s:]+-?[0-9]+px)+(?=\\s+|;|\\))', replace: fixMultiPix },
     { find: '0(?:px|r?em)', replace: '0' },
     { find: '0(\\.[0-9]+)', replace: '$1' },
     { find: '(border(?:-(?:top|right|bottom|left))?)\\s*:\\s*0\\s*(?=;)', replace: '$1: none' },
@@ -357,6 +357,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       replace: '$1: $2 $3 $4'
     },
     { find: '\\s+(?=[\r\n])', replace: '' }, // remove trailing white space
+    { find: '(url\\()[\'"]?([^)\'"]+)[\'"]?(?=\\))', replace: '$1\'$2\'' }, // Wrap URLs in single quotes
     { find: '\\s*$', replace: '\n' } // ensure file ends with a new line
     // { find: '', replace: '' },
   ]
@@ -392,4 +393,66 @@ doStuff.register({
 })
 
 //  END: fixSassLintIssues
+// ====================================================================
+// START: KSS comment block
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-09-04
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const kssCommentBlock = (input, extraInputs, GETvars) => {
+  const doWhole = extraInputs.wholeComment('true')
+  console.log('doWhole:', doWhole)
+
+  const findReplace = [{
+    find: '(^|[\r\n])+(?=[\\t ]+<)',
+    replace: '$1 *'
+  }]
+
+  if (doWhole) {
+    findReplace.push({
+      find: '^\\s*(?=\\*)',
+      replace: '/**\n * Component title\n *\n * Comment description goes here (may be multiple lines)\n *\n * Markup:\n '
+    },
+    {
+      find: '\\s*$',
+      replace: '\n *\n * .modifiers - Description of Modifier\n *\n * StyleGuide: Molecule.Molecule name\n */\n'
+    })
+  }
+  console.log('findReplace:', findReplace)
+
+  return multiRegexReplace(input, findReplace)
+}
+
+doStuff.register({
+  action: 'kssCommentBlock',
+  func: kssCommentBlock,
+  description: 'Generate a KSS comment block (or make HTML code safe to use in a KSS comment block',
+  // docsULR: '',
+  extraInputs: [{
+    id: 'wholeComment',
+    label: 'Build whole KSS comment',
+    type: 'checkbox',
+    options: [
+      { value: 'true', label: 'Yes! Build whole comment', default: true }
+    ]
+  }],
+  // group: 'it',
+  ignore: false,
+  name: 'KSS comment block'
+})
+
+//  END: KSS comment block
 // ====================================================================

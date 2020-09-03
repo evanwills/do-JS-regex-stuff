@@ -920,6 +920,9 @@ function DoStuff (url, _remote, docs) {
   }
 
   allowRemote = (typeof _remote !== 'boolean') ? true : _remote
+  if (URL.protocol !== 'http' && URL.protocol !== 'https') {
+    modalBlock.classList.add('hide')
+  }
 
   noIgnore = (typeof URL.searchParams.noIgnore !== 'undefined') ? URL.searchParams.noIgnore : ''
   baseURL = URL.protocol + '//' + URL.host + URL.pathname
