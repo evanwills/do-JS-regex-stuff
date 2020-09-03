@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+	<head>
+		<meta charset="utf-8" />
+		<title>How "Do JS regex stuff" works</title>
+
+		<link rel="stylesheet" type="text/css" href="../css/do-JS-regex-stuff.css" id="ID-2308436" />
+		<link rel="stylesheet" type="text/css" href="../css/syntax-highlight.css" id="ID-2359145" />
+	</head>
+	<body class="modal">
+		<h1 dir="auto">
+		<a id="user-content-helper-utility-functions" class="anchor" href="#helper-utility-functions" aria-hidden="true"></a>Helper &amp; utility functions</h1>
+
+		<h2 dir="auto">
+		<a id="user-content-utility-functions" class="anchor" href="#utility-functions" aria-hidden="true"></a>Utility functions</h2>
+
+		<h3 dir="auto">
+		<a id="user-content-multiregexreplaceinput-findreplace-flags-string" class="anchor" href="#multiregexreplaceinput-findreplace-flags-string" aria-hidden="true"></a><code>multiRegexReplace(input, findReplace, flags) : string</code>
+		</h3>
+
+		<p dir="auto">The most common use of <code>Do-JS-Regex-Stuff</code> is to apply multiple regular expessions consecutively to string. To help with this, we have the <code>multiRegexReplace()</code> function</p>
+
+		<ul dir="auto">
+		<li>
+		<code>input</code>: {string} the single string to which all the regular expressions
+				are applied</li>
+		<li>
+		<code>findReplace</code>: {array} is an list of find/replace objects.
+		Each <em>find/replace</em> object must have a<br>
+
+		<ul>
+		<li>
+		<code>find</code> {string} <em>[required]</em> Regular expression string,
+		passing it as the first parameter to <code>RegExp()</code>.</li>
+		<li>
+		<code>replace</code>: {string,function} <em>[required]</em> The replacement
+		string (or function) to passed as the second parameter to
+		<code>input.replace()</code>
+		</li>
+		<li>
+		<code>flag</code>: {string} <em>[optiona]</em> Flags (second parameter for
+		<code>RegExp()</code>) to over-ride the default flags used for all
+		regular expressions in the function call</li>
+		</ul>
+		</li>
+		<li>
+		<code>flags</code> are RegExp flags passed as the second parameter to RegExp()<br>
+		<strong>NOTE:</strong> the same flags are passed for every regular expression
+				unless there is an over-ride for that find/replace pair<br>
+		<strong>NOTE ALSO:</strong> '<code>ig</code>' are the default flags if the <code>flags</code>
+				parameter is ommitted.</li>
+		</ul>
+
+		<h4 dir="auto">
+		<a id="user-content-sample" class="anchor" href="#sample" aria-hidden="true"></a>sample:</h4>
+
+<pre class="code highlight js-syntax-highlight javascript dark" v-pre="true" lang="javascript"><code><span id="LC1" class="line" lang="javascript"><span class="kd">function</span> <span class="nx">headerCells</span><span class="p">(</span><span class="nx">whole</span><span class="p">,</span> <span class="nx">table</span><span class="p">,</span> <span class="nx">trOpen</span><span class="p">,</span> <span class="nx">headerCells</span><span class="p">,</span> <span class="nx">trClose</span><span class="p">,</span> <span class="nx">tbody</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC2" class="line" lang="javascript">  <span class="k">return</span> <span class="nx">wrapper</span> <span class="o">+</span> <span class="s1">'&lt;thead&gt;'</span> <span class="o">+</span> <span class="nx">trOpen</span> <span class="o">+</span> </span>
+<span id="LC3" class="line" lang="javascript">    <span class="nx">headerCells</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/&lt;</span><span class="se">(\/?)</span><span class="sr">td</span><span class="se">([^</span><span class="sr">&gt;</span><span class="se">]</span><span class="sr">*</span><span class="se">)</span><span class="sr">&gt;/ig</span><span class="p">,</span> <span class="s1">'&lt;$1th$2&gt;'</span><span class="p">)</span> <span class="o">+</span> </span>
+<span id="LC4" class="line" lang="javascript">    <span class="nx">trClose</span> <span class="o">+</span> <span class="s1">'&lt;/thead&gt;&lt;tbody&gt;'</span> <span class="o">+</span> <span class="nx">tbody</span> <span class="o">+</span> <span class="s1">'&lt;/tbody&gt;'</span></span>
+<span id="LC5" class="line" lang="javascript"><span class="p">}</span></span>
+<span id="LC6" class="line" lang="javascript"></span>
+<span id="LC7" class="line" lang="javascript"><span class="kd">var</span> <span class="nx">findReplace</span> <span class="o">=</span> <span class="p">[</span></span>
+<span id="LC8" class="line" lang="javascript">  <span class="p">{</span> <span class="c1">// bold to strong</span></span>
+<span id="LC9" class="line" lang="javascript">    <span class="na">find</span><span class="p">:</span> <span class="s1">'&lt;(/?)b([^&gt;]*)&gt;'</span><span class="p">,</span> <span class="c1">// becomes: new RegExp('&lt;(/?)b([^&gt;]*)&gt;', 'igm')</span></span>
+<span id="LC10" class="line" lang="javascript">    <span class="na">replace</span><span class="p">:</span> <span class="s1">'&lt;$1strong$2&gt;'</span></span>
+<span id="LC11" class="line" lang="javascript">  <span class="p">},</span></span>
+<span id="LC12" class="line" lang="javascript">  <span class="p">{</span> <span class="c1">// convert first row of table to table header</span></span>
+<span id="LC13" class="line" lang="javascript">    <span class="na">find</span><span class="p">:</span> <span class="s1">'(&lt;table[^&gt;]*&gt;)(</span><span class="err">\</span><span class="s1">s+&lt;tr[^&gt;]*&gt;)(.*?)(&lt;/tr&gt;)(.*?)(?=&lt;table&gt;)'</span><span class="p">,</span></span>
+<span id="LC14" class="line" lang="javascript">    <span class="na">replace</span><span class="p">:</span> <span class="nx">headerCells</span></span>
+<span id="LC15" class="line" lang="javascript">  <span class="p">},</span></span>
+<span id="LC16" class="line" lang="javascript">  <span class="p">{</span> <span class="c1">// Faculty acronym to full faculty name</span></span>
+<span id="LC17" class="line" lang="javascript">    <span class="na">find</span><span class="p">:</span> <span class="s1">'FEA'</span><span class="p">,</span></span>
+<span id="LC18" class="line" lang="javascript">    <span class="na">replace</span><span class="p">:</span> <span class="s1">'Faculty of Education and Arts'</span></span>
+<span id="LC19" class="line" lang="javascript">  <span class="p">}</span></span>
+<span id="LC20" class="line" lang="javascript"><span class="p">]</span></span>
+<span id="LC21" class="line" lang="javascript"></span>
+<span id="LC22" class="line" lang="javascript"><span class="nx">output</span> <span class="o">=</span> <span class="nx">multiRegexReplace</span><span class="p">(</span><span class="nx">input</span><span class="p">,</span> <span class="nx">findReplace</span><span class="p">,</span> <span class="s1">'igm'</span><span class="p">)</span></span></code></pre>
+<p dir="auto">or, if you'd prefer to name each find/replace pair</p>
+
+<pre class="code highlight js-syntax-highlight javascript dark" v-pre="true" lang="javascript"><code><span id="LC1" class="line" lang="javascript"><span class="kd">function</span> <span class="nx">headerCells</span><span class="p">(</span><span class="nx">whole</span><span class="p">,</span> <span class="nx">table</span><span class="p">,</span> <span class="nx">trOpen</span><span class="p">,</span> <span class="nx">headerCells</span><span class="p">,</span> <span class="nx">trClose</span><span class="p">,</span> <span class="nx">tbody</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC2" class="line" lang="javascript">  <span class="k">return</span> <span class="nx">wrapper</span> <span class="o">+</span> <span class="s1">'&lt;thead&gt;'</span> <span class="o">+</span> <span class="nx">trOpen</span> <span class="o">+</span> </span>
+<span id="LC3" class="line" lang="javascript">    <span class="nx">headerCells</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/&lt;</span><span class="se">(\/?)</span><span class="sr">td</span><span class="se">([^</span><span class="sr">&gt;</span><span class="se">]</span><span class="sr">*</span><span class="se">)</span><span class="sr">&gt;/ig</span><span class="p">,</span> <span class="s1">'&lt;$1th$2&gt;'</span><span class="p">)</span> <span class="o">+</span> </span>
+<span id="LC4" class="line" lang="javascript">    <span class="nx">trClose</span> <span class="o">+</span> <span class="s1">'&lt;/thead&gt;&lt;tbody&gt;'</span> <span class="o">+</span> <span class="nx">tbody</span> <span class="o">+</span> <span class="s1">'&lt;/tbody&gt;'</span></span>
+<span id="LC5" class="line" lang="javascript"><span class="p">}</span></span>
+<span id="LC6" class="line" lang="javascript"></span>
+<span id="LC7" class="line" lang="javascript"><span class="kd">var</span> <span class="nx">findReplace</span> <span class="o">=</span> <span class="p">{</span></span>
+<span id="LC8" class="line" lang="javascript">  <span class="na">bold</span><span class="p">:</span> <span class="p">{</span> <span class="c1">// bold to strong</span></span>
+<span id="LC9" class="line" lang="javascript">    <span class="na">find</span><span class="p">:</span> <span class="s1">'&lt;(/?)b([^&gt;]*)&gt;'</span><span class="p">,</span></span>
+<span id="LC10" class="line" lang="javascript">    <span class="na">replace</span><span class="p">:</span> <span class="s1">'&lt;$1strong$2&gt;'</span></span>
+<span id="LC11" class="line" lang="javascript">  <span class="p">},</span></span>
+<span id="LC12" class="line" lang="javascript">  <span class="na">cell</span><span class="p">:</span> <span class="p">{</span> <span class="c1">// table cell to table header cell</span></span>
+<span id="LC13" class="line" lang="javascript">    <span class="na">find</span><span class="p">:</span> <span class="s1">'(&lt;table[^&gt;]*&gt;)(</span><span class="err">\</span><span class="s1">s+&lt;tr[^&gt;]*&gt;)(.*?)(&lt;/tr&gt;)(.*?)(?=&lt;table&gt;)'</span><span class="p">,</span></span>
+<span id="LC14" class="line" lang="javascript">    <span class="na">replace</span><span class="p">:</span> <span class="nx">headerCells</span></span>
+<span id="LC15" class="line" lang="javascript">  <span class="p">},</span></span>
+<span id="LC16" class="line" lang="javascript">  <span class="na">acro</span><span class="p">:</span> <span class="p">{</span> <span class="c1">// Faculty acronym to full faculty name</span></span>
+<span id="LC17" class="line" lang="javascript">    <span class="na">find</span><span class="p">:</span> <span class="s1">'FEA'</span><span class="p">,</span></span>
+<span id="LC18" class="line" lang="javascript">    <span class="na">replace</span><span class="p">:</span> <span class="s1">'Faculty of Education and Arts'</span></span>
+<span id="LC19" class="line" lang="javascript">  <span class="p">}</span></span>
+<span id="LC20" class="line" lang="javascript"><span class="p">]</span></span>
+<span id="LC21" class="line" lang="javascript"></span>
+<span id="LC22" class="line" lang="javascript"><span class="nx">output</span> <span class="o">=</span> <span class="nx">multiRegexReplace</span><span class="p">(</span><span class="nx">input</span><span class="p">,</span> <span class="nx">findReplace</span><span class="p">,</span> <span class="s1">'igm'</span><span class="p">)</span></span></code></pre>
+		<h2 dir="auto">
+		<a id="user-content-validation-helper-function" class="anchor" href="#validation-helper-function" aria-hidden="true"></a>Validation helper function</h2>
+
+		<p dir="auto">Because data validation is important so we don't break things there are a number of helper functions for validation.</p>
+
+		<p dir="auto">The following set of functions validate the existence of and data type properties of an object (useful for validating <code>GETvars</code>)</p>
+
+		<h3 dir="auto">
+		<a id="user-content-invalidstringprop-input-notempty-false-string" class="anchor" href="#invalidstringprop-input-notempty-false-string" aria-hidden="true"></a><code>invalidString(prop, input, notEmpty) : false, string</code>
+		</h3>
+
+		<p dir="auto">This is a shortcut function to see if an object contains a property and if that property's value is a string. </p>
+
+		<p dir="auto">It returns <code>FALSE</code> if the property does exist and is a string. Otherwise it returns the data type of input or "empty string" if the propety exists and is a string but is empty (and <code>notEmpty</code> is <em>not</em> false).</p>
+
+		<h3 dir="auto">
+		<a id="user-content-invalidnumprop-input-false-string" class="anchor" href="#invalidnumprop-input-false-string" aria-hidden="true"></a><code>invalidNum(prop, input) : false, string</code>
+		</h3>
+
+		<p dir="auto">Basically the same as <code>invalidString()</code> but for numbers</p>
+
+		<h3 dir="auto">
+		<a id="user-content-invalidstrnumprop-input" class="anchor" href="#invalidstrnumprop-input" aria-hidden="true"></a><code>invalidStrNum(prop, input)</code>
+		</h3>
+
+		<p dir="auto">Basically the same as <code>invalidString()</code> but accepts numbers and strings (although empty strings are allowed)</p>
+
+		<h3 dir="auto">
+		<a id="user-content-invalidarrayprop-input-notempty-false-string" class="anchor" href="#invalidarrayprop-input-notempty-false-string" aria-hidden="true"></a><code>invalidArray(prop, input, notEmpty) : false, string</code>
+		</h3>
+
+		<p dir="auto">Basically the same as <code>invalidString()</code> but for arrays (empty arrays are considered invalid)</p>
+
+		<h3 dir="auto">
+		<a id="user-content-isfunctionfunctiontocheck-boolean" class="anchor" href="#isfunctionfunctiontocheck-boolean" aria-hidden="true"></a><code>isFunction(functionToCheck) : boolean</code>
+		</h3>
+
+		<p dir="auto">Test whether a value is a function</p>
+
+		<h2>
+			<a
+				id="user-content-more-reading"
+				class="anchor"
+				href="#more-reading"
+				aria-hidden="true"
+			></a
+			>More reading
+		</h2>
+		<ul>
+			<li>
+				<a href="How_Do-JS-regex-stuff_works.html">Do JS Regex Stuff Documentation</a>
+			</li>
+			<li>
+				<a href="Utility-and-helper-functions.html">Helper &amp; utility functions</a>
+			</li>
+			<li>
+				<a href="PHP-API.html">PHP API</a>
+			</li>
+			<li>
+				<a href="../">Do JS Regex Stuff tool</a>
+			</li>
+		</ul>
+	</body>
+</html>

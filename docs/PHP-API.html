@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+	<head>
+		<meta charset="utf-8" />
+		<title>How "Do JS regex stuff" works</title>
+
+		<link rel="stylesheet" type="text/css" href="../css/do-JS-regex-stuff.css" id="ID-2308436" />
+		<link rel="stylesheet" type="text/css" href="../css/syntax-highlight.css" id="ID-2359145" />
+	</head>
+	<body class="modal">
+		<h1 dir="auto">
+		<a id="user-content-do-js-regex-stuff-php-api" class="anchor" href="#do-js-regex-stuff-php-api" aria-hidden="true"></a><code>Do-JS-Regex-Stuff</code> PHP API</h1>
+
+		<h2 dir="auto">
+		<a id="user-content-how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"></a>How it works</h2>
+
+		<p dir="auto"><code>POST</code> Requests are made to <code>json.php</code>. </p>
+
+		<p dir="auto">Each request must have:</p>
+
+		<ol dir="auto">
+		<li>An <code>action</code> GET variable that matches one of the registered actions</li>
+		<li>An <code>input</code> POST variable containing the string that is to be modified</li>
+		</ol>
+
+		<p dir="auto">It can also contain</p>
+
+		<ol dir="auto">
+		<li>A <code>group</code> GET variable containing a single group name<br>
+		or </li>
+		<li>A <code>groups</code> GET variable containing a comma separated list of group names the use should have access to</li>
+		<li>Any number of other GET and/or POST variables required by the action</li>
+		</ol>
+
+		<p dir="auto">When the action is initialised, both GET &amp; POST variables are passed to the action's class constructor.</p>
+
+		<p dir="auto">Once initialised the action's <code>modify</code> method is called with the <code>POST</code> <code>input</code> value passed as the only parameter.</p>
+
+		<p dir="auto">As with the javascript action functions, the <code>modify</code> method must return the string that is to be returned to the client.</p>
+
+		<p dir="auto">The request will return either a success response object:</p>
+
+<pre class="code highlight js-syntax-highlight json dark"><code><span id="LC1" class="line"><span class="p">{</span></span>
+<span id="LC2" class="line"><span class="w">  </span><span class="s2">"success"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span></span>
+<span id="LC3" class="line"><span class="w">  </span><span class="s2">"error"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span></span>
+<span id="LC4" class="line"><span class="w">  </span><span class="s2">"output"</span><span class="p">:</span><span class="w"> </span><span class="s2">"[action output]"</span><span class="p">,</span></span>
+<span id="LC5" class="line"><span class="w">  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"[action identifier]"</span><span class="p">,</span></span>
+<span id="LC6" class="line"><span class="w">  </span><span class="s2">"group"</span><span class="p">:</span><span class="w"> </span><span class="s2">"[Group name (optional)]"</span><span class="p">,</span></span>
+<span id="LC7" class="line"><span class="w">  </span><span class="s2">"extraOutputs"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="err">//</span><span class="w"> </span><span class="err">May</span><span class="w"> </span><span class="err">contain</span><span class="w"> </span><span class="err">an</span><span class="w"> </span><span class="err">object</span><span class="w"> </span><span class="err">with</span><span class="w"> </span><span class="err">abitrary</span><span class="w"> </span><span class="err">key/value</span><span class="w"> </span><span class="err">pairs</span><span class="w"> </span><span class="err">as</span><span class="w"> </span><span class="err">needed</span><span class="w"> </span><span class="err">by</span><span class="w"> </span><span class="err">the</span><span class="w"> </span><span class="err">action.</span></span>
+<span id="LC8" class="line"><span class="p">}</span></span></code></pre>
+		<p dir="auto">or a fail response object:</p>
+
+<pre class="code highlight js-syntax-highlight json dark"><code><span id="LC1a" class="line"><span class="p">{</span></span>
+<span id="LC2a" class="line"><span class="w">  </span><span class="s2">"success"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span></span>
+<span id="LC3a" class="line"><span class="w">  </span><span class="s2">"error"</span><span class="p">:</span><span class="w"> </span><span class="s2">"[Error message]"</span><span class="p">,</span></span>
+<span id="LC4a" class="line"><span class="w">  </span><span class="s2">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"[action identifier]"</span></span>
+<span id="LC5a" class="line"><span class="p">}</span></span></code></pre>
+		<h2 dir="auto">
+		<a id="user-content-about-action-classes" class="anchor" href="#about-action-classes" aria-hidden="true"></a>About action classes</h2>
+
+		<p dir="auto">Action classes must implement the <code>IRegexAction</code> interface usually by extending the <code>RegexAction</code> abstract base class</p>
+
+		<h3 dir="auto">
+		<a id="user-content-iregexaction-methods" class="anchor" href="#iregexaction-methods" aria-hidden="true"></a><code>IRegexAction</code> methods</h3>
+
+		<h4 dir="auto">
+		<a id="user-content-static-methods" class="anchor" href="#static-methods" aria-hidden="true"></a>static methods</h4>
+
+		<h4 dir="auto">
+		<a id="user-content-object-methods" class="anchor" href="#object-methods" aria-hidden="true"></a>object methods</h4>
+
+		<h5 dir="auto">
+		<a id="user-content-modifyinput" class="anchor" href="#modifyinput" aria-hidden="true"></a><code>modify($input)</code>
+		</h5>
+
+		<p dir="auto">Modify the user supplied input for this type of action</p>
+
+		<p dir="auto">Parameter: <code>$input</code> {string} User input from post request</p>
+
+		<p dir="auto">Returns {string} Modified input, to be sent back to the client</p>
+
+		<h5 dir="auto">
+		<a id="user-content-extraoutputs" class="anchor" href="#extraoutputs" aria-hidden="true"></a><code>extraOutputs()</code>
+		</h5>
+
+		<p dir="auto">Get a list of extra key/value pairs to be returned to the client with the response JSON blob</p>
+
+		<p dir="auto">Returns {false,array} If the action doesn't output any extra outputs, then <code>FALSE</code> is returned otherwise an associative array of key/value pairs is returned.</p>
+
+
+		<h2>
+			<a
+				id="user-content-more-reading"
+				class="anchor"
+				href="#more-reading"
+				aria-hidden="true"
+			></a
+			>More reading
+		</h2>
+
+
+		<ul>
+			<li>
+				<a href="How_Do-JS-regex-stuff_works.html">Do JS Regex Stuff Documentation</a>
+			</li>
+			<li>
+				<a href="Utility-and-helper-functions.html">Helper &amp; utility functions</a>
+			</li>
+			<li>
+				<a href="PHP-API.html">PHP API</a>
+			</li>
+			<li>
+				<a href="../">Do JS Regex Stuff tool</a>
+			</li>
+		</ul>
+	</body>
+</html>

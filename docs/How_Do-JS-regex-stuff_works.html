@@ -3,418 +3,710 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>How "Do JS regex stuff" works</title>
+
+		<link rel="stylesheet" type="text/css" href="../css/do-JS-regex-stuff.css" id="ID-2308436" />
+		<link rel="stylesheet" type="text/css" href="../css/syntax-highlight.css" id="ID-2359145" />
 	</head>
 	<body class="modal">
-		<h1 id="how_do-js-regex-stuff_works">
-			How "Do JS regex stuff" works
+		<h1>
+			<a
+				id="user-content-do-js-regex-stuff"
+				class="anchor"
+				href="#do-js-regex-stuff"
+				aria-hidden="true"
+			></a
+			>Do JS regex stuff
 		</h1>
+
+		<h2>
+			<a
+				id="user-content-how-do-js-regex-stuff-works"
+				class="anchor"
+				href="#how-do-js-regex-stuff-works"
+				aria-hidden="true"
+			></a
+			>How "Do JS regex stuff" works
+		</h2>
+
 		<p>
-			So you have some dodgy text and you'd like to clean it up? Well you've come to the right place.
+			So you have some dodgy text and you'd like to clean it up? Well
+			you've come to the right place.
 		</p>
+
 		<p>
 			In the
-			<code><a href="js/action-function.js">js/action-function.js</a></code>
-			file you need to write a function that does all the stuff you need for one action.
+			<em
+				><a
+					href="/evwills/do-JS-regex-stuff/master/js/action-functions.js"
+					>js/action-functions.js</a
+				></em
+			>
+			file you need to write a function that does all the stuff you need
+			for one action.
 		</p>
+
 		<p>
 			Then you need to register that function so the app knows what to do.
 		</p>
-		<h2 id="the-function">
-			The function
+
+		<blockquote>
+			<p>
+				<code>Do-JS-Regex-Stuff</code> now has the ability to call a
+				server-side API. This allows you to create actions that can do
+				things that are not as easy to do in JavaScript. Currently I
+				only have a
+				<a href="docs/PHP-API.html">PHP implementation</a>
+				of the server side API. And <code>Do-JS-Regex-Stuff</code> can
+				only handle one output from the API, but I plan on implementing
+			</p>
+		</blockquote>
+
+		<h2>
+			<a
+				id="user-content-the-action-function"
+				class="anchor"
+				href="#the-action-function"
+				aria-hidden="true"
+			></a
+			>The <code>action</code> function
 		</h2>
+
 		<p>
-			There are a few things you need to know about the function:
+			There are a few things you need to know about the
+			<code>action</code> function:
 		</p>
+
 		<ol>
 			<li>
-				The function must have a unique name (so you don't override someone else's work).
+				The function must have a unique name (so you don't override
+				someone else's work).
 			</li>
 			<li>
 				It must accept three parameters:
+
 				<ol>
-					<li><strong><code>input</code></strong>: {string} text from the main "Text to be
-						modified" textarea
+					<li>
+						<strong><code>input</code></strong
+						>: {string} text from the main "Text to be modified"
+						textarea
 					</li>
-					<li><strong><code>extraInputs</code></strong>: {object} list of key/value pairs where the
-						key is the contents of the
-						<code>name</code>
-						attribute of the field and the value is a function that can be called to retrieve the value of that
-						field (see below for more info on extra fields that you can define when you register the function)
+					<li>
+						<strong><code>extraInputs</code></strong
+						>: {object} list of key/value pairs where the key is the
+						contents of the <code>name</code> attribute of the field
+						and the value is a function that can be called to
+						retrieve the value of that field (see below for more
+						info on extra fields that you can define when you
+						register the function)
 					</li>
-					<li><strong><code>GETvars</code></strong>: {object} list of all supplied GET variables
-						from URL
+					<li>
+						<strong><code>GETvars</code></strong
+						>: {object} list of all supplied GET variables from URL
 					</li>
 				</ol>
 			</li>
 			<li>
-				It must return a string (to be used as the replacement contents for the "Text to be modified" textarea
+				It must return a string (to be used as the replacement contents
+				for the "Text to be modified" textarea
 			</li>
 			<li>
-				It must be a pure function (i.e. it must not make changes to variables that are not defined within the
-				function)
+				It must be a pure function (i.e. it must not make changes to
+				variables that are not defined within the function)
 			</li>
 		</ol>
-		<h2 id="registering-the-function">
-			Registering the function
+
+		<h2>
+			<a
+				id="user-content-registering-an-action-function"
+				class="anchor"
+				href="#registering-an-action-function"
+				aria-hidden="true"
+			></a
+			>Registering an <code>action</code> function
 		</h2>
+
 		<p>
-			After you've defined the function, you need to register it by calling doStuff.register(), which accepts an
-			object with the following keys:
+			After you've defined the function, you need to register it by
+			calling doStuff.register(), which accepts an object with the
+			following keys:
 		</p>
+
 		<ol>
 			<li>
-				<strong><code>function</code></strong>: {function} <em>[required]</em>
+				<strong><code>func</code></strong
+				>: {function} <em>[required]</em> (forbidden/ignored for remote
+				actions)<br />
 				The function (the name of the function, not quoted)
 			</li>
 			<li>
-				<strong><code>action</code></strong>: {string} <em>[required]</em>
-				The GET '<code>action</code>' value that tells the script that this is the right function to use
+				<strong><code>action</code></strong
+				>: {string} <em>[required]</em>
+				<a href="#about-action-identifiers">Action identifier</a>.<br />
+				The GET '<code>action</code>' value that tells the script that
+				this is the right action function to use
 			</li>
 			<li>
-				<strong><code>name</code></strong>: {string} <em>[required]</em>
-				Used as the sub-title when the action is selected also used as the link text for the action in the menu.
+				<strong><code>remote</code></strong
+				>: {boolean} <em>[optional]</em> (required for remote actions)
+				If true, it indicates that the action is to be run on the same
+				server <code>Do-JS-Regex-Stuff</code> is served from, via an API
+				call. (currently only <code>json.php</code>)
 			</li>
 			<li>
-				<code>description</code>: {string} <em>[optional (but recommended)]</em>
-				short paragraph decribing the purpose of the function.
+				<strong><code>name</code></strong
+				>: {string} <em>[required]</em> Used as the sub-title when the
+				action is selected also used as the link text for the action in
+				the menu
 			</li>
 			<li>
-				<code>docURL</code>: {string} <em>[optional]</em>
-				URL for documentation page (must be HTTPS). Used in a popup to give detailed information about the action.
-				Including the expected input what will be changed and the expected output why this needs to be done
+				<code>description</code>: {string}
+				<em>[optional (but recommended)]</em> short paragraph decribing
+				the purpose of the function. <br />
+				(Displayed below the action's title)
 			</li>
 			<li>
-				<code>ignore</code>: {boolean} <em>[optional] (default: <code>FALSE</code>)</em>
-				If the <code>ignore</code> property is included in the action config and ignore is <code>TRUE</code> that action will not be available for use and will not show up in the menu
+				<code>group</code>: {string} [<em>optional]</em> The
+				<a href="#about-group-names">name of the group</a> the action
+				belongs to. Used to restrict access to (or visibility of) a
+				given action to people who belong to a specific group
 			</li>
 			<li>
-				<code>group</code>: {string} <em>[optional]</em>
-				Name of the group that owns the action.
-				Used for restricting access/visibility of actions.<br />
-				<strong>NOTE:</strong> If the <code>group</code> parameter is in the URL, and it matches the group in the action config then the group will be available.
+				<code>docURL</code>: {string} <em>[optional]</em> URL for
+				documentation page (must be relative or HTTPS). Used in a popup
+				to give detailed information about the action. Including the
+				expected input what will be changed and the expected output why
+				this needs to be done. It should also include details about the
+				use/purpose of any extra inputs the action specifies.<br />
+				Normally, documentation is written in HTML and stored in the
+				<code>docs/</code> directory in this repo.
 			</li>
 			<li>
-				<code>inputLabel</code>: {string} <em>[optional]</em>
-				The label that describes the main input textarea.
-				This is useful if your main content is a data source, rather than text to be modified.
+				<code>extraInputs</code>: {array} <em>[option]</em> list of
+				objects for extra input<br />
+				fields needed for the find/replace<br />
+				Extra inputs fields allow you to augment the functionalty of
+				your actions by letting the user control options you specify to
+				get specific<br />
+				behaviour that meets their needs. (<a
+					href="#about-extrainput-objects"
+					>Read more about Extra inputs objects</a
+				>)
 			</li>
 			<li>
-				<code>extraInputs</code>: {array} <em>[option]</em>
-				list of objects for extra inputs needed for the find/replace Extra inputs have the following keys:
-				<ol>
-					<li><strong><code>id</code></strong>: {string} <em>[required]</em> used to identify
-						the input (also used as the key when the '<code>extraInputs</code>' are passed to the function
-					</li>
-					<li><strong><code>label</code></strong>: {string} <em>[required]</em> text to
-						describe the field (or group of checkboxes/radio buttons)
-					</li>
-					<li>
-						<code>type</code>: {string} <em>[optional]</em> text (default), textarea, number, radio, checkbox, select (if
-						type is invalid, an error will be shown in the console)
-					</li>
-					<li>
-						<code>default</code>: {string, number} <em>[optional]</em> the default value for the input
-					</li>
-					<li>
-						<code>options</code>: {array} [required for radio, checkbox, select] list of option objects (option objects must have
-						both <strong><code>value</code></strong> &amp; <strong><code>label</code></strong> keys.
-						It can also have a boolean
-						<code>default</code>
-						property to specify that the given option should be checked/selected by default)
-					</li>
-					<li>
-						<code>placeholder</code>: {string} <em>[optional]</em> Text displayed within the text or number field (only used for
-						text &amp; number inputs)
-					</li>
-					<li>
-						<code>pattern</code>: {string} <em>[optional]</em> regular expression to validate the contents of the text/number
-						field (only used for text &amp; number inputs)
-					</li>
-					<li>
-						<code>description</code>: {string} <em>[optional]</em> Information about what this field is used for. (Displayed below
-						the input field input)
-					</li>
-					<li>
-						<code>min</code>: {number} <em>[optional]</em> (number fields only) Minumum value the number field can contain
-					</li>
-					<li>
-						<code>max</code>: {number} <em>[optional]</em> (number fields only) Maximum value the number field can contain
-					</li>
-					<li>
-						<code>step</code>: {number} <em>[optional]</em> (number fields only) The amount to increment the field's value
-						up and down when using the arrow keys or number scroller
-					</li>
-				</ol>
-			</li>
-			<li>
-				<code>rawGET</code>: by default GET variables are "URL decoded" and converted to appropriate types. By specifying
-				<code>rawGET</code>
-				as
-				<code>TRUE</code>
-				the action function receives the <em>raw</em> (all strings) GET variables.
+				<code>rawGET</code>: by default GET variables are "URL decoded"
+				and converted to appropriate types. By specifying
+				<code>rawGET</code> as <code>TRUE</code> the action function
+				receives the <em>raw</em> (all strings) GET variables.
 			</li>
 		</ol>
-		<h2 id="using-the-values-from-extra-input-fields">
-			Using the values from extra input fields
-		</h2>
-		<p>
-			Say you have an action function with three <em>extra input</em> fields.
-			One for year with the ID <code>year</code> and another for gender and a group of checkboxes for mood.
-			You can get the value of <code>year</code> by calling <code>extraInputs.year()</code>
-			and the value of gender by calling <code>extraInputs.gender()</code>.
-			You can get the value for each type of mood by calling the mood function,
-			passing the value of that mood as the only parameter e.g.
-		</p>
-		<pre><code><span class="tkn">function</span> <span class="fName">exposeChickens</span> <span class="bkt">(</span><span class="vName">input</span>, <span class="vName">extraInputs</span>, <span class="vName">GETvars</span><span class="bkt">)</span> <span class="bkt">{</span>
-  <span class="tkn">let</span> <span class="vName">_unsure</span> = <span class="bkt">(</span><span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'unsure'</span><span class="bkt">))</span> ? <span class="str">' I think'</span> : <span class="str">''</span>
-  <span class="tkn">let</span> <span class="vName">_angry</span> = <span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'angry'</span><span class="bkt">)</span>
-  <span class="tkn">let</span> <span class="vName">_boc</span> = <span class="str">'BOC! BOC!!'</span>
-  <span class="tkn">let</span> <span class="vName">_chicken</span> = <span class="str">'chicken'</span>
-  <span class="tkn">let</span> <span class="vName">_excited</span> = <span class="fName">extraInputs.mood</span><span class="bkt">(</span><span class="str">'excited'</span><span class="bkt">)</span>
-  <span class="comm">// <span class="commTxt">We retrieve the value of _gender by calling the function that</span></span>
-  <span class="comm">// <span class="commTxt">matches the <span class="vName">ID</span> (or <span class="vName">name</span>) of the input field</span></span>
-  <span class="tkn">let</span> <span class="vName">_gender</span> = <span class="fName">extraInputs.gender</span><span class="bkt">()</span>
-  <span class="tkn">let</span> <span class="vName">output</span> = <span class="str">''</span>
-  <span class="tkn">let</span> <span class="vName">_spring</span> = <span class="str">''</span>
-  <span class="comm">// <span class="commTxt">We do the same for _year</span></span>
-  <span class="tkn">let</span> <span class="vName">_year</span> = <span class="fName">extraInputs.year</span><span class="bkt">()</span>
 
-  <span class="comm">// <span class="commTxt">Test the gender of the chicken</span></span>
-  <span class="fName">if</span> <span class="bkt">(</span><span class="vName">_gender</span> === <span class="str">'male'</span><span class="bkt">)</span> <span class="bkt">{</span>
-    <span class="vName">_chicken</span> = <span class="str">'rooster'</span>
-    <span class="vName">_boc</span> = <span class="str">'COCK-A-DOODLE-DO'</span>
-  <span class="bkt">}</span> <span class="tkn">else</span> <span class="fName">if</span> <span class="bkt">(</span><span class="vName">_gender</span> === <span class="str">'female'</span><span class="bkt">)</span> <span class="bkt">{</span>
-    <span class="vName">_chicken</span> = <span class="str">'hen'</span>
-  <span class="bkt">}</span> <span class="tkn">else</span> <span class="fName">if</span> <span class="bkt">(</span><span class="vName">_gender</span> === <span class="str">'other'</span><span class="bkt">)</span> <span class="bkt">{</span>
-    <span class="vName">_chicken</span> += <span class="str">' first don\'t try to pigeon hole me'</span>
-  <span class="bkt">}</span>
-
-  <span class="comm">// <span class="commTxt">Test the Year (as defined by the )</span></span>
-  <span class="fName">if</span> <span class="bkt">(</span>_year >= <span class="num">2018</span>><span class="bkt">)</span> <span class="bkt">{</span>
-    <span class="vName">_spring</span> = <span class="str">' spring'</span>
-  <span class="bkt">}</span> <span class="tkn">else</span> <span class="fName">if</span> <span class="bkt">(</span>_year &lt; <span class="num">2016</span>><span class="bkt">)</span> <span class="bkt">{</span>
-    <span class="vName">_spring</span> = <span class="str">'n old'</span>
-    <span class="vName">_chicken</span> += <span class="str">'. Please don\'t boil me and make me into soup.'</span>
-  <span class="bkt">}</span>
-
-  <span class="fName">if</span> <span class="bkt">(</span><span class="vName">_excited</span> === <span class="bool">true</span><span class="bkt">)</span> <span class="bkt">{</span>
-    <span class="vName">_boc</span> += <span class="str">' BOC-OCK!!! '</span>
-    <span class="vName">output</span> = <span class="str">' <span class="bkt">[[</span>'</span> + <span class="vName">_boc</span> + <span class="vName">_unsure</span> + <span class="str">' '</span> + <span class="vName">_boc</span> + <span class="vName">_boc</span>
-    <span class="vName">output</span> += <span class="str">'I am a '</span> + <span class="vName">_boc</span> + <span class="vName">_boc</span> + _boc
-    <span class="vName">output</span> += <span class="vName">_spring</span> + <span class="str">' '</span> + <span class="vName">_boc</span> + <span class="vName">_boc</span> + <span class="vName">_boc</span> + <span class="vName">_boc</span>
-    <span class="vName">output</span> += <span class="vName">_chicken</span> + <span class="str">' '</span> + <span class="vName">_boc</span> + <span class="vName">_boc</span> + <span class="vName">_boc</span> + <span class="vName">_boc</span>
-    <span class="vName">output</span> += <span class="vName">_boc</span> + <span class="str">'!!<span class="bkt">]]</span> '</span>
-  <span class="bkt">}</span> <span class="tkn">else</span> <span class="bkt">{</span>
-    <span class="vName">output</span> = <span class="str">' <span class="bkt">[[</span>'</span> + <span class="vName">_boc</span> + <span class="str">'!!'</span> + <span class="vName">_unsure</span> + <span class="str">' I am a'</span>
-    <span class="vName">output</span> += <span class="vName">_spring</span> + <span class="str">' '</span> + <span class="vName">_chicken</span> + <span class="str">'<span class="bkt">]]</span> '</span>
-  <span class="bkt">}</span>
-
-  <span class="fName">if</span> <span class="bkt">(</span><span class="vName">_angry</span> === <span class="bool">true</span><span class="bkt">)</span> <span class="bkt">{</span>
-    <span class="vName">output</span> = <span class="fName">output.toUpperCase</span><span class="bkt">()</span>
-  <span class="bkt">}</span>
-
-  <span class="comm">// <span class="commTxt">Do the replacement and return the updated string</span></span>
-  <span class="tkn">return</span> <span class="fName">input.replace</span><span class="bkt">(</span>/<span class="bkt">[</span>aeiou<span class="bkt">]</span>+/<span class="vName">ig</span>, <span class="vName">output</span><span class="bkt">)</span>
-<span class="bkt">}</span>
-
-<span class="fName">doStuff.register</span> <span class="bkt">({</span>
-  <span class="vName">action</span>: <span class="str">'doChicken'</span>,
-  <span class="vName">name</span>: <span class="str">'Expose the chickens'</span>,
-  <span class="vName">func</span>: <span class="vName">exposeChickens</span>,
-  <span class="vName">extraInputs</span>: <span class="bkt">[</span>
-    <span class="bkt">{</span>
-      <span class="vName">id</span>: <span class="str">'year'</span>,
-      <span class="vName">label</span>: <span class="str">'Year chicken was born'</span>,
-      <span class="vName">type</span>: <span class="str">'number'</span>,
-      <span class="vName">min</span>: <span class="num">2013</span>>,
-      <span class="vName">max</span>: <span class="num">2019</span>>,
-      <span class="vName">step</span>: <span class="num">1</span>>,
-      <span class="vName">default</span>: <span class="num">2019</span>
-    <span class="bkt">}</span>,
-    <span class="bkt">{</span>
-      <span class="vName">id</span>: <span class="str">'gender'</span>,
-      <span class="vName">label</span>: <span class="str">'Gender of chicken'</span>,
-      <span class="vName">type</span>: <span class="str">'radio'</span>,
-      <span class="vName">options</span>: <span class="bkt">[</span>
-        <span class="bkt">{</span>
-          <span class="vName">value</span>: <span class="str">'male'</span>,
-          <span class="vName">label</span>: <span class="str">'Male (rooster)'</span>
-        <span class="bkt">}</span>,
-        <span class="bkt">{</span>
-          <span class="vName">value</span>: <span class="str">'female'</span>,
-          <span class="vName">label</span>: <span class="str">'Female (hen)'</span>,
-          <span class="vName">default</span>: <span class="bool">true</span>
-        <span class="bkt">}</span>,
-        <span class="bkt">{</span>
-          <span class="vName">value</span>: <span class="str">'other'</span>,
-          <span class="vName">label</span>: <span class="str">'Other'</span>
-        <span class="bkt">}</span>
-      <span class="bkt">]</span>
-    <span class="bkt">}</span>,
-    <span class="bkt">{</span>
-      <span class="vName">id</span>: <span class="str">'mood'</span>,
-      <span class="vName">label</span>: <span class="str">'Mood of the chicken'</span>,
-      <span class="vName">type</span>: <span class="str">'checkbox'</span>,
-      <span class="vName">options</span>: <span class="bkt">[</span>
-        <span class="bkt">{</span>
-          <span class="vName">value</span>: <span class="str">'unsure'</span>,
-          <span class="vName">label</span>: <span class="str">'Chicken is confused about its identity'</span>
-        <span class="bkt">}</span>, <span class="bkt">{
-          </span> <span class="vName">value</span>: <span class="str">'angry'</span>,
-          <span class="vName">label</span>: <span class="str">'Chicken woke up on the wrong side of its purch'</span>,
-          <span class="vName">default</span>: <span class="bool">true</span> <span class="bkt">
-        }</span>,
-        <span class="bkt">{</span>
-          <span class="vName">value</span>: <span class="str">'excited'</span>,
-          <span class="vName">label</span>: <span class="str">'Chicken is super excited'</span>,
-          <span class="vName">default</span>: <span class="bool">true</span> <span class="bkt">
-        }</span>
-      <span class="bkt">]</span>
-    <span class="bkt">}</span>
-  <span class="bkt">]</span>,
-  <span class="vName">description</span>: <span class="str">'Change all vowels into chickens'</span>
-<span class="bkt">})</span></code></pre>
-		<h3 id="checkbox-fields">
-			Checkbox fields
+		<h3>
+			<a
+				id="user-content-about-action-identifiers"
+				class="anchor"
+				href="#about-action-identifiers"
+				aria-hidden="true"
+			></a
+			>About <code>action</code> identifiers
 		</h3>
+
+		<p>
+			<code>action</code> identifiers must follow a few simple rules:
+		</p>
+
+		<ol>
+			<li>They must start with at least two alphabetical characters</li>
+			<li>They can only contain alpha-numeric characters</li>
+			<li>
+				They must be a minimum of 6 characters long and a maximum of 50
+				characters long
+			</li>
+			<li>They are case insensitive when compared</li>
+			<li>They must be unique</li>
+		</ol>
+
+		<h3>
+			<a
+				id="user-content-about-group-names"
+				class="anchor"
+				href="#about-group-names"
+				aria-hidden="true"
+			></a
+			>About <code>group</code> names
+		</h3>
+
+		<p>
+			Like <code>action</code> identifiers <code>group</code> names must
+			follow some rules to be valid:
+		</p>
+
+		<ol>
+			<li>They must start with at least two alphabetical characters</li>
+			<li>They can only contain alpha-numeric characters</li>
+			<li>
+				They must be a minimum of 2 characters long and a maximum of 50
+				characters long
+			</li>
+			<li>They are case insensitive when compared</li>
+		</ol>
+
+		<p>
+			Unlike <code>action</code> identifiers there is no need for them to
+			be unique
+		</p>
+
+		<h3>
+			<a
+				id="user-content-about-extrainput-objects"
+				class="anchor"
+				href="#about-extrainput-objects"
+				aria-hidden="true"
+			></a
+			>About <code>extraInput</code> objects
+		</h3>
+
+		<p>
+			Having extra user input fields gives your action more flexibility.
+			<code>extraInput</code> objects allow you to define all the
+			attributes you'd like for a given input field, textarea, select
+			field, group of radio buttons or checkboxes.
+		</p>
+
+		<p>
+			<code>extraInput</code> objects have the following properties:
+		</p>
+
+		<ol>
+			<li>
+				<strong><code>id</code></strong
+				>: {string} <em>[required]</em> used to identify the input (also
+				used as the key when the '<code>extraInputs</code>' are passed
+				to the function
+			</li>
+			<li>
+				<strong><code>label</code></strong
+				>: {string} <em>[required]</em> text to describe the field (or
+				group of checkboxes/radio buttons)
+			</li>
+			<li>
+				<code>type</code>: {string} <em>[optional]</em> text (default),
+				textarea, number, radio, checkbox, select (if type is invalid,
+				an error will be shown in the console)
+			</li>
+			<li>
+				<code>default</code>: {string, number} <em>[optional]</em> (not
+				radio, checkbox or select) the default value for the input<br />
+				<strong>NOTE:</strong> If there is a <code>GET</code> variable
+				matching the ID of the field and the <code>GET</code> variable's
+				value will be used as the default for the field
+			</li>
+			<li>
+				<code>options</code>: {array} [required for radio, checkbox,
+				select] list of option objects<br />
+				<a href="#option-objects">Read more about option objects</a>
+			</li>
+			<li>
+				<code>placeholder</code>: {string} <em>[optional]</em> Text
+				displayed within the text or number field (only used for text
+				&amp; number inputs)
+			</li>
+			<li>
+				<code>pattern</code>: {string} <em>[optional]</em> regular
+				expression to validate the contents of the text/number field
+				(only used for text &amp; number inputs)
+			</li>
+			<li>
+				<code>description</code>: {string}
+				<em>[optional]</em> Information about what this field is used
+				for. (Displayed below the input field input)
+			</li>
+			<li>
+				<code>min</code>: {number} <em>[optional]</em> (number, date
+				&amp; time fields only) Minumum value the number field can
+				contain
+			</li>
+			<li>
+				<code>max</code>: {number} <em>[optional]</em> (number, date
+				&amp; time fields only) Maximum value the number field can
+				contain
+			</li>
+			<li>
+				<code>step</code>: {number} <em>[optional]</em> (number fields
+				only) The amount to increment the field's value up and down when
+				using the arrow keys or number scroller
+			</li>
+			<li>
+				<strong><code>options</code></strong
+				>: {array} <em>[required]</em> (select, radio &amp; checkbox
+				fields only) List of option objects<br />
+				Option objects have the following keys:
+			</li>
+		</ol>
+
+		<h4>
+			<a
+				id="user-content-option-objects"
+				class="anchor"
+				href="#option-objects"
+				aria-hidden="true"
+			></a
+			><code>option</code> objects
+		</h4>
+
+		<p>
+			When specifying multi option fields like Select/dropdown fields,
+			Radio button fields, or Checkbox fields, You will need to list each
+			option value/label pair. You can do so by defining option objects.
+		</p>
+
+		<p>
+			<code>option</code> object have the following properties:
+		</p>
+
+		<ol>
+			<li>
+				<strong><code>value</code></strong
+				>: {string, number} <em>[required]</em> the field value
+			</li>
+			<li>
+				<strong><code>label</code></strong
+				>: {string} <em>[required]</em> The text visible to the user
+			</li>
+			<li>
+				<code>default</code>: {boolean} <em>[optional]</em> Whether or
+				not this field/option is checked/selected by default
+			</li>
+		</ol>
+
+		<p>
+			<strong>NOTE:</strong> If there is a <code>GET</code> variable
+			matching the ID of the field and the value of that
+			<code>GET</code> variable matches the value of the option, then that
+			option will be checked/selected by default.
+		</p>
+
+		<hr />
+
+		<h2>
+			<a
+				id="user-content-using-the-values-from-extra-input-fields"
+				class="anchor"
+				href="#using-the-values-from-extra-input-fields"
+				aria-hidden="true"
+			></a
+			>Using the values from extra input fields
+		</h2>
+
+		<p>
+			Say you have an action function with three
+			<em>extra input</em> fields. One for year with the ID
+			<code>year</code> and another for gender and a group of checkboxes
+			for mood. You can get the value of <code>year</code> by calling
+			<code>extraInputs.year()</code> and the value of gender by calling
+			<code>extraInputs.gender()</code>. You can get the value for each
+			type of mood by calling the mood function, passing the value of that
+			mood as the only parameter e.g.
+		</p>
+
+		<pre class="code highlight js-syntax-highlight javascript dark"><code><span id="LC1" class="line">
+<span class="kd">const</span> <span class="nx">exposeChickens</span> <span class="o">=</span> <span class="p">(</span><span class="nx">input</span><span class="p">,</span> <span class="nx">extraInputs</span><span class="p">,</span> <span class="nx">GETvars</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span></span>
+<span id="LC2" class="line">  <span class="kd">let</span> <span class="nx">_unsure</span> <span class="o">=</span> <span class="p">(</span><span class="nx">extraInputs</span><span class="p">.</span><span class="nx">mood</span><span class="p">(</span><span class="s1">'unsure'</span><span class="p">))</span> <span class="p">?</span> <span class="s1">' I think'</span> <span class="p">:</span> <span class="s1">''</span></span>
+<span id="LC3" class="line">  <span class="kd">let</span> <span class="nx">_angry</span> <span class="o">=</span> <span class="nx">extraInputs</span><span class="p">.</span><span class="nx">mood</span><span class="p">(</span><span class="s1">'angry'</span><span class="p">)</span></span>
+<span id="LC4" class="line">  <span class="kd">let</span> <span class="nx">_boc</span> <span class="o">=</span> <span class="s1">'BOC! BOC!!'</span></span>
+<span id="LC5" class="line">  <span class="kd">var</span> <span class="nx">_chicken</span> <span class="o">=</span> <span class="s1">'chicken'</span></span>
+<span id="LC6" class="line">  <span class="kd">var</span> <span class="nx">_excited</span> <span class="o">=</span> <span class="nx">extraInputs</span><span class="p">.</span><span class="nx">mood</span><span class="p">(</span><span class="s1">'excited'</span><span class="p">)</span></span>
+<span id="LC7" class="line">  <span class="c1">// We retrieve the value of _gender by calling the function that</span></span>
+<span id="LC8" class="line">  <span class="c1">// matches the ID (or name) of the input field</span></span>
+<span id="LC9" class="line">  <span class="kd">var</span> <span class="nx">_gender</span> <span class="o">=</span> <span class="nx">extraInputs</span><span class="p">.</span><span class="nx">gender</span><span class="p">()</span></span>
+<span id="LC10" class="line">  <span class="kd">let</span> <span class="nx">output</span> <span class="o">=</span> <span class="s1">''</span></span>
+<span id="LC11" class="line">  <span class="kd">var</span> <span class="nx">_spring</span> <span class="o">=</span> <span class="s1">''</span></span>
+<span id="LC12" class="line">  <span class="c1">// We do the same for _year</span></span>
+<span id="LC13" class="line">  <span class="kd">var</span> <span class="nx">_year</span> <span class="o">=</span> <span class="nx">extraInputs</span><span class="p">.</span><span class="nx">year</span><span class="p">()</span></span>
+<span id="LC14" class="line"></span>
+<span id="LC15" class="line">  <span class="c1">// Test the gender of the chicken</span></span>
+<span id="LC16" class="line">  <span class="k">if</span> <span class="p">(</span><span class="nx">_gender</span> <span class="o">===</span> <span class="s1">'male'</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC17" class="line">    <span class="nx">_chicken</span> <span class="o">=</span> <span class="s1">'rooster'</span></span>
+<span id="LC18" class="line">    <span class="nx">_boc</span> <span class="o">=</span> <span class="s1">'COCK-A-DOODLE-DO'</span></span>
+<span id="LC19" class="line">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">_gender</span> <span class="o">===</span> <span class="s1">'female'</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC20" class="line">    <span class="nx">_chicken</span> <span class="o">=</span> <span class="s1">'hen'</span></span>
+<span id="LC21" class="line">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">_gender</span> <span class="o">===</span> <span class="s1">'other'</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC22" class="line">    <span class="nx">_chicken</span> <span class="o">+=</span> <span class="s1">' first don</span><span class="se">\'</span><span class="s1">t try to pigeon hole me'</span></span>
+<span id="LC23" class="line">  <span class="p">}</span></span>
+<span id="LC24" class="line"></span>
+<span id="LC25" class="line">  <span class="c1">// Test the Year (as defined by the user)</span></span>
+<span id="LC26" class="line">  <span class="k">if</span> <span class="p">(</span><span class="nx">_year</span> <span class="o">&gt;=</span> <span class="mi">2020</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC27" class="line">    <span class="nx">_spring</span> <span class="o">=</span> <span class="s1">' spring'</span></span>
+<span id="LC28" class="line">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">_year</span> <span class="o">&lt;</span> <span class="mi">2018</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC29" class="line">    <span class="nx">_spring</span> <span class="o">=</span> <span class="s1">'n old'</span></span>
+<span id="LC30" class="line">    <span class="nx">_chicken</span> <span class="o">+=</span> <span class="s1">'. Please don</span><span class="se">\'</span><span class="s1">t boil me and make me into soup.'</span></span>
+<span id="LC31" class="line">  <span class="p">}</span></span>
+<span id="LC32" class="line"></span>
+<span id="LC33" class="line">  <span class="k">if</span> <span class="p">(</span><span class="nx">_excited</span> <span class="o">===</span> <span class="kc">true</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC34" class="line">    <span class="nx">_boc</span> <span class="o">+=</span> <span class="s1">' BOC-OCK!!! '</span></span>
+<span id="LC35" class="line">    <span class="nx">output</span> <span class="o">=</span> <span class="s1">' [['</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_unsure</span> <span class="o">+</span> <span class="s1">' '</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span></span>
+<span id="LC36" class="line">    <span class="nx">output</span> <span class="o">+=</span> <span class="s1">'I am a '</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span></span>
+<span id="LC37" class="line">    <span class="nx">output</span> <span class="o">+=</span> <span class="nx">_spring</span> <span class="o">+</span> <span class="s1">' '</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span></span>
+<span id="LC38" class="line">    <span class="nx">output</span> <span class="o">+=</span> <span class="nx">_chicken</span> <span class="o">+</span> <span class="s1">' '</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="s1">'!!]] '</span></span>
+<span id="LC39" class="line">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span></span>
+<span id="LC40" class="line">    <span class="nx">output</span> <span class="o">=</span> <span class="s1">' [['</span> <span class="o">+</span> <span class="nx">_boc</span> <span class="o">+</span> <span class="s1">'!!'</span> <span class="o">+</span> <span class="nx">_unsure</span> <span class="o">+</span> <span class="s1">' I am a'</span> <span class="o">+</span> <span class="nx">_spring</span> <span class="o">+</span> <span class="s1">' '</span> <span class="o">+</span> <span class="nx">_chicken</span> <span class="o">+</span> <span class="s1">']] '</span></span>
+<span id="LC41" class="line">  <span class="p">}</span></span>
+<span id="LC42" class="line"></span>
+<span id="LC43" class="line">  <span class="k">if</span> <span class="p">(</span><span class="nx">_angry</span> <span class="o">===</span> <span class="kc">true</span><span class="p">)</span> <span class="p">{</span></span>
+<span id="LC44" class="line">    <span class="nx">output</span> <span class="o">=</span> <span class="nx">output</span><span class="p">.</span><span class="nx">toUpperCase</span><span class="p">()</span></span>
+<span id="LC45" class="line">  <span class="p">}</span></span>
+<span id="LC46" class="line"></span>
+<span id="LC47" class="line">  <span class="c1">// Do the replacement and return the updated string</span></span>
+<span id="LC48" class="line">  <span class="k">return</span> <span class="nx">input</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/</span><span class="se">[</span><span class="sr">aeiou</span><span class="se">]</span><span class="sr">+/ig</span><span class="p">,</span> <span class="nx">output</span><span class="p">)</span></span>
+<span id="LC49" class="line"><span class="p">}</span></span>
+<span id="LC50" class="line"></span>
+<span id="LC51" class="line"><span class="nx">doStuff</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span></span>
+<span id="LC52" class="line">  <span class="na">action</span><span class="p">:</span> <span class="s1">'doChicken'</span><span class="p">,</span></span>
+<span id="LC53" class="line">  <span class="na">name</span><span class="p">:</span> <span class="s1">'Expose the chickens'</span><span class="p">,</span></span>
+<span id="LC54" class="line">  <span class="na">func</span><span class="p">:</span> <span class="nx">exposeChickens</span><span class="p">,</span></span>
+<span id="LC55" class="line">  <span class="na">extraInputs</span><span class="p">:</span> <span class="p">[</span></span>
+<span id="LC56" class="line">    <span class="p">{</span></span>
+<span id="LC57" class="line">      <span class="na">id</span><span class="p">:</span> <span class="s1">'year'</span><span class="p">,</span></span>
+<span id="LC58" class="line">      <span class="na">label</span><span class="p">:</span> <span class="s1">'Year chicken was born'</span><span class="p">,</span></span>
+<span id="LC59" class="line">      <span class="na">type</span><span class="p">:</span> <span class="s1">'number'</span><span class="p">,</span></span>
+<span id="LC60" class="line">      <span class="na">min</span><span class="p">:</span> <span class="mi">2013</span><span class="p">,</span></span>
+<span id="LC61" class="line">      <span class="na">max</span><span class="p">:</span> <span class="mi">2019</span><span class="p">,</span></span>
+<span id="LC62" class="line">      <span class="na">step</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span></span>
+<span id="LC63" class="line">      <span class="na">default</span><span class="p">:</span> <span class="mi">2019</span></span>
+<span id="LC64" class="line">    <span class="p">},</span></span>
+<span id="LC65" class="line">    <span class="p">{</span></span>
+<span id="LC66" class="line">      <span class="na">id</span><span class="p">:</span> <span class="s1">'gender'</span><span class="p">,</span></span>
+<span id="LC67" class="line">      <span class="na">label</span><span class="p">:</span> <span class="s1">'Gender of chicken'</span><span class="p">,</span></span>
+<span id="LC68" class="line">      <span class="na">type</span><span class="p">:</span> <span class="s1">'radio'</span><span class="p">,</span></span>
+<span id="LC69" class="line">      <span class="na">options</span><span class="p">:</span> <span class="p">[</span></span>
+<span id="LC70" class="line">        <span class="p">{</span> <span class="s1">'value'</span><span class="p">:</span> <span class="s1">'male'</span><span class="p">,</span> <span class="na">label</span><span class="p">:</span> <span class="s1">'Male (rooster)'</span> <span class="p">},</span></span>
+<span id="LC71" class="line">        <span class="p">{</span> <span class="s1">'value'</span><span class="p">:</span> <span class="s1">'female'</span><span class="p">,</span> <span class="na">label</span><span class="p">:</span> <span class="s1">'Female (hen)'</span><span class="p">,</span> <span class="na">default</span><span class="p">:</span> <span class="kc">true</span> <span class="p">},</span></span>
+<span id="LC72" class="line">        <span class="p">{</span> <span class="s1">'value'</span><span class="p">:</span> <span class="s1">'other'</span><span class="p">,</span> <span class="na">label</span><span class="p">:</span> <span class="s1">'Other'</span> <span class="p">}</span></span>
+<span id="LC73" class="line">      <span class="p">]</span></span>
+<span id="LC74" class="line">    <span class="p">},</span></span>
+<span id="LC75" class="line">    <span class="p">{</span></span>
+<span id="LC76" class="line">      <span class="na">id</span><span class="p">:</span> <span class="s1">'mood'</span><span class="p">,</span></span>
+<span id="LC77" class="line">      <span class="na">label</span><span class="p">:</span> <span class="s1">'Mood of the chicken'</span><span class="p">,</span></span>
+<span id="LC78" class="line">      <span class="na">type</span><span class="p">:</span> <span class="s1">'checkbox'</span><span class="p">,</span></span>
+<span id="LC79" class="line">      <span class="na">options</span><span class="p">:</span> <span class="p">[</span></span>
+<span id="LC80" class="line">        <span class="p">{</span> <span class="s1">'value'</span><span class="p">:</span> <span class="s1">'unsure'</span><span class="p">,</span> <span class="na">label</span><span class="p">:</span> <span class="s1">'Chicken is confused about its identity'</span> <span class="p">},</span></span>
+<span id="LC81" class="line">        <span class="p">{</span> <span class="s1">'value'</span><span class="p">:</span> <span class="s1">'angry'</span><span class="p">,</span> <span class="na">label</span><span class="p">:</span> <span class="s1">'Chicken woke up on the wrong side of its purch'</span><span class="p">,</span> <span class="na">default</span><span class="p">:</span> <span class="kc">true</span> <span class="p">},</span></span>
+<span id="LC82" class="line">        <span class="p">{</span> <span class="s1">'value'</span><span class="p">:</span> <span class="s1">'excited'</span><span class="p">,</span> <span class="na">label</span><span class="p">:</span> <span class="s1">'Chicken is super excited'</span><span class="p">,</span> <span class="na">default</span><span class="p">:</span> <span class="kc">true</span> <span class="p">}</span></span>
+<span id="LC83" class="line">      <span class="p">]</span></span>
+<span id="LC84" class="line">    <span class="p">}</span></span>
+<span id="LC85" class="line">  <span class="p">],</span></span>
+<span id="LC86" class="line">  <span class="na">description</span><span class="p">:</span> <span class="s1">'Change all vowels into chickens'</span></span>
+<span id="LC87" class="line"><span class="p">})</span></span></code></pre>
+		<h3>
+			<a
+				id="user-content-checkbox-fields"
+				class="anchor"
+				href="#checkbox-fields"
+				aria-hidden="true"
+			></a
+			>Checkbox fields
+		</h3>
+
 		<p>
 			All input types have the same way of accessing their values except
-			checkboxes. <strong>do-JS-regex-stuff</strong> is set up to allow for multiple checkbox inputs for a single
-			"field" but checkboxes are unique and each needs a unique ID, so you access whether a checkbox is checked or not
-			by passing the value to the function.
+			checkboxes. <strong>do-JS-regex-stuff</strong> is set up to allow
+			for multiple checkbox inputs for a single "field" but checkboxes are
+			unique and each needs a unique ID, so you access whether a checkbox
+			is checked or not by passing the value to the function.
 		</p>
-		<p><strong>NOTE:</strong> Checkbox values are always boolean (
-			<code>TRUE</code>
-			or
-			<code>FALSE</code>
-			)
-		</p>
+
 		<p>
-			In the above code sample we have "<em>Mood of the chicken</em>" group of checkboxes identified by
-			<code>mood</code>
-			. To get whether a given mood is checked we pass value for that mood to the
-			<code>mood</code>
-			function. e.g.
+			<strong>NOTE:</strong> Checkbox values are always boolean (<code
+				>TRUE</code
+			>
+			or <code>FALSE</code>)
 		</p>
-		<pre><code>var _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
-var _angry = extraInputs.mood('angry')
-var _excited = extraInputs.mood('excited')</code></pre>
-		<h2 id="using-get-variables-from-the-url">
-			Using GET variables from the URL
+
+		<p>
+			In the above code sample we have "<em>Mood of the chicken</em>"
+			group of checkboxes identified by <code>mood</code>. To get whether
+			a given mood is checked we pass value for that mood to the
+			<code>mood</code> function. e.g.
+		</p>
+
+		<pre class="code highlight js-syntax-highlight javascript dark"><code><span id="LC1a" class="line"><span class="kd">var</span> <span class="nx">_unsure</span> <span class="o">=</span> <span class="p">(</span><span class="nx">extraInputs</span><span class="p">.</span><span class="nx">mood</span><span class="p">(</span><span class="s1">'unsure'</span><span class="p">))</span> <span class="p">?</span> <span class="s1">' I think'</span> <span class="p">:</span> <span class="s1">''</span></span>
+		<span id="LC2a" class="line"><span class="kd">var</span> <span class="nx">_angry</span> <span class="o">=</span> <span class="nx">extraInputs</span><span class="p">.</span><span class="nx">mood</span><span class="p">(</span><span class="s1">'angry'</span><span class="p">)</span></span>
+		<span id="LC3a" class="line"><span class="kd">var</span> <span class="nx">_excited</span> <span class="o">=</span> <span class="nx">extraInputs</span><span class="p">.</span><span class="nx">mood</span><span class="p">(</span><span class="s1">'excited'</span><span class="p">)</span></span></code></pre>
+		<h2>
+			<a
+				id="user-content-using-get-variables-from-the-url"
+				class="anchor"
+				href="#using-get-variables-from-the-url"
+				aria-hidden="true"
+			></a
+			>Using GET variables from the URL
 		</h2>
+
 		<p>
-			URL GET variables are used in two ways in <strong>do-JS-regex-stuff</strong>:
+			URL GET variables are used in two ways in
+			<strong>do-JS-regex-stuff</strong>:
 		</p>
+
 		<ol>
 			<li>
 				GET variables are used to preset "<em>extra input</em>" fields
 			</li>
-			<li>
-				GET variables are also available within an action function
-			</li>
+			<li>GET variables are also available within an action function</li>
 		</ol>
-		<h3 id="pre-processing-get-variables">
-			Pre-Processing GET variables
+
+		<h3>
+			<a
+				id="user-content-pre-processing-get-variables"
+				class="anchor"
+				href="#pre-processing-get-variables"
+				aria-hidden="true"
+			></a
+			>Pre-Processing GET variables
 		</h3>
+
 		<p>
-			Where possible, the value of GET variables are converted to their appropriate javascript variable types. e.g.
+			Where possible, the value of GET variables are converted to their
+			appropriate javascript variable types. e.g.
 		</p>
+
 		<ul>
 			<li>
-				<code>'true'</code>
-				will be converted to boolean
-				<code>TRUE</code>
-				(case <em>insensitive</em>)
+				<code>'true'</code> will be converted to boolean
+				<code>TRUE</code> (case <em>insensitive</em>)
 			</li>
 			<li>
-				<code>'false'</code>
-				will be converted to boolean
-				<code>FALSE</code>
-				(case <em>insensitive</em>)
+				<code>'false'</code> will be converted to boolean
+				<code>FALSE</code> (case <em>insensitive</em>)
 			</li>
 			<li>
-				<code>'2019'</code>
-				will be converted to number
+				<code>'2019'</code> will be converted to number
 				<code>2019</code>
 			</li>
 		</ul>
+
 		<p>
-			GET variables are also URL decoded. (But JSON objects are not parsed)
+			GET variables are also URL decoded. (But JSON objects are not
+			parsed)
 		</p>
-		<h3 id="presetting-extra-input-fields">
-			Presetting <em>extra input</em> fields
+
+		<h3>
+			<a
+				id="user-content-presetting-extra-input-fields"
+				class="anchor"
+				href="#presetting-extra-input-fields"
+				aria-hidden="true"
+			></a
+			>Presetting <em>extra input</em> fields
 		</h3>
+
 		<p>
-			For text type fields, if the field's ID matches a GET variable, then the value of the GET variable is used as
-			the default value for that field.
+			For text type fields, if the field's ID matches a GET variable, then
+			the value of the GET variable is used as the default value for that
+			field.
 		</p>
+
 		<p>
 			For checkbox, radio &amp; select fields, if the field's
-			<code>name</code>
-			matches a get variable and the field's (or option's) value matches the value of the GET variable then that
+			<code>name</code> matches a get variable and the field's (or
+			option's) value matches the value of the GET variable then that
 			field/option will be checked/selected
 		</p>
-		<h3 id="using-get-variables-within-action-function">
-			Using GET variables within action function
+
+		<h3>
+			<a
+				id="user-content-using-get-variables-within-action-function"
+				class="anchor"
+				href="#using-get-variables-within-action-function"
+				aria-hidden="true"
+			></a
+			>Using GET variables within action function
 		</h3>
+
 		<p>
-			It's probably a bad idea to use GET variables within you action function because it hides functionality from the
-			user which they may or may not need to change.
+			It's probably a bad idea to use GET variables within you action
+			function because it hides functionality from the user which they may
+			or may not need to change.
 		</p>
+
 		<p>
 			However, there are times when that's exactly what you want.
 		</p>
+
 		<p>
-			Action functions get the GET variables passed an object via the third parameter when the function is called.
-		</p>
-		<p>
-			As an action function author, you need to test whether the GET variable exists before you use it. Otherwise, an
-			error will be thrown and your function won't work.
+			Action functions get the GET variables passed an object via the
+			third parameter when the function is called.
 		</p>
 
-		<h3 id="predefined-get-vars">Pre-defined GET variables</h3>
+		<p>
+			As an action function author, you need to test whether the GET
+			variable exists before you use it. Otherwise, an error will be
+			thrown and your function won't work.
+		</p>
+
+		<p>
+			<strong>NOTE:</strong> If the pre-processed GET variables don't work
+			in your usecase, you can include the <code>rawGET</code> property in
+			your registration object. This means that when the GET variables are
+			passed to the action function you get the raw version of the
+			variables.
+		</p>
+
+		<h2>
+			<a
+				id="user-content-regular-expressions"
+				class="anchor"
+				href="#regular-expressions"
+				aria-hidden="true"
+			></a
+			>Regular expressions
+		</h2>
+
+		<p>
+			Because there are somethings you can't normally do with regular
+			Javascript RegExp regular expressions
+			<a
+				href="http://xregexp.com/"
+				rel="nofollow noreferrer noopener"
+				target="_blank"
+				>XRegExp</a
+			>
+			is included.
+		</p>
+
+		<p>
+			XRegExp adds a lot of very useful extra functionality to RegExp.
+			Checkout the
+			<a
+				href="https://github.com/slevithan/xregexp/blob/master/README.md"
+				rel="nofollow noreferrer noopener"
+				target="_blank"
+				>XRegExp documentation</a
+			>
+			for more info on how to use it.
+		</p>
+
+		<h2>
+			<a
+				id="user-content-more-reading"
+				class="anchor"
+				href="#more-reading"
+				aria-hidden="true"
+			></a
+			>More reading
+		</h2>
 
 		<ul>
-				<li>
-					<code class="bold">action</code> -
-					The name of the action to be used to process text
-				</li>
-				<li>
-					<code class="bold">debug</code> -
-					Adds an extra text area for output string. This means you can reuse the same input over and over again without it being changed
-				</li>
-				<li>
-					<code class="bold">noIgnore</code> -
-					There are times when you want to work on an action without other people seeing it.<br />
-					In this case you would use <code>&amp;noIgnore</code> with the name of the action<br />
-					e.g. <code>action=dochicken&amp;noIgnore=dochicken</code> or maybe <code>action=dochicken&amp;debug=true&amp;noIgnore=dochicken</code>
-				</li>
+			<!-- <li>
+				<a href="How_Do-JS-regex-stuff_works.html">Do JS Regex Stuff Documentation</a>
+			</li> -->
+			<li>
+				<a href="Utility-and-helper-functions.html">Helper &amp; utility functions</a>
+			</li>
+			<li>
+				<a href="PHP-API.html">PHP API</a>
+			</li>
+			<li>
+				<a href="../">Do JS Regex Stuff tool</a>
+			</li>
 		</ul>
-
-
-		<p><strong>NOTE:</strong> If the pre-processed GET variables don't work in your usecase, you can
-			include the
-			<code>rawGET</code>
-			property in your registration object. This means that when the GET variables are passed to the action function
-			you get the raw version of the variables.
-		</p>
-		<h2 id="regular-expressions">
-			Regular expressions
-		</h2>
-		<p>
-			Because there are somethings you can't normally do with regular Javascript RegExp regular expressions <a
-				href="http://xregexp.com">XRegExp</a> is included.
-		</p>
-		<p>
-			XRegExp adds a lot of very useful extra functionality to RegExp checkout the <a
-				href="https://github.com/slevithan/xregexp/blob/master/README.md">XRegExp documentation</a> for more info
-			on how to use it.
-		</p>
-
-		<h2 id="utility-functions">Utility and helper functions</h2>
-
-		<h3>multiRegexReplace()</h3>
-
-		One of the things this tool is used for is applying multiple regular expressions sequentially to a given
 	</body>
 </html>
