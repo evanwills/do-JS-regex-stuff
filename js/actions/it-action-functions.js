@@ -206,14 +206,18 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       1200: '$screen-lg'
     }
     const key = (value * 1)
+    let output = ''
+
     if (typeof mediaPx[key] === 'string') {
-      return mediaPx[key]
+      output = mediaPx[key]
     } else {
-      let output = Math.round((value / remPixels) * 100) / 100
+      output = Math.round((value / remPixels) * 100) / 100
       output = output + ''
       output = output.replace(/^0+/, '')
-      return preSpace + output + 'rem'
+      output += 'rem'
     }
+
+    return preSpace + output
   }
 
   /**
@@ -224,6 +228,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
    * @returns {string} Converted property value
    */
   const fixMultiPix = (whole) => {
+    console.log(whole.replace(/([\s:]+-?)([0-9]+)px/ig, fixSinglePix))
     return whole.replace(/([\s:]+-?)([0-9]+)px/ig, fixSinglePix)
   }
 
@@ -355,6 +360,8 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     { find: '\\s*$', replace: '\n' } // ensure file ends with a new line
     // { find: '', replace: '' },
   ]
+  console.log('mainModifiers:', mainModifiers)
+  console.log('colours:', colours)
 
   let output = multiRegexReplace(input, mainModifiers)
 

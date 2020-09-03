@@ -836,19 +836,18 @@ const multiRegexReplace = (input, findReplace, flags) => {
   }
   let _output = input
 
-  const getValidFlags = (_flag) => {
-    return _flags.replace(/[^gimsuy]+/g, '')
+  const getValidFlags = (regExpFlag) => {
+    return regExpFlag.replace(/[^gimsuy]+/g, '')
   }
 
   const _flags = (typeof flags === 'string') ? getValidFlags(flags) : 'ig'
   if (flags !== _flags) {
-    console.warn('multiRegexReplace() expects third parameter "flags" to contain ')
+    console.warn('multiRegexReplace() expects third parameter "flags" to contain valid JavaScript flags ("i", "g", "m", "s", "u", "y") supplied global flags ("' + flags + '") contained invalid characters')
   }
 
-  let a = 0
-  for (const pair in findReplace) {
-    // console.group('findreplace[' + a + ']')
-    // console.log('findreplace[' + a + ']:', pair)
+  // let b = 0
+  for (const a in findReplace) {
+    const pair = findReplace[a]
 
     if (typeof pair.find !== 'string' || (typeof pair.replace !== 'string' && !isFunction(pair.replace))) {
       console.group('findreplace[' + a + ']')
@@ -868,14 +867,8 @@ const multiRegexReplace = (input, findReplace, flags) => {
       console.error('multiRegexReplace() expects findReplace[' + a + '].find to contain a valid regular expression. It had the following error: "' + e.message + '"')
     }
 
-    // console.log('_regex:', _regex)
-    // console.log('findreplace[' + a + '].replace:', pair.replace)
-    // console.log('_regex.test(_output):', _regex.test(_output))
-    // console.log('_regex.match(_output):', _regex.match(_output))
-    // console.groupEnd()
-
     _output = _output.replace(_regex, pair.replace)
-    a += 1
+    // b += 1
   }
 
   return _output
