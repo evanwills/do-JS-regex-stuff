@@ -256,6 +256,10 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       return _output.replace(/\s+(?=:|;)/g, '')
     }
 
+    if (value.indexOf('#') === -1) {
+      return cleanWhole(whole)
+    }
+
     const _colour = value.replace(/^.*?(#(?:(?:(?:f{3}){1,2})|(?:74){3})).*$/i, '$1')
     let _other = value.replace(_colour, '')
 
@@ -357,7 +361,10 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       replace: '$1: $2 $3 $4'
     },
     { find: '\\s+(?=[\r\n])', replace: '' }, // remove trailing white space
-    { find: '(url\\()[\'"]?([^)\'"]+)[\'"]?(?=\\))', replace: '$1\'$2\'' }, // Wrap URLs in single quotes
+    { // Wrap URLs in single quotes
+      find: '(url\\()[\'"]?([^)\'"]+)[\'"]?(?=\\))',
+      replace: '$1\'$2\''
+    },
     { find: '\\s*$', replace: '\n' } // ensure file ends with a new line
     // { find: '', replace: '' },
   ]

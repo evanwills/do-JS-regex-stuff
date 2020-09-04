@@ -382,7 +382,7 @@ function jsSyntaxHighlight (input, extraInputs, GETvars) {
     },
     { // 2 token
       find: '(^|\\s)(function|var|return|if|else)(?=\\s)',
-      replace:'$1<span class="tkn">$2</span>'
+      replace: '$1<span class="tkn">$2</span>'
     },
     { // 3 comment
       find: '(\\s)(?:<em>)?//(.*?)(?:</em>)?(?=[\r\n])',
@@ -914,7 +914,7 @@ doStuff.register({
  */
 function fixPoliciesAnchorLinksV1 (input, extraInputs, GETvars) {
   let output = input
-  let labelsAndIDs = []
+  const labelsAndIDs = []
 
   const anchorIDs = new RegExp('<h([1-5])(?: id="([^"]+)")>((?:[0-9]+\\.?)+\\s*)(.*?)\\s*(?=</h\\1>)', 'ig')
   const anchorLinks = new RegExp('<a(?:\\s+(title|href)="(#?)([^"]+)")(?:\\s+(title|href)="(#?)([^"]+)")?>([^<]+)(?=</a>)', 'ig')
