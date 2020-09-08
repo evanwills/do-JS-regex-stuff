@@ -4,6 +4,9 @@
 // other global functions available:
 //   invalidString, invalidStrNum, invalidNum, invalidArray, makeAttributeSafe, isFunction, makeHumanReadableAttr
 
+const kssCommentStart = '/**\n * Component title\n *\n * Comment description goes here (may be multiple lines)\n *\n * Sample file path: [relative to \\ACU.Sitecore\\website\n *                    e.g. src\\Project\\ACUPublic\\ACU.Static\\components\\anchor_links.html]\n *\n *\n * Markup:\n '
+const kssCommentEnd = '\n *\n * .modifiers - Description of Modifier\n *\n * StyleGuide: Molecule.Molecule name\n */\n// {{modifier_class}} - use this in place of a modifier class name in the sample "Markup" block\n'
+
 // ====================================================================
 // START: CEG course advice HTML
 
@@ -182,6 +185,7 @@ doStuff.register({
  */
 function fixSassLintIssues (input, extraInputs, GETvars) {
   const remPixels = extraInputs.remValue()
+  const _hasStyleGuide = new RegExp('styleguide:', 'i')
 
   /**
    * Convert pixel values to REMs with accuracy of up to 2 decimal
@@ -283,7 +287,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
         _colourVar = (_isLight) ? 'text-colour-light' : 'text-colour'
         break
       case 'background':
-        _colourVar = (_isLight) ? 'black--80' : 'body-bg'
+        _colourVar = (_isLight) ? 'body-bg' : 'black--80'
         break
       case 'border':
         _colourVar = (_isLight) ? 'text-colour-light' : 'grey-border'
@@ -334,8 +338,10 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     { find: '#ccc', replace: '$black--40' },
     { find: '#eee', replace: '$black--20' },
     { find: '#fafafa', replace: '$black--10' },
-    { find: '((background|border|color)(?:-(?:bottom|left|right|top))?(?:-color)?)\\s*:\\s*([^;!]+?)\\s*(?=(?:!important)?\\s*;)', replace: fixWhiteHex }
+    { find: '((background|border|color)(?:-(?:bottom|left|right|top))?(?:-color)?)\\s*:\\s*([^;!]+?)\\s*(?=(?:!important)?\\s*;)', replace: fixWhiteHex },
+    { find: '\\s*!important\\s*', replace: ' !important' }
   ]
+
   // ((background|border|color)(?:-(bottom|color|left|right|top))?(?:-(color))?)\\s*:((?:\\s*([0-9.]+(?:px|r?em)|solid|dotted|dashed|hidden|double|groove|ridge|inset|outset)){2})?\\s*(?:#((?:f{3}){1,2}|(?:74){3}))\\s*?(?=;|\\s*!important)
 
   /**
@@ -367,13 +373,20 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     },
     { find: '\\s*$', replace: '\n' } // ensure file ends with a new line
     // { find: '', replace: '' },
+    // { find: '', replace: '', flags: 'ig' },
   ]
-  console.log('mainModifiers:', mainModifiers)
-  console.log('colours:', colours)
+  // console.log('mainModifiers:', mainModifiers)
+  // console.log('colours:', colours)
 
   let output = multiRegexReplace(input, mainModifiers)
 
   output = multiRegexReplace(output, colours)
+
+  if (extraInputs.addKSS('true')) {
+    if (!_hasStyleGuide.test(output)) {
+      output = kssCommentStart + '*' + kssCommentEnd + output
+    }
+  }
   // if (extraInputs.doColours() === true) {
   // }
   return output
@@ -384,7 +397,7 @@ doStuff.register({
   func: fixSassLintIssues,
   description: '',
   // docsULR: '',
-  inputLabel: 'scss code to be modified',
+  inputLabel: 'SCSS code to be modified',
   extraInputs: [{
     id: 'remValue',
     label: 'Pixel value of 1rem',
@@ -393,6 +406,18 @@ doStuff.register({
     max: 24,
     step: 1,
     type: 'number'
+  },
+  {
+    id: 'addKSS',
+    label: 'Add KSS comment block',
+    type: 'checkbox',
+    options: [
+      {
+        value: 'true',
+        label: 'Yes! Add a KSS comment block at the top of the file',
+        default: true
+      }
+    ]
   }],
   group: 'it',
   ignore: false,
@@ -423,24 +448,31 @@ const kssCommentBlock = (input, extraInputs, GETvars) => {
   const doWhole = extraInputs.wholeComment('true')
   console.log('doWhole:', doWhole)
 
-  const findReplace = [{
-    find: '(^|[\r\n])+(?=[\\t ]+<)',
-    replace: '$1 *'
-  }]
+  if (input.trim() === '') {
+    return kssCommentStart + '*' + kssCommentEnd
+  } else {
+    const findReplace = {
+      html: {
+        find: '(^|[\\r\\n])+(?=[\\t ]*<)',
+        replace: '$1 *'
+      }
+    }
 
-  if (doWhole) {
-    findReplace.push({
-      find: '^\\s*(?=\\*)',
-      replace: '/**\n * Component title\n *\n * Comment description goes here (may be multiple lines)\n *\n * Markup:\n '
-    },
-    {
-      find: '\\s*$',
-      replace: '\n *\n * .modifiers - Description of Modifier\n *\n * StyleGuide: Molecule.Molecule name\n */\n'
-    })
+    if (doWhole) {
+      findReplace.start = {
+        find: '^\\s*(?=\\*)?',
+        replace: kssCommentStart
+      }
+      findReplace.end = {
+        find: '\\s*$',
+        replace: kssCommentEnd
+      }
+    }
+
+    console.log('findReplace:', findReplace)
+
+    return multiRegexReplace(input, findReplace, 'ig')
   }
-  console.log('findReplace:', findReplace)
-
-  return multiRegexReplace(input, findReplace)
 }
 
 doStuff.register({
