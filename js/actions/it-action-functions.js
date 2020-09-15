@@ -299,6 +299,52 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     return _wholeProp.trim() + ': ' + _other + '$' + _colourVar
   }
 
+  const fixFontFamily = (whole, prop, value) => {
+    const fontVars = [
+      {
+        family: 'AvenirLTStd-Book',
+        var: 'font--sans-serif'
+      },
+      {
+        family: 'Miller Text Rom',
+        var: 'font--serif'
+      },
+      {
+        family: 'Nexa-Heavy',
+        var: 'heading-font'
+      },
+      {
+        family: 'Miller Text Bd',
+        var: 'heading-2way-font'
+      // },
+      // {
+      //   family: 'AvenirLTStd-Heavy',
+      //   var: ''
+      // },
+      // {
+      //   family: 'AvenirLTStd-Bold',
+      //   var: ''
+      // },
+      // {
+      //   family: 'Miller Text Bd',
+      //   var: ''
+      // },
+      // {
+      //   family: 'Nexa-Bold',
+      //   var: ''
+      }
+    ]
+    const lowerVal = value.toLowerCase()
+
+    for (let a = 0; a < fontVars.length; a += 1) {
+      if (lowerVal.indexOf(fontVars[a].family.toLowerCase()) >= 0) {
+        return 'font-family: $' + fontVars[a].var + ';'
+      }
+    }
+
+    return whole
+  }
+
   /**
    * @constant colour Brand colour hex values and variable names
    */
@@ -327,17 +373,17 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     { find: '#8c857b', replace: '$stone' },
     { find: '#e8e3db', replace: '$sand' },
     // { find: '#747474', replace: '$dark-grey' },
-    { find: '#eeeeee', replace: '$light-grey' },
-    { find: '#fafafa', replace: '$x-light-grey' },
+    { find: '#(?:eee){1, 2}', replace: '$light-grey' },
+    { find: '#(?:fa){3}', replace: '$x-light-grey' },
     // { find: '#fff', replace: '$body-bg' },
     // { find: '#fff', replace: '$text-colour-light' },
     { find: '#3d3935', replace: '$charcoal--100' },
     { find: '#252320', replace: '$charcoal--120' },
-    { find: '#000', replace: '$black' },
+    { find: '#(?:000){1, 2}', replace: '$black' },
     // { find: '#747474', replace: '$black--80' },
-    { find: '#ccc', replace: '$black--40' },
-    { find: '#eee', replace: '$black--20' },
-    { find: '#fafafa', replace: '$black--10' },
+    { find: '#(?:ccc){1, 2}', replace: '$black--40' },
+    { find: '#(?:eee){1, 2}', replace: '$black--20' },
+    { find: '#(?:fa){3}', replace: '$black--10' },
     { find: '((background|border|color)(?:-(?:bottom|left|right|top))?(?:-color)?)\\s*:\\s*([^;!]+?)\\s*(?=(?:!important)?\\s*;)', replace: fixWhiteHex },
     { find: '\\s*!important\\s*', replace: ' !important' }
   ]
@@ -366,12 +412,24 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       find: '(margin|padding)\\s*:\\s*([0-9.]+(?:r?em|px)?)\\s*([0-9.]+(?:r?em|px)?)\\s*([0-9.]+(?:r?em|px)?)\\s+\\3\\s*(?=;)',
       replace: '$1: $2 $3 $4'
     },
+    { find: 'font-family:\\s*([^;]+;)', replace: fixFontFamily },
     { find: '\\s+(?=[\r\n])', replace: '' }, // remove trailing white space
     { // Wrap URLs in single quotes
       find: '(url\\()[\'"]?([^)\'"]+)[\'"]?(?=\\))',
       replace: '$1\'$2\''
     },
-    { find: '\\s*$', replace: '\n' } // ensure file ends with a new line
+    { // ensure file ends with a new line
+      find: '\\s*$',
+      replace: '\n'
+    },
+    { // add missing new lines caused by the find/replace pair above
+      find: '([};])(?:[\\t ]*[\\r\\n]+)*([\\t ]*)(?=(?:[.#]|\\&|[a-z]+|\\[|@(?:media|supports|font-face|import|keyframes))[^,;{]*?\\s*[,{])',
+      replace: '$1\n\n$2'
+    },
+    { // add missing new lines caused by the find/replace pair above
+      find: '(\\})(?:[\\t ]*[\\r\\n]+)*([\\t ]*)(?=/\\*)',
+      replace: '$1\n\n$2'
+    }
     // { find: '', replace: '' },
     // { find: '', replace: '', flags: 'ig' },
   ]
@@ -411,13 +469,11 @@ doStuff.register({
     id: 'addKSS',
     label: 'Add KSS comment block',
     type: 'checkbox',
-    options: [
-      {
-        value: 'true',
-        label: 'Yes! Add a KSS comment block at the top of the file',
-        default: true
-      }
-    ]
+    options: [{
+      value: 'true',
+      label: 'Yes! Add a KSS comment block at the top of the file',
+      default: true
+    }]
   }],
   group: 'it',
   ignore: false,
@@ -494,4 +550,114 @@ doStuff.register({
 })
 
 //  END: KSS comment block
+// ====================================================================
+// START: Sort components alphabetically
+
+/**
+ * Sort components alphabetically
+ *
+ * created by: Evan Wills
+ * created: 2020-09-04
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const sortComponentsAlpha = (input, extraInputs, GETvars) => {
+  const allItems = new RegExp('(<ul[^>]*?class="component-list"[^>]*?>)\\s*(.*?)(?=</ul>)', 'igs')
+  const singleItem = new RegExp('<li(?: class="([^"]+)")?>\\s*<a(?: (href|target)="([^"]+)")(?: (href|target)="([^"]+)")?>(.*?)</a>\\s*</li>', 'igs')
+  const noHTML = new RegExp('<[^>]+>|[^a-z0-9\\-]+', 'igs')
+
+  const sortableText = (input) => {
+    const output = input.replace(noHTML, '')
+    console.log('output:', output)
+    console.log('output.toLowerCase():', output.toLowerCase())
+    return output.toLowerCase()
+  }
+
+  const sortByText = (a, b) => {
+    const foo = a.comp
+    const bar = b.comp
+    // console.group('sortByText')
+    // console.log('a.text:', a.text)
+    // console.log('foo:', foo)
+    // console.log('b.text:', b.text)
+    // console.log('bar:', bar)
+
+    if (foo < bar) {
+      // console.log('foo is less than bar:')
+      // console.groupEnd()
+      return -1
+    }
+
+    if (foo > bar) {
+      // console.log('foo is greater than bar:')
+      // console.groupEnd()
+      return 1
+    }
+
+    // console.log('foo is the same as bar:')
+    // console.groupEnd()
+    return 0
+  }
+
+  const sortItems = (whole, openWrapp, allLis) => {
+    const itemObjects = []
+    const unsorted = [...allLis.matchAll(singleItem)]
+    let output = ''
+    console.group('sortItems')
+    console.log(unsorted)
+
+    for (const key in unsorted) {
+      const tmp = {
+        comp: sortableText(unsorted[key][6]),
+        text: unsorted[key][6].replace('( ', '('),
+        state: unsorted[key][1],
+        url: (unsorted[key][2] === 'href') ? unsorted[key][3] : unsorted[key][5]
+      }
+      console.log('tmp:', tmp)
+      itemObjects.push(tmp)
+    }
+    console.log('itemObjects:', itemObjects)
+
+    // itemObjects.sort(sortByText)
+
+    console.log('itemObjects.sort(sortByText):', itemObjects.sort(sortByText))
+
+    for (const key in itemObjects) {
+      // console.group('outputing list')
+      // console.log('key:', key)
+      // console.log('itemObjects[key]:', itemObjects[key])
+      // console.log('itemObjects[key].state:', itemObjects[key].state)
+      // console.log('itemObjects[key].url:', itemObjects[key].url)
+      // console.log('itemObjects[key].text:', itemObjects[key].text)
+      // console.log('itemObjects[key].comp:', itemObjects[key].text)
+      output += '\n\t\t\t\t<li class="' + itemObjects[key].state + '">\n\t\t\t\t\t<a href="' + itemObjects[key].url + '" target="_blank">\n\t\t\t\t\t\t' + itemObjects[key].text.trim() + '\n\t\t\t\t\t</a>\n\t\t\t\t</li>\n'
+      // console.groupEnd()
+    }
+    console.groupEnd()
+    return openWrapp + output + '\t\t\t'
+  }
+
+  return input.replace(allItems, sortItems)
+}
+
+doStuff.register({
+  action: 'sortComponentsAlpha',
+  func: sortComponentsAlpha,
+  description: 'Sort list of components into alphabetical order',
+  // docsULR: '',
+  extraInputs: [],
+  // group: 'it',
+  ignore: false,
+  name: 'Sort components alphabetically'
+})
+
+//  END: Sort components alphabetically
 // ====================================================================
