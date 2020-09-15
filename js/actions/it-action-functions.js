@@ -576,34 +576,21 @@ const sortComponentsAlpha = (input, extraInputs, GETvars) => {
 
   const sortableText = (input) => {
     const output = input.replace(noHTML, '')
-    console.log('output:', output)
-    console.log('output.toLowerCase():', output.toLowerCase())
     return output.toLowerCase()
   }
 
   const sortByText = (a, b) => {
     const foo = a.comp
     const bar = b.comp
-    // console.group('sortByText')
-    // console.log('a.text:', a.text)
-    // console.log('foo:', foo)
-    // console.log('b.text:', b.text)
-    // console.log('bar:', bar)
 
     if (foo < bar) {
-      // console.log('foo is less than bar:')
-      // console.groupEnd()
       return -1
     }
 
     if (foo > bar) {
-      // console.log('foo is greater than bar:')
-      // console.groupEnd()
       return 1
     }
 
-    // console.log('foo is the same as bar:')
-    // console.groupEnd()
     return 0
   }
 
@@ -611,8 +598,6 @@ const sortComponentsAlpha = (input, extraInputs, GETvars) => {
     const itemObjects = []
     const unsorted = [...allLis.matchAll(singleItem)]
     let output = ''
-    console.group('sortItems')
-    console.log(unsorted)
 
     for (const key in unsorted) {
       const tmp = {
@@ -621,27 +606,14 @@ const sortComponentsAlpha = (input, extraInputs, GETvars) => {
         state: unsorted[key][1],
         url: (unsorted[key][2] === 'href') ? unsorted[key][3] : unsorted[key][5]
       }
-      console.log('tmp:', tmp)
       itemObjects.push(tmp)
     }
-    console.log('itemObjects:', itemObjects)
 
-    // itemObjects.sort(sortByText)
-
-    console.log('itemObjects.sort(sortByText):', itemObjects.sort(sortByText))
+    itemObjects.sort(sortByText)
 
     for (const key in itemObjects) {
-      // console.group('outputing list')
-      // console.log('key:', key)
-      // console.log('itemObjects[key]:', itemObjects[key])
-      // console.log('itemObjects[key].state:', itemObjects[key].state)
-      // console.log('itemObjects[key].url:', itemObjects[key].url)
-      // console.log('itemObjects[key].text:', itemObjects[key].text)
-      // console.log('itemObjects[key].comp:', itemObjects[key].text)
       output += '\n\t\t\t\t<li class="' + itemObjects[key].state + '">\n\t\t\t\t\t<a href="' + itemObjects[key].url + '" target="_blank">\n\t\t\t\t\t\t' + itemObjects[key].text.trim() + '\n\t\t\t\t\t</a>\n\t\t\t\t</li>\n'
-      // console.groupEnd()
     }
-    console.groupEnd()
     return openWrapp + output + '\t\t\t'
   }
 
