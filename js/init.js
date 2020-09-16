@@ -284,6 +284,23 @@ function DoStuff (url, _remote, docs) {
   const updateRegistry = (config) => {
     let tmp = false
 
+    if (typeof config.ignore === 'boolean' && config.ignore === true) {
+      // This action has been set to IGNORE
+      if (noIgnore !== config.action) {
+        // The user has not overridden the IGNORE directive via the URL
+        return false
+      }
+    }
+
+    if (typeof config.remote === 'boolean' && config.remote === true) {
+      if (allowRemote === false) {
+        console.warn('All remote actions are blocked from this host')
+        return false
+      } else if (baseURL.substring(0, 4) !== 'http') {
+        console.warn('URL (' + baseURL + ') does not point to a remote origin and is likely to be blocked by the browser.')
+      }
+    }
+
     tmp = invalidString('group', config, false)
 
     if (tmp === false) {
@@ -304,19 +321,10 @@ function DoStuff (url, _remote, docs) {
       throw new Error('a "action" property that is a non-empty string. ' + tmp + ' given.')
     }
 
-    if (typeof config.ignore === 'boolean' && config.ignore === true) {
-      // This action has been set to IGNORE
-      if (noIgnore !== config.action) {
-        // The user has not overridden the IGNORE directive via the URL
-        return false
-      }
-    }
-
     tmp = invalidString('name', config)
     if (tmp !== false) {
       throw new Error('a "name" property that is a non-empty string. ' + tmp + ' given.')
     }
-    actionName = config.name
 
     tmp = invalidString('inputLable', config)
     if (tmp === false) {
@@ -328,13 +336,6 @@ function DoStuff (url, _remote, docs) {
     if (config.remote === false) {
       if (typeof config.func === 'undefined' || !isFunction(config.func)) {
         throw new Error('a "func" property that is a plain javascript function. ' + tmp + ' given.')
-      }
-    } else {
-      if (allowRemote === false) {
-        console.warn('All remote actions are blocked from this host')
-        return false
-      } else if (baseURL.substring(0, 4) !== 'http') {
-        console.warn('URL (' + baseURL + ') does not point to a remote origin and is likely to be blocked by the browser.')
       }
     }
 
@@ -372,6 +373,7 @@ function DoStuff (url, _remote, docs) {
       throw new Error('DoStuff.initialiseAction() expects only parameter "_action" to be a string that matches a key in the registry of actions. ' + typeof _action + ' given.')
     }
     action = _action
+    actionName = registry[_action].name
 
     docTitle.innerHTML = 'Do JS Regex Stuff &ndash; ' + registry[_action].name
     subTitle.className = ''
