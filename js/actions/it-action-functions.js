@@ -299,46 +299,57 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     return _wholeProp.trim() + ': ' + _other + '$' + _colourVar
   }
 
-  const fixFontFamily = (whole, prop, value) => {
+  const fixFontFamily = (whole, value) => {
     const fontVars = [
       {
-        family: 'AvenirLTStd-Book',
+        // 'AvenirLTStd-Book',
+        family: 'avenirltstd-book',
         var: 'font--sans-serif'
       },
       {
-        family: 'Miller Text Rom',
+        // 'Miller Text Rom',
+        family: 'miller text rom',
         var: 'font--serif'
       },
       {
-        family: 'Nexa-Heavy',
+        // 'Nexa-Heavy',
+        family: 'nexa-heavy',
         var: 'heading-font'
       },
       {
-        family: 'Miller Text Bd',
+        // 'Miller Text Bd',
+        family: 'miller text bd',
         var: 'heading-2way-font'
       // },
       // {
-      //   family: 'AvenirLTStd-Heavy',
+      //   // 'AvenirLTStd-Heavy',
+      //   family: 'avenirltstd-heavy',
       //   var: ''
       // },
       // {
-      //   family: 'AvenirLTStd-Bold',
+      //   // 'AvenirLTStd-Bold',
+      //   family: 'avenirltstd-bold',
       //   var: ''
       // },
       // {
-      //   family: 'Miller Text Bd',
+      //   // 'Miller Text Bd',
+      //   family: 'miller text bd',
       //   var: ''
       // },
       // {
-      //   family: 'Nexa-Bold',
+      //   // 'Nexa-Bold',
+      //   family: 'nexa-bold',
       //   var: ''
       }
     ]
-    const lowerVal = value.toLowerCase()
 
-    for (let a = 0; a < fontVars.length; a += 1) {
-      if (lowerVal.indexOf(fontVars[a].family.toLowerCase()) >= 0) {
-        return 'font-family: $' + fontVars[a].var + ';'
+    if (typeof value === 'string') {
+      const lowerVal = value.toLowerCase()
+
+      for (let a = 0; a < fontVars.length; a += 1) {
+        if (lowerVal.indexOf(fontVars[a].family) >= 0) {
+          return 'font-family: $' + fontVars[a].var + ';'
+        }
       }
     }
 
