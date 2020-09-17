@@ -232,7 +232,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
    * @returns {string} Converted property value
    */
   const fixMultiPix = (whole) => {
-    console.log(whole.replace(/([\s:]+-?)([0-9]+)px/ig, fixSinglePix))
+    // console.log(whole.replace(/([\s:]+-?)([0-9]+)px/ig, fixSinglePix))
     return whole.replace(/([\s:]+-?)([0-9]+)px/ig, fixSinglePix)
   }
 
@@ -513,7 +513,6 @@ doStuff.register({
  */
 const kssCommentBlock = (input, extraInputs, GETvars) => {
   const doWhole = extraInputs.wholeComment('true')
-  console.log('doWhole:', doWhole)
 
   if (input.trim() === '') {
     return kssCommentStart + '*' + kssCommentEnd
@@ -535,8 +534,6 @@ const kssCommentBlock = (input, extraInputs, GETvars) => {
         replace: kssCommentEnd
       }
     }
-
-    console.log('findReplace:', findReplace)
 
     return multiRegexReplace(input, findReplace, 'ig')
   }

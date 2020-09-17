@@ -735,7 +735,7 @@ const isIterable = (input) => {
   if (input == null) {
     return false
   }
-  return typeof input[Symbol.iterator] === 'function'
+  return (typeof input[Symbol.iterator] === 'function' || typeof input.propertyIsEnumerable === 'function')
 }
 
 //  END: validation functions
