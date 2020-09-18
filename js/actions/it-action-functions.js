@@ -641,3 +641,117 @@ doStuff.register({
 
 //  END: Sort components alphabetically
 // ====================================================================
+// START: Remove duplicate characters from a list
+
+/**
+ * Sort components alphabetically
+ *
+ * created by: Evan Wills
+ * created: 2020-09-18
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const uniqueCharsOnly = (input, extraInputs, GETvars) => {
+  const found = []
+  const lost = {}
+  const digits = []
+  const requiredChars = extraInputs.requiredChars()
+  const dataSet = requiredChars.split('')
+  const maxDigits = 10
+  let output = ''
+  let sep0 = ' '
+  let sep1 = ''
+
+  // input = extraInputs.base()
+  const src = input.split('')
+
+  // console.log('dataSet:', dataSet)
+
+  for (let a = 0; a < src.length; a += 1) {
+    if (found.indexOf(src[a]) === -1 && dataSet.indexOf(src[a]) >= 0) {
+      found.push(src[a])
+      if (found.length === dataSet.length) {
+        console.log('a', a)
+        console.log('src.length', src.length)
+        break
+      }
+    }
+  }
+
+  // console.log('found:', found)
+
+  let b = 0
+  for (let a = 0; a < found.length; a += 1) {
+    if (typeof digits[b] === 'undefined') {
+      digits[b] = [found[a]]
+    } else {
+      digits[b].push(found[a])
+    }
+    lost[found[a]] = b
+
+    b += 1
+    if (b >= maxDigits) {
+      b = 0
+    }
+  }
+
+  // console.log('digits:', digits)
+  // console.log('lost:', lost)
+
+  output = '$dictionary = array('
+  for (let a = 0; a < digits.length; a += 1) {
+    sep1 = ''
+    console.log('digits[' + a + ']:', digits[a])
+    console.log('digits[' + a + '].length:', digits[a].length)
+    output += sep0 + '\n\tarray( '
+    for (let b = 0; b < digits[a].length; b += 1) {
+      output += sep1 + "'" + digits[a][b] + "'"
+      sep1 = ', '
+    }
+    output += ' )'
+    sep0 = ','
+  }
+
+  output += '\n);\n\n$chars = array('
+  sep0 = ' '
+  for (const key in lost) {
+    output += sep0 + "'" + key + "' => '" + lost[key] + "'"
+    sep0 = ', '
+  }
+
+  output += ');'
+
+  return output
+}
+
+doStuff.register({
+  action: 'uniqueCharsOnly',
+  func: uniqueCharsOnly,
+  description: 'Remove duplicate characters from a string',
+  // docsULR: '',
+  extraInputs: [{
+    id: 'requiredChars',
+    label: 'Required Characters',
+    type: 'text',
+    default: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  }, {
+    id: 'base',
+    label: 'default source',
+    type: 'text',
+    default: 'zgqXOnRN7i4Gqe2x4JNjaH4wDm35e9FWb2dmrkKEjYs6RaDh8RrBbgZecxWOWUirEYFydC0AzGFCOJ35GTbSPgDrdrwwfTSreH1HeiEmRNo1x27v4qAgOIkhc95AbeVVRJVfXuz4rLdAnpZMPYxe7Ugj8OQbgjedUJGJ2xAUF6ht2KLAy1meS9HMshRaukvakvoTLk7wvsyaqWX8zTJ7QmX67s1cPRkMQJqFdwT7c9YJDUq15NfHqy0Omgo0OnTr3oIE3ZxXB50Erm9lWTiWFNSiQqtcTXnsRBebJA4x0ccZiu2SslxQmF93CUY'
+  }],
+  // group: 'it',
+  ignore: true,
+  name: 'Unique characters only'
+})
+
+//  END: Sort components alphabetically
+// ====================================================================
