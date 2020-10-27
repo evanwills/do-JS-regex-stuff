@@ -1,5 +1,5 @@
 // Copy the below code to the appropriate action file, rename it
-//
+/* global doStuff */
 
 // ====================================================================
 // START: Action name

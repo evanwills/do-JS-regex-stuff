@@ -4,7 +4,8 @@
 // other global functions available:
 //   invalidString, invalidStrNum, invalidNum, invalidArray, makeAttributeSafe, isFunction, makeHumanReadableAttr
 
-const kssCommentStart = '/**\n * Component title\n *\n * Comment description goes here (may be multiple lines)\n *\n * Sample file path: [relative to \\ACU.Sitecore\\website\n *                    e.g. src\\Project\\ACUPublic\\ACU.Static\\components\\anchor_links.html]\n *\n *\n * Markup:\n '
+const kssCommentStart = '/**\n * Component title\n *\n * Comment description goes here (may be multiple lines)\n *\n * Sample file path: [[SAMPLE_PATH]]\n *\n *\n * Markup:\n '
+const kssSamplePath = '[relative to \\ACU.Sitecore\\website\n *                    e.g. src\\Project\\ACUPublic\\ACU.Static\\components\\anchor_links.html]'
 const kssCommentEnd = '\n *\n * .modifiers - Description of Modifier\n *\n * StyleGuide: Molecule.Molecule name\n */\n// {{modifier_class}} - use this in place of a modifier class name in the sample "Markup" block\n'
 
 // ====================================================================
@@ -440,7 +441,8 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     { // add missing new lines caused by the find/replace pair above
       find: '(\\})(?:[\\t ]*[\\r\\n]+)*([\\t ]*)(?=/\\*)',
       replace: '$1\n\n$2'
-    }
+    },
+    { find: '\\[\\[SAMPLE_PATH\\]\\]', replace: kssSamplePath }
     // { find: '', replace: '' },
     // { find: '', replace: '', flags: 'ig' },
   ]
@@ -513,6 +515,14 @@ doStuff.register({
  */
 const kssCommentBlock = (input, extraInputs, GETvars) => {
   const doWhole = extraInputs.wholeComment('true')
+  let samplePath = extraInputs.samplePath()
+
+  if (samplePath !== '') {
+    samplePath = samplePath.replace(/\\/g, '/')
+    samplePath = samplePath.replace(/^.*?(?=\/ACU.Sitecore)/ig, '')
+  } else {
+    samplePath = kssSamplePath
+  }
 
   if (input.trim() === '') {
     return kssCommentStart + '*' + kssCommentEnd
@@ -533,6 +543,10 @@ const kssCommentBlock = (input, extraInputs, GETvars) => {
         find: '\\s*$',
         replace: kssCommentEnd
       }
+      findReplace.samplePath = {
+        find: '\\[\\[SAMPLE_PATH\\]\\]',
+        replace: samplePath
+      }
     }
 
     return multiRegexReplace(input, findReplace, 'ig')
@@ -551,6 +565,10 @@ doStuff.register({
     options: [
       { value: 'true', label: 'Yes! Build whole comment', default: true }
     ]
+  }, {
+    id: 'samplePath',
+    label: 'Path to sample HTML',
+    type: 'text'
   }],
   // group: 'it',
   ignore: false,

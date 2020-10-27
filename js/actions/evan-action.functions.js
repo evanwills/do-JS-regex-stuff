@@ -252,7 +252,7 @@ doStuff.register({
   action: 'buildAcroSQL',
   func: buildAcroSQL,
   group: 'evan',
-  ignore: false,
+  ignore: true,
   name: 'SQL for inserting SA Main acros into form_build'
   // description: 'Fix heading levels when Migrating HTML from one system to another',
   // docURL: '',
@@ -377,4 +377,577 @@ doStuff.register({
 })
 
 //  END: Clean CSS
+// ====================================================================
+// START: Action name
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const artBotSpeeds = (input, extraInputs, GETvars) => {
+  const ratio = extraInputs.ratio() * 1
+  const swap = extraInputs.swap('true')
+  const baseSpeed = extraInputs.baseSpeed() * 1
+  const maxSpeed = extraInputs.maxSpeed() * 1
+  const _backwards = (ratio < 0)
+  const _primes = [
+    '1', '2', '3', '5', '7', '11',
+    '13', '17', '19', '23', '29', '31',
+    '37', '41', '43', '47', '53', '59',
+    '61', '67', '71', '73', '79', '83',
+    '89', '97'
+  ]
+  const _okNonPrimes = {
+    4: ['2'],
+    6: ['2', '3'],
+    9: ['3'],
+    10: ['2', '5'],
+    14: ['2', '7'],
+    15: ['3', '5'],
+    21: ['3', '7'],
+    22: ['2', '11'],
+    25: ['5'],
+    26: ['2', '13'],
+    33: ['3', '11'],
+    34: ['2', '17'],
+    35: ['5', '7'],
+    38: ['2', '19'],
+    39: ['3', '13'],
+    46: ['2', '23'],
+    49: ['7'],
+    51: ['3', '17'],
+    55: ['5', '11'],
+    57: ['3', '19'],
+    58: ['2', '29'],
+    62: ['2', '31'],
+    65: ['5', '13'],
+    69: ['3', '23'],
+    74: ['2', '37'],
+    77: ['7', '11'],
+    82: ['2', '41'],
+    85: ['5', '17'],
+    86: ['2', '43'],
+    87: ['3', '29'],
+    91: ['7', '13'],
+    93: ['3', '31'],
+    94: ['2', '47'],
+    95: ['5', '19']
+  }
+
+  /**
+   * Get the nearest viable value to the one supplied
+   *
+   * @param {string} input Number whose closest viable number is to
+   *                       be returned
+   * @param {number} prox  relative proximity to input
+   */
+  const getNearest = (input, prox) => {
+    const _prox = (typeof prox === 'number') ? prox : 0
+    let _tmp = 0
+
+    if (_prox === 0) {
+      if (_primes.indexOf(input) > -1) {
+        return {
+          val: input,
+          isPrime: true,
+          factors: []
+        }
+      }
+      if (typeof _okNonPrimes[input] !== 'undefined') {
+        return {
+          val: input,
+          isPrime: false,
+          factors: _okNonPrimes[input]
+        }
+      }
+    } else {
+      // adjacent prime
+      _tmp = input + _prox
+      _tmp = _tmp.toString()
+      if (_primes.indexOf(_tmp) > -1) {
+        return {
+          val: _tmp,
+          isPrime: true,
+          factors: []
+        }
+      }
+
+      // adjacent prime
+      _tmp = input - _prox
+      _tmp = _tmp.toString()
+      if (_primes.indexOf(_tmp) > -1) {
+        return {
+          val: _tmp,
+          isPrime: true,
+          factors: []
+        }
+      }
+
+      // adjacent OK non-prime
+      _tmp = input + _prox
+      _tmp = _tmp.toString()
+      if (typeof _okNonPrimes[_tmp] !== 'undefined') {
+        return {
+          val: _tmp,
+          isPrime: false,
+          factors: _okNonPrimes[_tmp]
+        }
+      }
+
+      // adjacent OK non-prime
+      _tmp = input - _prox
+      _tmp = _tmp.toString()
+      if (typeof _okNonPrimes[_tmp] !== 'undefined') {
+        return {
+          val: _tmp,
+          isPrime: false,
+          factors: _okNonPrimes[_tmp]
+        }
+      }
+    }
+
+    return getNearest(input, _prox + 1)
+  }
+
+  /**
+   *
+   * @param {string} inputA Initial value for left motor speed
+   * @param {string} inputB Initial value for right motor speed
+   */
+  const noSharedFactors = (inputA, inputB) => {
+    const _inputA = getNearest(inputA)
+
+    if (_inputA.isPrime) {
+      return {
+        left: _inputA.val,
+        right: inputB
+      }
+    }
+
+    const _inputB = getNearest(inputB)
+    if (_inputB.isPrime) {
+      return {
+        left: inputA,
+        right: _inputB.val
+      }
+    }
+
+    if (_inputA.factors.indexOf(_inputB.val) > -1 || _inputB.factors.indexOf(_inputA.val) > -1) {
+      // One of the values is a factor of the other
+      // Just give up
+      return false
+    } else {
+      const _primary = (_inputA.factors.length > _inputB.factors.length)
+        ? _inputA
+        : _inputB
+      const _secondary = (_inputA.factors.length < _inputB.factors.length)
+        ? _inputB
+        : _inputA
+
+      for (let a = 0; a < _primary.factors.length; a += 1) {
+        if (_secondary.factors.indexOf(_primary.factors[a]) > -1) {
+          return false
+        }
+      }
+
+      return {
+        left: _inputA.val,
+        right: _inputB.val
+      }
+    }
+  }
+
+  /**
+   * Undocumented function
+   *
+   * @param float   ratio     decimal (up to 5 decimal places) between -1 and 1
+   * @param boolean swap      swap the values for the wheels
+   * @param integer baseSpeed The base speed of the motors of ratio = 0
+   *
+   * @return array
+   */
+  const getMotorSpeeds = (_ratio_, _swap, _baseSpeed, _topSpeed) => {
+    const _totalSpeed = _baseSpeed * 2
+    const _maxSpeed = (typeof _topSpeed !== 'number' || _topSpeed > 100 || _topSpeed < -100) ? 100 : _topSpeed
+    let _output = { left: baseSpeed, right: baseSpeed }
+
+    let _ratio = (_backwards) ? -_ratio_ : _ratio_
+    let _left = _baseSpeed
+    let _right = _baseSpeed
+
+    _ratio = (_ratio > 1) ? 1 / _ratio : _ratio
+    _ratio = 1 - _ratio
+
+    _left = _baseSpeed * _ratio
+    _right = _totalSpeed - _left
+    _output.left = _left
+    _output.right = _right
+
+    if (_right > _maxSpeed) {
+      _right = Math.round(_right)
+      if (_right > 100) {
+        // debug('going into recursion', _left, _right);
+        _output = getMotorSpeeds(
+          ratio,
+          swap,
+          (baseSpeed - ((_right - _maxSpeed) / 2))
+        )
+      }
+    }
+
+    return noSharedFactors(
+      Math.round(_output.left),
+      Math.round(_output.right)
+    )
+  }
+
+  let output = getMotorSpeeds(ratio, swap, baseSpeed, maxSpeed)
+  if (output === false) {
+    // OK output is DUD, maybe if we adjust the baseSpeed, we can get something w
+    for (let a = 0; a < 20; a += 1) {
+      if ((baseSpeed + a) > maxSpeed) {
+        break
+      }
+
+      output = getMotorSpeeds(ratio, swap, (baseSpeed + a), maxSpeed)
+      if (output !== false) {
+        break
+      } else {
+        output = getMotorSpeeds(ratio, swap, (baseSpeed - a), maxSpeed)
+        if (output !== false) {
+          break
+        }
+      }
+    }
+  }
+
+  if (output !== false) {
+    let tmp
+
+    if (swap) {
+      tmp = output.left
+      output.left = output.right
+      output.right = tmp
+    }
+
+    if (_backwards) {
+      output.left = -output.left
+    }
+
+    return ' Left: ' + output.left + '\nRight: ' + output.right
+  } else {
+    return 'Could not get usable motor speeds'
+  }
+}
+
+doStuff.register({
+  action: 'artBotSpeeds',
+  func: artBotSpeeds,
+  description: '',
+  // docsULR: '',
+  extraInputs: [{
+    id: 'ratio',
+    type: 'number',
+    label: 'Ratio as decimal',
+    default: 0.236498,
+    min: -2,
+    max: 2,
+    step: 0.000001
+  }, {
+    id: 'swap',
+    type: 'checkbox',
+    label: 'swap',
+    options: [
+      {
+        value: 'true',
+        label: 'Swap values for motors'
+      }
+    ]
+  }, {
+    id: 'baseSpeed',
+    type: 'number',
+    label: 'base speed of the motors at a ratio of 0',
+    default: 50,
+    min: -100,
+    max: 100
+  }, {
+    id: 'maxSpeed',
+    type: 'number',
+    label: 'Maximum allowable speed of the motors',
+    default: 80,
+    min: -100,
+    max: 100
+  }],
+  group: 'evan',
+  ignore: false,
+  name: 'Calculate Artbot Motor Speeds'
+})
+
+// ====================================================================
+// START: ACUSIS queries
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const acusysQueries = (input, extraInputs, GETvars) => {
+  const _invoices = input.split('\n')
+  let _in = ''
+  let _sep = ''
+  for (let a = 0; a < _invoices.length; a += 1) {
+    _in += _sep + '\n      \'' + _invoices[a].trim() + '\''
+    _sep = ','
+  }
+
+  return `
+-- ====================================================
+-- RUN BOTH THESE QUERIES IN ORDER EVERY TIME
+-- (It saves you having to run them separately each time)
+
+-- ==========================
+-- Revert previous (below) change before re-running the update
+
+UPDATE acu_project_invoice
+SET    datesenttofinanace = null
+WHERE  status = 'Approved'
+AND    CAST(datesenttofinanace AS DATE) = CAST(GETDATE() AS DATE)
+AND    invoiceno IN (
+        -- - - - - - - - - - - - - - - - - - - - -
+        -- Below are all the invoice IDs to be checked
+        --
+        -- These IDs do not need to be changed/commented
+${_in}
+);
+
+
+-- ==========================
+-- Make change
+
+UPDATE acu_project_invoice
+SET    datesenttofinanace = getdate()
+WHERE  status = 'Approved'
+AND    datesenttofinanace is null
+AND    invoiceno IN (
+        -- - - - - - - - - - - - - - - - - - - - -
+        -- Below here should go all the invoice IDs to be checked
+        -- (Use the same list as above)
+        --
+        -- Comment all of the below out (one by one)
+        --
+        -- Step 1:  Comment out the first ID
+        -- Step 2:  Run the both SQL Queries
+        -- Step 3:  Test the batch
+        --          https://acusis.acu.edu.au/ACUSIS/ACUdefault/Enhancement/ProjectProcurement/Send_finance_email.aspx
+        -- Step 4a: If the batch failed add a commnet after the
+        --          failing ID to identify it as bad and uncomment
+        --          it.
+        -- Step 5b: If the batch succeeded, leave it the ID commented
+        --          out
+        -- Step 6:  Repeat steps 1 - 5 until all bad IDs have been
+        --          identified for each subsequent ID
+        --
+        -- NOTE: You do not need to comment out any of the IDs in the
+        --       last SQL Statement
+        --       These are ignored if their datSsenTtoFinanace is NULL
+        -- - - - - - - - - - - - - - - - - - - - -
+${_in}
+);`
+}
+
+doStuff.register({
+  action: 'acusysQueries',
+  func: acusysQueries,
+  description: '',
+  // docsULR: '',
+  extraInputs: [],
+  group: 'evan',
+  ignore: false,
+  name: 'ACUSIS queries'
+})
+
+//  END: ACUSIS queries
+// ====================================================================
+// START: ACU Form Build email hash search
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const emailHashSearch = (input, extraInputs, GETvars) => {
+  const rows = input.split('\n')
+  const IDs = []
+  let IDstring = ''
+  let sep = ''
+  let output = ''
+  console.log('rows:', rows)
+  for (let a = 0; a < rows.length; a += 1) {
+    if (rows[a].trim() !== '') {
+      const row = rows[a].split('\t')
+      console.log('row:', row)
+      if (row[1].trim() !== '') {
+        const ref = row[1].split('_')
+        console.log('ref:', ref)
+        const acro = ref[0].trim()
+        const id = ref[1].trim()
+        console.log('acro:', acro)
+        console.log('id:', id)
+        IDs.push(id)
+        IDstring += sep + id
+        sep = ', '
+      }
+    }
+  }
+
+  output = `\n-- Total rows: ${IDs.length}\n\nSELECT COUNT(*)\nFROM \`email_hash\`\nWHERE \`user_id\` IN ( ${IDstring} );`
+
+  return output
+}
+
+doStuff.register({
+  action: 'emailHashSearch',
+  func: emailHashSearch,
+  description: '',
+  // docsULR: '',
+  extraInputs: [],
+  // group: '',
+  ignore: false,
+  name: 'ACU Form Build email hash search'
+})
+
+//  END: ACU Form Build email hash search
+// ====================================================================
+// START: Fix bad ACU.Sitecore merge
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const fixBadSitecoreMerge = (input, extraInputs, GETvars) => {
+  var lines = input.split('\n')
+  var uncommitted = false
+  var untracked = false
+  var line = ''
+  var output = ''
+  var file = ''
+  var checkoutFiles = ''
+  var rmFiles = ''
+  var rmDirs = ''
+  var thisURL = 'file:///C:/Users/evwills/Documents/Evan/code/do-JS-regex-stuff/do-JS-regex-stuff.html?groups=it,evan&action=fixbadsitecoremerge'
+
+  for (var a = 0; a < lines.length; a += 1) {
+    line = lines[a].trim()
+
+    if (line === '' || line.substring(line.length - 3) === '.sh' || line.substr(0, 9) === 'On branch' || line.substr(0, 1) === '(' || line.substr(0, 10) === 'no changes' || line.substr(0, 33) === 'src/Project/ACUPublic/ACU.Static/') {
+      console.log('Skipping line:', line)
+      continue
+    }
+
+    if (line === 'Changes not staged for commit:') {
+      uncommitted = true
+      untracked = false
+      // output += '\n-----------------------\necho "Undoing merge"\n\n'
+      continue
+    }
+    if (line === 'Untracked files:') {
+      uncommitted = false
+      untracked = true
+      // output += '\n-----------------------\necho "Removing untracked files"\n\n'
+      continue
+    }
+
+    if (uncommitted === true) {
+      file = line.replace(/^(?:deleted|modified):[\\t ]*/, '')
+      console.log('file:', file)
+      console.log('line:', line)
+      if (file !== line) {
+        checkoutFiles += ' "' + file + '"'
+      }
+    } else if (untracked === true) {
+      if (line.substr(line.length - 1) === '/') {
+        rmDirs += ' "' + line + '"'
+      } else {
+        rmFiles += ' "' + line + '"'
+      }
+    }
+  }
+
+  if (checkoutFiles !== '') {
+    output += '\n\n-----------------------\necho "Files to be reset";\n\ngit checkout' + checkoutFiles + ';\n\ngit reset' + checkoutFiles + ';'
+  }
+  if (rmFiles !== '') {
+    output += '\n\n-----------------------\necho "Files to be deleted";\n\nrm' + rmFiles + ';'
+  }
+  if (rmDirs !== '') {
+    output += '\n\n-----------------------\necho "Directories to be deleted";\n\nrm -rf' + rmDirs + ';'
+  }
+
+  if (output !== '') {
+    output = '#!/bin/sh\n\n// ' + thisURL + '\n\n' + output + '\n\n\ngit status;\n\n// ' + thisURL + '\n\n'
+  } else {
+    output = input
+  }
+
+  return output
+}
+
+doStuff.register({
+  action: 'fixBadSitecoreMerge',
+  func: fixBadSitecoreMerge,
+  description: '',
+  // docsULR: '',
+  extraInputs: [],
+  // group: '',
+  ignore: false,
+  name: 'Fix bad ACU.Sitecore merge'
+})
+
+//  END: Fix bad ACU.Sitecore merge
 // ====================================================================
