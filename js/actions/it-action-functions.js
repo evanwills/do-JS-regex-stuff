@@ -773,3 +773,70 @@ doStuff.register({
 
 //  END: Sort components alphabetically
 // ====================================================================
+// START: Sitecore HTML to local HTML
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const sitecore2local = (input, extraInputs, GETvars) => {
+  var reg1 = new RegExp('/assets/acupublic/(?:custom)?(?=(?:css|js|fonts)/)', 'ig')
+  var reg2 = new RegExp('(<img src=")(?=/-/media/feature/)', 'ig')
+  var replace2 = '$1https://' + extraInputs.domain() + '.acu.edu.au'
+
+  console.log('reg1:', reg1)
+  console.log('reg2:', reg2)
+  console.log('replace2:', replace2)
+
+  var _output = input.replace(reg1, '../')
+  return _output.replace(reg2, replace2)
+}
+
+doStuff.register({
+  action: 'sitecore2local',
+  func: sitecore2local,
+  description: 'Rewrite URLs to point to local version of CSS, font & JS files. Plus rewrite image URLs to point to server.',
+  // docsULR: '',
+  extraInputs: [{
+    id: 'domain',
+    label: 'Domain',
+    type: 'select',
+    options: [{
+      value: 'uat',
+      label: 'UAT'
+    }, {
+      value: 'auth.uat',
+      label: 'Auth UAT'
+    }, {
+      value: 'qa',
+      label: 'QA'
+    }, {
+      value: 'auth.qa',
+      label: 'Auth QA'
+    }, {
+      value: 'www',
+      label: 'WWW'
+    }, {
+      value: 'auth',
+      label: 'Auth WWW'
+    }]
+  }],
+  group: 'it',
+  ignore: false,
+  name: 'Sitecore HTML to local HTML'
+})
+
+//  END: Sitecore HTML to local HTML
+// ====================================================================

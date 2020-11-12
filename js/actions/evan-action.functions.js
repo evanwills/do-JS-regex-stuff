@@ -845,7 +845,7 @@ doStuff.register({
   description: '',
   // docsULR: '',
   extraInputs: [],
-  // group: '',
+  group: 'evan',
   ignore: false,
   name: 'ACU Form Build email hash search'
 })
@@ -944,10 +944,158 @@ doStuff.register({
   description: '',
   // docsULR: '',
   extraInputs: [],
-  // group: '',
+  group: 'evan',
   ignore: false,
   name: 'Fix bad ACU.Sitecore merge'
 })
 
 //  END: Fix bad ACU.Sitecore merge
+// ====================================================================
+// START: Accept all origin changes
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const acceptChanges = (input, extraInputs, GETvars) => {
+  var lines = input.split('\n')
+  var line = ''
+  var output = ''
+  var oursTheirs = extraInputs.oursTheirs()
+  var doAdd = extraInputs.add('add')
+  var doCheckout = extraInputs.add('checkout')
+  var a
+
+  oursTheirs = (typeof oursTheirs === 'string') ? oursTheirs : 'theirs'
+  console.log('lines:', lines)
+  console.log('lines.length:', lines.length)
+  console.log('oursTheirs:', oursTheirs)
+
+  for (a = 0; a < lines.length; a += 1) {
+    console.log('lines[' + a + ']:', lines[a])
+    line = lines[a].trim()
+    console.log('line:', line)
+    line = line.replace(/^both modified:\s+/, '')
+    console.log('line:', line)
+
+    if (line !== '') {
+      if (doCheckout === true) {
+        output += 'git checkout --' + oursTheirs + ' "' + line + '";\n'
+      }
+      if (doAdd === true) {
+        output += 'git add "' + line + '";\n'
+      }
+      console.log('output:', output)
+    }
+  }
+
+  if (output !== '') {
+    output += 'git status;\n'
+  }
+
+  return output
+}
+
+doStuff.register({
+  action: 'acceptChanges',
+  func: acceptChanges,
+  description: '',
+  // docsULR: '',
+  extraInputs: [{
+    id: 'oursTheirs',
+    label: 'Mine or theirs?',
+    type: 'radio',
+    options: [{
+      value: 'ours',
+      label: 'Mine'
+    }, {
+      value: 'theirs',
+      label: 'Theirs',
+      default: true
+    }]
+  }, {
+    id: 'add',
+    label: 'Git commands',
+    type: 'checkbox',
+    options: [{
+      value: 'checkout',
+      label: 'Do `git checkout`',
+      default: true
+    }, {
+      value: 'add',
+      label: 'Do `git add`',
+      default: true
+    }]
+  }],
+  group: 'evan',
+  ignore: false,
+  name: 'Accept merge changes'
+})
+
+//  END: DUMMY action
+// ====================================================================
+// START: side-accordion IDs
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const sideAccordionIDs = (input, extraInputs, GETvars) => {
+  const regex = new RegExp(
+    '(@if \\(!string\\.IsNullOrEmpty\\(Model(?:\\.(?:DataItemModel|StudentType))?\\.' +
+    '([^)]+)' +
+    '\\)\\)\\s+\\{\\s+<div class="side-accordion")(?=>)',
+    'gi'
+  )
+
+  const replaceFunc = (whole, ifPart, varPart) => {
+    console.log('whole:', whole)
+    console.log('ifPart:', ifPart)
+    console.log('varPart:', varPart)
+    var _varPart = varPart.replace(/[^a-zA-Z]+/ig, '-')
+    _varPart = _varPart.replace(/([a-z])(?=[A-Z])/g, '$1-')
+    return ifPart + ' id="' + _varPart.toLowerCase() + '"'
+  }
+
+  console.log('regex:', regex)
+
+  return input.replace(regex, replaceFunc)
+}
+
+doStuff.register({
+  action: 'sideAccordionIDs',
+  func: sideAccordionIDs,
+  description: '',
+  // docsULR: '',
+  extraInputs: [],
+  group: 'evan',
+  ignore: false,
+  name: 'Side Accordion IDs'
+})
+
+//  END: side-accordion IDs
 // ====================================================================
