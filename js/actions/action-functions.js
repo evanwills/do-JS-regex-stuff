@@ -1022,7 +1022,7 @@ doStuff.register({
 
 //  END: fixPoliciesAnchorLinksV1
 // ====================================================================
-// START: DUMMY action
+// START: Strip inline styles from table elements
 
 /**
  *
@@ -1040,18 +1040,40 @@ doStuff.register({
  *
  * @returns {string} modified version user input
  */
-// function functionName (input, extraInputs, GETvars) {
-// }
+function stripTableStyles (input, extraInputs, GETvars) {
+  const tableRegex = new RegExp('<(?:table|t(?:[hdr]|head|body|foot))[^>]+>', 'igs')
+  const allStyle = new RegExp('\\sstyle="[^"]+"', 'igs')
+  const tableInner = (whole) => {
+    console.log('whole:', whole)
+    return whole.replace(allStyle, '')
+  }
 
-// doStuff.register({
-//   action: '',
-//   func: functionName,
-//   description: '',
-//   // docsULR: '',
-//   extraInputs: [],
-//   ignore: false,
-//   name: ''
-// })
+  if (extraInputs.whichStyle() === 'table') {
+    return input.replace(tableRegex, tableInner)
+  } else {
+    return tableInner(input)
+  }
+}
+
+doStuff.register({
+  action: 'stripTableStyles',
+  func: stripTableStyles,
+  description: 'Remove style attributes (inline styles) from HTML',
+  // docsULR: '',
+  extraInputs: [
+    {
+      id: 'whichStyle',
+      label: 'Which style blocks to delete',
+      type: 'radio',
+      options: [
+        { value: 'table', label: 'Only table (and related elements)', default: true },
+        { value: 'all', label: 'All style attributes' }
+        // { value: 'other', label: 'Other' }
+      ]
+    }],
+  ignore: false,
+  name: 'Strip inline table styles'
+})
 
 //  END: DUMMY action
 // ====================================================================
