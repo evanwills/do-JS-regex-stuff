@@ -792,16 +792,74 @@ doStuff.register({
  * @returns {string} modified version user input
  */
 const sitecore2local = (input, extraInputs, GETvars) => {
-  var reg1 = new RegExp('/assets/acupublic/(?:custom)?(?=(?:css|js|fonts)/)', 'ig')
-  var reg2 = new RegExp('(<img src=")(?=/-/media/feature/)', 'ig')
-  var replace2 = '$1https://' + extraInputs.domain() + '.acu.edu.au'
+  const idClean = (_whole, _start, _id) => {
+    return _start + _id.replace(/[^a-z0-9]+/ig, '-')
+  }
+  const getTitle = new RegExp('<title>([^<]+)</title>', 'igs')
+  let titleBits
+  let _title = ''
 
-  console.log('reg1:', reg1)
-  console.log('reg2:', reg2)
-  console.log('replace2:', replace2)
+  if ((titleBits = getTitle.exec(input)) !== null) {
+    _title = titleBits[1]
+    _title = _title.trim()
+    _title = _title.replace(/[^a-z0-9]+/ig, '-')
+    _title = _title.toLowerCase()
+    if (_title !== '') {
+      input += '\n\n\n<!-- file-name: ' + _title + '.html -->'
+    }
+  }
 
-  var _output = input.replace(reg1, '../')
-  return _output.replace(reg2, replace2)
+  const regex = [
+    {
+      find: '/assets/acupublic/(?:custom)?(?=(?:css|js|fonts)/)',
+      replace: '../'
+    }, {
+      find: '(<img src=")(?=/-/media/feature/)',
+      replace: '$1https://' + extraInputs.domain() + '.acu.edu.au'
+    }, {
+      find: '\\.\\.(?=\\/js\\/(?:cta-bar|sticky|side-accordion)\\.js)',
+      replace: '../../../../Foundation/ACUPublic/Theming/code/assets/ACUPublic'
+    }, {
+      find: '\\s+target=""',
+      replace: ''
+    }, {
+      find: '\\s+v-model="[^"]*"',
+      replace: ''
+    }, {
+      find: '(\\s+id=")([^"]+)(?=")',
+      replace: idClean
+    }, {
+      find: '\\s*<meta (?:name|property)="[^"]+"(?:\\s*/)?>',
+      replace: ''
+    }, {
+      find: ' type="text/javascript"',
+      replace: ''
+    }, {
+      find: '<%--.*?--%>',
+      replace: '',
+      flags: 'igs'
+    }, {
+      find: '(<input type="hidden" id="hdnStickyEncodeValue" />.*?</button>.*?</label>\\s+)+',
+      replace: '$1',
+      flags: 'igs'
+    }, {
+      find: '<!--(GoogleAnalytics Section) Starts-->.*?<!--GoogleAnalytics Section Ends-->',
+      replace: '',
+      flags: 'igs'
+    }, {
+      find: '<linked-c.*?data-code=[\'"]([^\'"]+)[\'"] data-name=[\'"]([^\'"]+)[\'"].*?</linked-co>',
+      replace: '<a href="/Handbook/Handbook-2021/Course/unit/$1" title="$2">$1</a>',
+      flags: 'igs'
+    }, {
+      find: '/sitecore%20modules/Web/ExperienceForms/scripts/',
+      replace: '../js/sitecore/'
+    }, {
+      find: '(href="#)course(?=overview")',
+      replace: '$1'
+    }
+  ]
+
+  return multiRegexReplace(input, regex)
 }
 
 doStuff.register({
