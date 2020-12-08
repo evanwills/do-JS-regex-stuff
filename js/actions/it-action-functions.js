@@ -187,6 +187,7 @@ doStuff.register({
 function fixSassLintIssues (input, extraInputs, GETvars) {
   const remPixels = extraInputs.remValue()
   const _hasStyleGuide = new RegExp('styleguide:', 'i')
+  const _kssSamplePath = (extraInputs.samplePath() !== '') ? extraInputs.samplePath() : kssSamplePath
 
   /**
    * Convert pixel values to REMs with accuracy of up to 2 decimal
@@ -212,16 +213,23 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     }
     const key = (value * 1)
     let output = ''
+    console.group('fixSinglePix()')
+    console.log('whole:', whole)
+    console.log('value:', value)
+    console.log('preSpace:', preSpace)
 
     if (typeof mediaPx[key] === 'string') {
       output = mediaPx[key]
+    } else if (value == 0) {
+      output = '0'
     } else {
       output = Math.round((value / remPixels) * 100) / 100
       output = output + ''
       output = output.replace(/^0+/, '')
       output += 'rem'
     }
-
+    console.log('output:', output)
+    console.groupEnd()
     return preSpace + output
   }
 
@@ -261,14 +269,25 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       return _output.replace(/\s+(?=:|;)/g, '')
     }
 
+    // console.groupCollapsed('fixWhiteHex()')
+
     if (value.indexOf('#') === -1) {
+      // console.groupEnd()
       return cleanWhole(whole)
     }
 
-    const _colour = value.replace(/^.*?(#(?:(?:(?:f{3}){1,2})|(?:74){3})).*$/i, '$1')
+    const _colour = value.replace(/^.*?(#[a-f0-9]{3,6})/i, '$1')
     let _other = value.replace(_colour, '')
+    // console.log('whole:', whole)
+    // console.log('wholeProp:', wholeProp)
+    // console.log('propMain:', propMain)
+    // console.log('value:', value)
+    // console.log('_colour:', _colour)
+    // console.log('_other:', _other)
+    // console.log('(_other === value):', (_other === value))
 
     if (_other === value) {
+      // console.groupEnd()
       // This is not a value we care about.
       // Hand it back unchanged
       return cleanWhole(whole)
@@ -294,9 +313,10 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
         _colourVar = (_isLight) ? 'text-colour-light' : 'grey-border'
         break
       default:
+        // console.groupEnd()
         return cleanWhole(whole)
     }
-
+    // console.groupEnd()
     return _wholeProp.trim() + ': ' + _other + '$' + _colourVar
   }
 
@@ -408,10 +428,16 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
    *                                 converted to a RegExp object
    */
   const mainModifiers = [
-    { find: '([\\s:]+-?[0-9]+px)+(?=\\s+|;|\\))', replace: fixMultiPix },
+    {
+      find: '([\\s:]+-?[0-9]+px)+(?=\\s+|;|\\))',
+      replace: fixMultiPix
+    },
     { find: '0(?:px|r?em)', replace: '0' },
-    { find: '0(\\.[0-9]+)', replace: '$1' },
-    { find: '(border(?:-(?:top|right|bottom|left))?)\\s*:\\s*0\\s*(?=;)', replace: '$1: none' },
+    { find: '([^0-9])0(?=\\.[0-9]+)', replace: '$1' },
+    {
+      find: '(border(?:-(?:top|right|bottom|left))?)\\s*:\\s*0\\s*(?=;)',
+      replace: '$1: none'
+    },
     {
       find: '(margin|padding)\\s*:\\s*([0-9.]+(?:r?em|px)?)(?:\\s+\\2){3}\\s*(?=;)',
       replace: '$1: $2'
@@ -424,8 +450,14 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       find: '(margin|padding)\\s*:\\s*([0-9.]+(?:r?em|px)?)\\s*([0-9.]+(?:r?em|px)?)\\s*([0-9.]+(?:r?em|px)?)\\s+\\3\\s*(?=;)',
       replace: '$1: $2 $3 $4'
     },
-    { find: 'font-family:\\s*([^;]+;)', replace: fixFontFamily },
-    { find: '\\s+(?=[\r\n])', replace: '' }, // remove trailing white space
+    {
+      find: 'font-family:\\s*([^;]+;)',
+      replace: fixFontFamily
+    },
+    { // remove trailing white space
+      find: '\\s+(?=[\r\n])',
+      replace: ''
+    },
     { // Wrap URLs in single quotes
       find: '(url\\()[\'"]?([^)\'"]+)[\'"]?(?=\\))',
       replace: '$1\'$2\''
@@ -442,7 +474,10 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       find: '(\\})(?:[\\t ]*[\\r\\n]+)*([\\t ]*)(?=/\\*)',
       replace: '$1\n\n$2'
     },
-    { find: '\\[\\[SAMPLE_PATH\\]\\]', replace: kssSamplePath }
+    {
+      find: '\\[\\[SAMPLE_PATH\\]\\]',
+      replace: _kssSamplePath
+    }
     // { find: '', replace: '' },
     // { find: '', replace: '', flags: 'ig' },
   ]
@@ -455,7 +490,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
 
   if (extraInputs.addKSS('true')) {
     if (!_hasStyleGuide.test(output)) {
-      output = kssCommentStart + '*' + kssCommentEnd + output
+      output = kssCommentStart.replace('[[SAMPLE_PATH]]', _kssSamplePath) + '*' + kssCommentEnd + output
     }
   }
   // if (extraInputs.doColours() === true) {
@@ -469,25 +504,31 @@ doStuff.register({
   description: '',
   // docsULR: '',
   inputLabel: 'SCSS code to be modified',
-  extraInputs: [{
-    id: 'remValue',
-    label: 'Pixel value of 1rem',
-    default: 16,
-    min: 8,
-    max: 24,
-    step: 1,
-    type: 'number'
-  },
-  {
-    id: 'addKSS',
-    label: 'Add KSS comment block',
-    type: 'checkbox',
-    options: [{
-      value: 'true',
-      label: 'Yes! Add a KSS comment block at the top of the file',
-      default: true
-    }]
-  }],
+  extraInputs: [
+    {
+      id: 'remValue',
+      label: 'Pixel value of 1rem',
+      default: 16,
+      min: 8,
+      max: 24,
+      step: 1,
+      type: 'number'
+    }, {
+      id: 'addKSS',
+      label: 'Add KSS comment block',
+      type: 'checkbox',
+      options: [{
+        value: 'true',
+        label: 'Yes! Add a KSS comment block at the top of the file',
+        default: true
+      }]
+    }, {
+      id: 'samplePath',
+      label: 'Path to Sample HTML',
+      default: '',
+      type: 'text'
+    }
+  ],
   group: 'it',
   ignore: false,
   name: 'Fix (some) ACU.Sitecore scss issues'
