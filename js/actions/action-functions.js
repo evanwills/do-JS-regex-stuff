@@ -1066,8 +1066,8 @@ doStuff.register({
       label: 'Which style blocks to delete',
       type: 'radio',
       options: [
-        { value: 'table', label: 'Only table (and related elements)', default: true },
-        { value: 'all', label: 'All style attributes' }
+        { value: 'table', label: 'Only table (and related elements)' },
+        { value: 'all', label: 'All style attributes', default: true }
         // { value: 'other', label: 'Other' }
       ]
     }],

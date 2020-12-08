@@ -321,16 +321,16 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
         // 'Miller Text Bd',
         family: 'miller text bd',
         var: 'heading-2way-font'
-      // },
-      // {
-      //   // 'AvenirLTStd-Heavy',
-      //   family: 'avenirltstd-heavy',
-      //   var: ''
-      // },
-      // {
-      //   // 'AvenirLTStd-Bold',
-      //   family: 'avenirltstd-bold',
-      //   var: ''
+      },
+      {
+        // 'AvenirLTStd-Heavy',
+        family: 'avenirltstd-heavy',
+        var: 'font--sans-serif-heavy'
+      },
+      {
+        // 'AvenirLTStd-medium',
+        family: 'avenirltstd-medium',
+        var: 'font--sans-serif-medium'
       // },
       // {
       //   // 'Miller Text Bd',
@@ -831,6 +831,10 @@ const sitecore2local = (input, extraInputs, GETvars) => {
     }, {
       find: '\\s*<meta (?:name|property)="[^"]+"(?:\\s*/)?>',
       replace: ''
+    }, {
+      find: '(<meta http-equiv="X-UA-Compatible" content="IE=edge" />).*?(?=\\s*<meta name="viewport")',
+      replace: '$1',
+      flags: 'is'
     }, {
       find: ' type="text/javascript"',
       replace: ''

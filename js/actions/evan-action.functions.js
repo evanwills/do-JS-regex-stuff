@@ -1099,3 +1099,89 @@ doStuff.register({
 
 //  END: side-accordion IDs
 // ====================================================================
+// START: Bash path to Windows path
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const bash2windows = (input, extraInputs, GETvars) => {
+  const prefix = {
+    bash: '/c/ACU.Sitecore/Website/',
+    win: 'C:\\ACU.Sitecore\\Website\\'
+  }
+  const whichWay = extraInputs.whichWay()
+  let output = ''
+
+  input = input.trim()
+
+  const forwardBack = (_input) => {
+    const _output = _input.replace(
+      /^\/([a-z])(?=\/)/i,
+      (whole, part) => {
+        return part.toUpperCase() + ':'
+      }
+    )
+    return _output.replace(/\//g, '\\')
+  }
+  const backForward = (_input) => {
+    const _output = _input.replace(
+      /^([a-z]):(?=\\)/i,
+      (whole, part) => {
+        return '/' + part.toLowerCase()
+      }
+    )
+    return _output.replace(/\\/g, '/')
+  }
+
+  if (whichWay === 'win2bash') {
+    output = backForward(input)
+    console.log('input:', input)
+    console.log('input.substr(1, 1):', input.substr(1, 1))
+    if (input.substr(1, 1) === ':') {
+      output = prefix.bash + output
+    }
+  } else {
+    output = forwardBack(input)
+    if (input.substr(0, 1) === '/') {
+      output = prefix.win + output
+    }
+  }
+
+  return output
+}
+
+doStuff.register({
+  action: 'bash2windows',
+  func: bash2windows,
+  description: '',
+  // docsULR: '',
+  extraInputs: [
+    {
+      id: 'whichWay',
+      label: 'Which way to convert',
+      type: 'radio',
+      options: [
+        { value: 'bash2win', label: 'Bash path to Windows path', default: true },
+        { value: 'win2bash', label: 'Windows to Bash' }
+      ]
+    }],
+  // group: '',
+  ignore: false,
+  name: 'Bash path to Windows path'
+})
+
+//  END: Bash path to Windows path
+// ====================================================================
