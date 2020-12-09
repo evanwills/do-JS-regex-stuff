@@ -4,9 +4,10 @@
 // other global functions available:
 //   invalidString, invalidStrNum, invalidNum, invalidArray, makeAttributeSafe, isFunction, makeHumanReadableAttr
 
-const kssCommentStart = '/**\n * Component title\n *\n * Comment description goes here (may be multiple lines)\n *\n * Sample file path: [[SAMPLE_PATH]]\n *\n *\n * Markup:\n '
+const kssComponentName = 'Component name'
+const kssCommentStart = '/**\n * [[COMPONENT_NAME]]\n *\n * Comment description goes here (may be multiple lines)\n *\n * Sample file path: [[SAMPLE_PATH]]\n *\n *\n * Markup:\n '
 const kssSamplePath = '[relative to \\ACU.Sitecore\\website\n *                    e.g. src\\Project\\ACUPublic\\ACU.Static\\components\\anchor_links.html]'
-const kssCommentEnd = '\n *\n * .modifiers - Description of Modifier\n *\n * StyleGuide: Molecule.Molecule name\n */\n// {{modifier_class}} - use this in place of a modifier class name in the sample "Markup" block\n'
+const kssCommentEnd = '\n *\n * .modifiers - Description of Modifier\n *\n * StyleGuide: Molecule.[[COMPONENT_NAME]]\n */\n// {{modifier_class}} - use this in place of a modifier class name in the sample "Markup" block\n'
 
 // ====================================================================
 // START: CEG course advice HTML
@@ -166,7 +167,72 @@ doStuff.register({
 
 //  END:  New Relic-ify
 // ====================================================================
+// START: Make KSS comment
+
+/**
+ * Create a full KSS comment
+ *
+ * @param {string} componentName Name of component
+ * @param {string} samplePath    Path to sample HTML file
+ * @param {string} html          Component HTML
+ *
+ * @returns {string}
+ */
+const makeKssComment = (componentName, samplePath, html) => {
+  const pathClean = [
+    {
+      find: '\\/',
+      replace: '\\'
+    },
+    {
+      find: '^.*?(?=\\ACU.Sitecore)',
+      replace: ''
+    }
+  ]
+  const _kssReplace = [
+    {
+      find: '\\[\\[COMPONENT_NAME\\]\\]',
+      replace: (componentName === '') ? kssComponentName : componentName
+    }, {
+      find: '\\[\\[SAMPLE_PATH\\]\\]',
+      replace: (samplePath === '') ? kssSamplePath : multiRegexReplace(samplePath, pathClean)
+    }
+  ]
+  const _kssCommentStart = multiRegexReplace(kssCommentStart, _kssReplace)
+  const _kssCommentEnd = multiRegexReplace(kssCommentEnd, _kssReplace)
+  const tab2space = (whole, before, after) => {
+    console.log('whole:', whole)
+    console.log('before:', before)
+    console.log('after:', after)
+    return '\n *' + after.replace(/\t/g, '  ')
+  }
+
+  if (html === '') {
+    return _kssCommentStart + '*' + _kssCommentEnd
+  } else {
+    const findReplace = {
+      html: {
+        find: '(^|[\\r\\n])+([\\t ]*<)',
+        replace: tab2space
+      },
+      start: {
+        find: '^\\s*(?=\\*)?',
+        replace: _kssCommentStart
+      },
+      end: {
+        find: '\\s*$',
+        replace: _kssCommentEnd
+      }
+    }
+
+    return multiRegexReplace(html, findReplace, 'ig')
+  }
+}
+
+//  END:  KSS comment builder
+// ====================================================================
 // START: fixSassLintIssues
+
 
 /**
  * Fix ACU.Sitecore scss issues
@@ -187,7 +253,91 @@ doStuff.register({
 function fixSassLintIssues (input, extraInputs, GETvars) {
   const remPixels = extraInputs.remValue()
   const _hasStyleGuide = new RegExp('styleguide:', 'i')
-  const _kssSamplePath = (extraInputs.samplePath() !== '') ? extraInputs.samplePath() : kssSamplePath
+
+  const alphabetiseProps = (_input) => {
+    const propFinder = new RegExp(
+      '([0-9a-z]+\\s*\\{)' +
+      '((?:\\s*(?:\\/\\/\\s*)?' +
+      '(?:-?[a-z]+(?:-[a-z]+)*\\s*:[^\\r\\n;]+;)' +
+      '|' +
+      '(?:\\s*\\/\\/[^\\r\\n]+(?=[\\r\\n]))+' +
+      ')+)',
+      'igs'
+    )
+
+    /**
+     * Compare CSS properties so they can be sorted alphabetically
+     *
+     * @param {array} a First CSS property
+     * @param {array} b Second CSS property
+     *
+     * @returns {number} -1 if A is less than B, +1 if B is less than A & 0 ir they are the same
+     */
+    const propCompare = (a, b) => {
+      const l = a[2].length
+      let i = 0
+
+      for (i = 0; i < l; i += 1) {
+        if (typeof b[2][i] === 'undefined') {
+          // So far A & B props match exactly but
+          // B prop is shorter than A prop so put it before A prop
+          return 1
+        }
+
+        if (a[2][i] < b[2][i]) {
+          return -1
+        } else if (a[2][i] > b[2][i]) {
+          return 1
+        }
+      }
+
+      // So far A & B props match exactly but
+      // If B is longer than A, put it after A,
+      // Otherwise leave it where it is
+      return (typeof b[2][i] !== 'undefined') ? -1 : 0
+    }
+
+    /**
+     * Sort all the props for a style declaration alphabetically
+     *
+     * @param {string} whole    The whole string match by the parent
+     *                          Regex
+     * @param {string} selector The last part of the CSS selector
+     *                          plus the style's opening curley
+     *                          bracket
+     * @param {string} props    All the props for the style
+     */
+    const sortProps = (whole, selector, props) => {
+      /**
+       * Regular expression to capture the individual CSS properties
+       * within a style declaration.
+       *
+       * @var {RegExp} singleProp
+       */
+      const singleProp = new RegExp(
+        '(?:\\s*\\/\\/[^:;\\r\\n]+(?=[\\r\\n]))*' +
+        '(?:\\s*(?:\\/\\/\\s*)?(?:' +
+        '(-(?:moz|webkit|ie|opera)-)?' +
+        '([a-z]+(?:-[a-z]+)*)\\s*:' +
+        '[^\\r\\n;]+;))',
+        'igs'
+      )
+      let z = 0
+      let output = selector
+
+      let individualProps = singleProp[Symbol.matchAll](props)
+      individualProps = Array.from(individualProps)
+      individualProps = individualProps.sort(propCompare)
+
+      for (z = 0; z < individualProps.length; z += 1) {
+        output += individualProps[z][0]
+      }
+
+      return output
+    }
+
+    return input.replace(propFinder, sortProps)
+  }
 
   /**
    * Convert pixel values to REMs with accuracy of up to 2 decimal
@@ -213,10 +363,10 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
     }
     const key = (value * 1)
     let output = ''
-    console.group('fixSinglePix()')
-    console.log('whole:', whole)
-    console.log('value:', value)
-    console.log('preSpace:', preSpace)
+    // console.group('fixSinglePix()')
+    // console.log('whole:', whole)
+    // console.log('value:', value)
+    // console.log('preSpace:', preSpace)
 
     if (typeof mediaPx[key] === 'string') {
       output = mediaPx[key]
@@ -228,8 +378,8 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       output = output.replace(/^0+/, '')
       output += 'rem'
     }
-    console.log('output:', output)
-    console.groupEnd()
+    // console.log('output:', output)
+    // console.groupEnd()
     return preSpace + output
   }
 
@@ -382,6 +532,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
    */
   const colours = [
     { find: '#ed0c00', replace: '$red--100' },
+    { find: ':\\s*red(?=[\\s;])', replace: ': $red--100' },
     { find: '#d00a00', replace: '$red--120' },
     { find: '#f15047', replace: '$red--80' },
     { find: '#f57c75', replace: '$red--60' },
@@ -475,8 +626,8 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
       replace: '$1\n\n$2'
     },
     {
-      find: '\\[\\[SAMPLE_PATH\\]\\]',
-      replace: _kssSamplePath
+      find: '([^:]//)(?=[^\\s])',
+      replace: '$1 '
     }
     // { find: '', replace: '' },
     // { find: '', replace: '', flags: 'ig' },
@@ -484,13 +635,18 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
   // console.log('mainModifiers:', mainModifiers)
   // console.log('colours:', colours)
 
-  let output = multiRegexReplace(input, mainModifiers)
+  let output = alphabetiseProps(input)
 
+  output = multiRegexReplace(output, mainModifiers)
   output = multiRegexReplace(output, colours)
 
   if (extraInputs.addKSS('true')) {
     if (!_hasStyleGuide.test(output)) {
-      output = kssCommentStart.replace('[[SAMPLE_PATH]]', _kssSamplePath) + '*' + kssCommentEnd + output
+      output = makeKssComment(
+        extraInputs.componentName(),
+        extraInputs.samplePath(),
+        extraInputs.sampleHTML()
+      ) + output
     }
   }
   // if (extraInputs.doColours() === true) {
@@ -523,10 +679,20 @@ doStuff.register({
         default: true
       }]
     }, {
-      id: 'samplePath',
-      label: 'Path to Sample HTML',
+      id: 'componentName',
+      label: 'Component name',
       default: '',
       type: 'text'
+    }, {
+      id: 'samplePath',
+      label: 'Path to sample HTML file',
+      default: '',
+      type: 'text'
+    }, {
+      id: 'sampleHTML',
+      label: 'Sample HTML for KSS comment',
+      default: '',
+      type: 'textarea'
     }
   ],
   group: 'it',
@@ -555,42 +721,16 @@ doStuff.register({
  * @returns {string} modified version user input
  */
 const kssCommentBlock = (input, extraInputs, GETvars) => {
-  const doWhole = extraInputs.wholeComment('true')
-  let samplePath = extraInputs.samplePath()
+  console.log("extraInputs.wholeComment('true'):", extraInputs.wholeComment('true'))
 
-  if (samplePath !== '') {
-    samplePath = samplePath.replace(/\\/g, '/')
-    samplePath = samplePath.replace(/^.*?(?=\/ACU.Sitecore)/ig, '')
+  if (extraInputs.wholeComment('true')) {
+    return makeKssComment(
+      extraInputs.componentName(),
+      extraInputs.samplePath(),
+      input
+    )
   } else {
-    samplePath = kssSamplePath
-  }
-
-  if (input.trim() === '') {
-    return kssCommentStart + '*' + kssCommentEnd
-  } else {
-    const findReplace = {
-      html: {
-        find: '(^|[\\r\\n])+(?=[\\t ]*<)',
-        replace: '$1 *'
-      }
-    }
-
-    if (doWhole) {
-      findReplace.start = {
-        find: '^\\s*(?=\\*)?',
-        replace: kssCommentStart
-      }
-      findReplace.end = {
-        find: '\\s*$',
-        replace: kssCommentEnd
-      }
-      findReplace.samplePath = {
-        find: '\\[\\[SAMPLE_PATH\\]\\]',
-        replace: samplePath
-      }
-    }
-
-    return multiRegexReplace(input, findReplace, 'ig')
+    return input.replace(/(^|[\r\n])+(?=[\t ]*<)/ig, '$1 *')
   }
 }
 
@@ -607,8 +747,14 @@ doStuff.register({
       { value: 'true', label: 'Yes! Build whole comment', default: true }
     ]
   }, {
+    id: 'componentName',
+    label: 'Component name',
+    default: '',
+    type: 'text'
+  }, {
     id: 'samplePath',
-    label: 'Path to sample HTML',
+    label: 'Path to Sample HTML',
+    default: '',
     type: 'text'
   }],
   // group: 'it',

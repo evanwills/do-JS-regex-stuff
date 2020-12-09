@@ -283,6 +283,9 @@ form {
 .input-wrap p {
   margin: 0;
 }
+.input-wrap textarea {
+  height: 10rem;
+}
 select { font-size: 1rem; }
 option , input {
   padding: 0.3rem 0.5rem;
