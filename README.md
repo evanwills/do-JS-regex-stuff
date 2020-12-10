@@ -216,7 +216,8 @@ doStuff.register({
         { 'value': 'male', label: 'Male (rooster)' },
         { 'value': 'female', label: 'Female (hen)', default: true },
         { 'value': 'other', label: 'Other' }
-      ]
+      ],
+      description: 'This is used to give extra info about how this input should be used.'
     },
     {
       id: 'mood',

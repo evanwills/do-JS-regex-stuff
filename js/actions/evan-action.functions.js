@@ -1178,7 +1178,7 @@ doStuff.register({
         { value: 'win2bash', label: 'Windows to Bash' }
       ]
     }],
-  // group: '',
+  group: 'evan',
   ignore: false,
   name: 'Bash path to Windows path'
 })

@@ -194,6 +194,16 @@ code { font-size: 1rem; }
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
+.new-group::before {
+  background-color: #030;
+  color: #fff;
+  content: attr(title);
+  display: block;
+  font-size: 0.86rem;
+  padding: 0.4rem 1rem;
+  text-align: center;
+}
+
 .mask {
   position: fixed;
   bottom: 0;

@@ -1,5 +1,6 @@
 /* jslint browser: true */
 /* global XMLHttpRequest fetch */
+
 /**
  * polyfil for new URL() call (but with better GET and hash parsing)
  * (see: https://developer.mozilla.org/en-US/docs/Web/API/URL/URL)

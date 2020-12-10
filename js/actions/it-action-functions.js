@@ -233,7 +233,6 @@ const makeKssComment = (componentName, samplePath, html) => {
 // ====================================================================
 // START: fixSassLintIssues
 
-
 /**
  * Fix ACU.Sitecore scss issues
  *
@@ -657,7 +656,7 @@ function fixSassLintIssues (input, extraInputs, GETvars) {
 doStuff.register({
   action: 'fixSassLintIssues',
   func: fixSassLintIssues,
-  description: '',
+  description: 'Fix common issues identified by sass-lint and use standard branding variables for colour and spacing.',
   // docsULR: '',
   inputLabel: 'SCSS code to be modified',
   extraInputs: [
@@ -665,6 +664,7 @@ doStuff.register({
       id: 'remValue',
       label: 'Pixel value of 1rem',
       default: 16,
+      description: 'The number of pixels set for the font size on the HTML (or body) element',
       min: 8,
       max: 24,
       step: 1,
@@ -687,6 +687,7 @@ doStuff.register({
       id: 'samplePath',
       label: 'Path to sample HTML file',
       default: '',
+      description: 'The file system path to an HTML file that shows how the component is used. (Path should either be absolute or relative to the repo base. It should always include "ACU.Sitecore")',
       type: 'text'
     }, {
       id: 'sampleHTML',
@@ -757,7 +758,7 @@ doStuff.register({
     default: '',
     type: 'text'
   }],
-  // group: 'it',
+  group: 'it',
   ignore: false,
   name: 'KSS comment block'
 })

@@ -688,6 +688,7 @@ doStuff.register({
 //  END:  Match unfinished payment IDs to confirmed payments.
 // ====================================================================
 // START: SVG ACU Logo cleanup
+
 /**
  * acuLogoClean() remove all unnecessary junk from the ACU logo
  *
@@ -782,7 +783,7 @@ doStuff.register({
   action: 'acuLogoClean',
   func: acuLogoClean,
   group: 'mer',
-  ignore: false,
+  ignore: true,
   name: 'Minify ACU Logo SVG'
   // description: 'Fix heading levels when Migrating HTML from one system to another',
   // docURL: '',
@@ -887,7 +888,7 @@ doStuff.register({
   description: 'Fix CEG unit modal URLs',
   // docsULR: '',
   extraInputs: [],
-  ignore: false,
+  ignore: true,
   name: 'Fix CEG unit URLs'
 })
 
@@ -1016,7 +1017,7 @@ doStuff.register({
   description: '',
   // docsULR: '',
   extraInputs: [],
-  ignore: false,
+  ignore: true,
   name: 'Fix policy anchor links'
 })
 
@@ -1075,5 +1076,44 @@ doStuff.register({
   name: 'Strip inline table styles'
 })
 
-//  END: DUMMY action
+//  END:  Strip inline styles from table elements
+// ====================================================================
+// START: Base64
+
+function base64 (input, extraInputs, GETvars) {
+  if (extraInputs.mode(true)) {
+    return window.btoa(input)
+  } else {
+    return window.atob(input)
+  }
+}
+
+doStuff.register({
+  action: 'Base64',
+  description: 'Encode/Decode Base64 string',
+  func: base64,
+  // group: 'it',
+  // ignore: true,
+  name: 'Base64 encode/decode',
+  extraInputs: [
+    {
+      id: 'mode',
+      label: 'Encode/Decode mode',
+      options: [
+        {
+          value: 'true',
+          label: 'Encode',
+          default: true
+        },
+        {
+          value: 'false',
+          label: 'Decode'
+        }
+      ],
+      type: 'radio'
+    }
+  ]
+})
+
+//  END:  Base64
 // ====================================================================

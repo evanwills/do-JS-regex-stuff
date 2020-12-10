@@ -15,15 +15,18 @@
  */
 function DoStuff (url, _remote, docs) {
   /**
-   * @var {string} action what the "app" is app is doing at the moment
+   * What the "app" is doing at the moment
    *
    * It's used to identify the function to be used to modify the input
+   *
+   * @var {string} action
    */
   let action = ''
 
   /**
-   * @var {function} actionFunction the function to be called when
-   *               modifying the input
+   * The function to be called when modifying the input
+   *
+   * @var {function} actionFunction
    */
   let actionFunction = null
 
@@ -33,16 +36,19 @@ function DoStuff (url, _remote, docs) {
   let actionGroups = []
 
   /**
-   * @var {string} actionGroupsGet comma separated list of action
-   *            groups the user has access to (to be appended to the URL's GET string)
+   * comma separated list of action groups the user has access to
+   * (to be appended to the URL's GET string)
+   *
+   * @var {string} actionGroupsGet
    */
   let actionGroupsGet = ''
 
   /**
-   * @var {string} actionInputLabel the label text for the textarea
-   *             where the text that is to be modified by the "app"
-   *             is put by the user and where the modified output of
-   *             the action is also put once the action has been run
+   * The label text for the textarea where the text that is to be
+   * modified by the "app" is put by the user and where the modified
+   * output of the action is also put once the action has been run
+   *
+   * @var {string} actionInputLabel
    */
   let actionInputLabel = 'Text to be modified'
 
@@ -52,19 +58,36 @@ function DoStuff (url, _remote, docs) {
   let actionName = ''
 
   /**
-   * @var {boolean} allowRemote Whether or not to allow remote
-   *              requests
+   * Whether or not to allow remote requests
+   *
+   * @var {boolean} allowRemote
    */
   let allowRemote = false
 
   /**
-   * @var {array} allLinks array of navigation link DOM elements
+   * List of all navigation link DOM elements used for setting
+   * classes that link's action becomes active.
+   *
+   * @var {array} allLinks
    */
   const allLinks = []
 
   /**
-   * @var {string} baseURL used as the main part of the URL for all
-   *             links
+   * list of objects each containing an action link (for the nav)
+   * plus, the _group_ the action belongs to and the _name_ of
+   * the action
+   *
+   * NOTE: both _group_ and _name_ are used for sorting before nav
+   *       is rendered
+   *
+   * @var {array} structuredLinks
+   */
+  const structuredLinks = []
+
+  /**
+   * Used as the main part of the URL for all links
+   *
+   * @var {string} baseURL
    */
   let baseURL = ''
 
@@ -74,29 +97,34 @@ function DoStuff (url, _remote, docs) {
   const customFields = document.getElementById('custom-fields')
 
   /**
-   * @var {DOMelement} debugField textarea field used to output the
-   *             results of the action function.
+   * textarea field used to output the results of the action function
    *
    * Useful when you're creating a new action and you want to use
    * the same input over and over again.
+   *
+   * @var {DOMelement} debugField
    */
   let debugField = null
 
   /**
-   * @var {string} debugGet string to be appended to the URL of all
-   *             links when in debug mode it adds a GET letiable to
-   *             the URL
+   * String to be appended to the URL of all links when in debug
+   * mode it adds a GET letiable to the URL
+   *
+   * @var {string} debugGet
    */
   let debugGet = ''
 
   /**
-   * @var {boolean} debugMode whether the script is in "Debug Mode"
+   * Whether the script is in "Debug Mode"
+   *
+   * @var {boolean} debugMode
    */
   let debugMode = false
 
   /**
-   * @var {DOMelement} debugSwitch button toggling between debug and
-   *             non-debug modes
+   * button toggling between debug and non-debug modes
+   *
+   * @var {DOMelement} debugSwitch
    */
   let debugSwitch = null
 
@@ -107,166 +135,207 @@ function DoStuff (url, _remote, docs) {
   let debugWrapper = null
 
   /**
-   * @var {string} docsURL URL for Documentation.
+   * URL for Documentation.
+   *
+   * @var {string} docsURL
    */
   let docsURL = 'docs/How_Do-JS-regex-stuff_works.html'
   // let docsURL = 'https://courses.acu.edu.au/do-js-regex-stuff/docs/help'
 
   /**
-   * @var {DOMelement} docTitle the Title element in the page header
+   * The Title element in the page header
+   *
+   * @var {DOMelement} docTitle
    */
   const docTitle = document.getElementById('doc-title')
 
   /**
-   * @var {array} extraInputs [array] An array of objects where the
-   *      key is the "name" attribute for an input field and the
-   *      value is a function that returns the value for that input
-   *      field
+   * An array of objects where the key is the "name" attribute for
+   * an input field and the value is a function that returns the
+   * value for that input field
+   *
+   * @var {array} extraInputs
    */
   const extraInputs = {}
 
   /**
-   * @var {object} GET list of URL GET variables
+   * List of URL GET variables
+   *
+   * @var {object} GET
    */
   let GET = {}
 
   /**
-   * @var {string} getPart GET variable part of URL
+   * GET variable part of URL
+   *
+   * @var {string} getPart
    */
   let getPart = ''
 
   /**
-   * @var {DOMelement} helpBtn the help button that links to
-   *             documentation about an action
+   * The help button that links to documentation about an action
+   *
+   * @var {DOMelement} helpBtn
    */
   const helpBtn = document.getElementById('help')
 
   /**
-   * @var {DOMelement} inputTextarea the textarea element where the
-   *             text that is to be modified by the "app" is put by
-   *             the user and where the modified output of the action
-   *             is also put once the action has been run
+   * The textarea element where the text that is to be modified by
+   * the "app" is put by the user and where the modified output of
+   * the action is also put once the action has been run
+   *
+   * @var {DOMelement} inputTextarea
    */
   const inputTextarea = document.getElementById('input')
 
   /**
-   * @var {DOMelement} inputLabel the label element for the textarea
-   *             where the text that is to be modified by the "app"
-   *             is put by the user and where the modified output of
-   *             the action is also put once the action has been run
+   * The label element for the textarea where the text that is to
+   * be modified by the "app" is put by the user and where the
+   * modified output of the action is also put once the action has
+   * been run
+   *
+   * @var {DOMelement} inputLabel
    */
   const inputLabel = document.getElementById('inputLabel')
 
   /**
-   * @var {string} inputLabelText Default text used to label the main
-   *             input textarea
+   * Default text used to label the main input textarea
+   *
+   * @var {string} inputLabelText
    */
   let inputLabelText = 'Text to be modified'
 
   /**
-   * @var {DOMelement} inputWrapper The wrapper for the main input text area
+   * The wrapper for the main input text area
+   *
+   * @var {DOMelement} inputWrapper
    */
   const inputWrapper = document.getElementById('input-wrapper')
 
   /**
-   * @var {DOMelement} mask a button element stretched across the
-   *             whole visible window area that when clicked on
-   *             closes the navingation (berger) menu
+   * A button element stretched across the whole visible window area
+   * that when clicked on closes the navingation (berger) menu
+   *
+   * @var {DOMelement} mask
    */
   const mask = document.getElementById('nav-show-hide__mask')
 
   /**
-   * @var {DOMelement} menuShowHide the button used for showing and
-   *             hiding the navigation menue
+   * The button used for showing and hiding the navigation menue
+   *
+   * @var {DOMelement} menuShowHide
    */
   const menuShowHide = document.getElementById('nav-show-hide')
 
   /**
-   * @var {boolean} modalOpen whether or not the modal is currently open
+   * Whether or not the modal is currently open
+   *
+   * @var {boolean} modalOpen
    */
   let modalOpen = false
 
   /**
-   * @var {DOMelement} modalBlock the the block in which modal content is
-   *             inserted when the help button is clicked
+   * The the block in which modal content is inserted when the help
+   * button is clicked
+   *
+   * @var {DOMelement} modalBlock
    */
   const modalBlock = document.getElementById('modal')
 
   /**
-   * @var {DOMelement} modalMask the clickable background
+   * The clickable background
+   *
+   * @var {DOMelement} modalMask
    */
   const modalMask = document.getElementById('modal-show-hide__mask')
 
   /**
-   * @var {DOMelement} nav the unordered list use to house all the
-   *             action links
+   * The unordered list use to house all the action links
+   *
+   * @var {DOMelement} nav
    */
   const nav = document.getElementById('menu-items')
 
   /**
-   * @var {DOMelement} navWrap the wrapping element for the
-   *             navigation (Berger) Menu
+   * The wrapping element for the navigation (Berger) Menu
+   *
+   * @var {DOMelement} navWrap
    */
   const navWrap = document.getElementById('main-nav')
 
   /**
-   * @var {boolean} navOpen whether or not the nav (burger menu) is
-   *              open or closed
+   * Whether or not the nav (burger menu) is open or closed
+   *
+   * @var {boolean} navOpen
    */
   let navOpen = false
 
   /**
-   * @var {DOMelement} noAction where the message explaining what is
-   *             happeing when no action has been selected and also
-   *             the place to put the action description if one has
-   *             been set.
+   * Where the message explaining what is happeing when no action
+   * has been selected and also the place to put the action
+   * description if one has been set.
+   *
+   * @var {DOMelement} noAction
    */
   const noAction = document.getElementById('no-action')
 
   /**
-   * @var {string} the name of an action set to NOT be ignored
+   * The name of an action set to NOT be ignored
+   *
+   * @var {string} noIgnore
    */
   let noIgnore = ''
 
   /**
-   * @var {object} registry list of objects where the key is the
-   *             action name and the value is all the metadata for
-   *             the action plus the action function
+   * List of objects where the key is the action name and the value
+   * is all the metadata for the action plus the action function
+   *
+   * @var {object} registry
    */
   const registry = {}
 
   /**
-   * @var {string} URL for XHR requests
+   * For XHR requests
+   *
+   * @var {string} URL
    */
   let remoteURL = ''
 
   // const customFields = document.getElementById('some-action')
 
   /**
-   * @var {DOMelement} someAction the main form element where all
-   *             the cool stuff happens
+   * The main form element where all the cool stuff happens
+   *
+   * @var {DOMelement} someAction
    */
   const someAction = document.getElementById('some-action')
 
   /**
-   * @var {DOMelement} subTitle the page's main H2 element
+   * The page's main H2 element
    *
    * Used to set house the action's name in the main page content
+   *
+   * @var {DOMelement} subTitle
+   *
    */
   const subTitle = document.getElementById('sub-title')
 
   /**
-   * @var {DOMelement} submit the submit button used to trigger an
-   *             action to modify the user's input
+   * The submit button used to trigger an action to modify the
+   * user's input
+   *
+   * @var {DOMelement} submit
    */
   const submit = document.getElementById('submit')
 
   /**
-   * @var object URL contains all the parts of a URL, making it easy
-   *             to use varios parts just as individual parts.
+   * Contains all the parts of a URL, making it easy to use various
+   * parts just as individual parts.
    *
    * In this case it's used to create the base URL used for all links
    * plus provide easy access to GET variables.
+   *
+   * @var {object} URL
    */
   let URL = null
 
@@ -348,7 +417,7 @@ function DoStuff (url, _remote, docs) {
     // TODO: work out how to sort the registry so it's always in
     // alphabetical order (by name, not action)
     registry[config.action] = config
-
+    // console.log('registry:', registry)
     return true
   }
 
@@ -466,7 +535,36 @@ function DoStuff (url, _remote, docs) {
     return li
   }
 
-  //  END:
+  /**
+   * Sort action link objects by group name, then by action name
+   *
+   * @param {object} actionA
+   * @param {object} actionB
+   *
+   * @returns {number}
+   */
+  const sortActions = (actionA, actionB) => {
+    if (actionA.group !== actionB.group) {
+      if (actionA.group === '') {
+        return 1
+      } else if (actionA.group < actionB.group) {
+        return -1
+      } else if (actionA.group > actionB.group) {
+        return 1
+      }
+    }
+
+    // Both actions belong to the same group
+    if (actionA.name < actionB.name) {
+      return -1
+    } else if (actionA.name > actionB.name) {
+      return 1
+    } else {
+      return 0
+    }
+  }
+
+  //  END: private functions
   // ======================================================
   // START: extra field generators
 
@@ -822,6 +920,7 @@ function DoStuff (url, _remote, docs) {
    */
   this.register = function (config) {
     let registerOk = false
+
     try {
       registerOk = updateRegistry(config)
     } catch (error) {
@@ -830,9 +929,12 @@ function DoStuff (url, _remote, docs) {
     }
 
     if (registerOk) {
-      // need to sort out making this alphabetical
-      // but this'll do for the moment
-      nav.appendChild(addToNav(config.action))
+      // Create and store object that makes sorting links possible.
+      structuredLinks.push({
+        group: (typeof config.group === 'string' && config.group !== '') ? config.group : 'public',
+        link: addToNav(config.action),
+        name: config.name
+      })
 
       if (config.action === action) {
         initialiseAction(action)
@@ -846,6 +948,9 @@ function DoStuff (url, _remote, docs) {
   this.render = function () {
     const li = document.createElement('li')
     const resetBtn = document.getElementById('reset')
+    let a = 0
+    let groupName = ''
+
     menuShowHide.onclick = bergerShowHide
     mask.onclick = bergerShowHide
 
@@ -865,6 +970,26 @@ function DoStuff (url, _remote, docs) {
       debugSwitch.appendChild(document.createTextNode('Turn on Debug mode'))
       debugSwitch.className = 'btn btn-debug btn-debug--off'
     }
+
+    structuredLinks.sort(sortActions)
+
+    for (a = 0; a < structuredLinks.length; a += 1) {
+      if (structuredLinks[a].group !== groupName) {
+        // This link belongs to a new group.
+        // Do some stuff so we can style it differently to its siblings
+        groupName = structuredLinks[a].group
+
+        if (typeof structuredLinks[a].link.className !== 'string') {
+          structuredLinks[a].link.className = 'new-group'
+        } else {
+          structuredLinks[a].link.classList.add('new-group')
+        }
+
+        structuredLinks[a].link.title = groupName.toUpperCase() + ' actions'
+      }
+      nav.appendChild(structuredLinks[a].link)
+    }
+
     debugSwitch.onclick = toggleDebug
     li.appendChild(debugSwitch)
     nav.appendChild(li)
