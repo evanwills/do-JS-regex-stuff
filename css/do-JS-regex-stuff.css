@@ -195,13 +195,14 @@ code { font-size: 1rem; }
 }
 
 .new-group::before {
-  background-color: #030;
-  color: #fff;
+  background-color: #020;
+  color: #ff0;
   content: attr(title);
   display: block;
   font-size: 0.86rem;
+  font-weight: bold;
   padding: 0.4rem 1rem;
-  text-align: center;
+  text-align: right;
 }
 
 .mask {

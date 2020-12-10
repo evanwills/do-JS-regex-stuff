@@ -693,7 +693,8 @@ doStuff.register({
       id: 'sampleHTML',
       label: 'Sample HTML for KSS comment',
       default: '',
-      type: 'textarea'
+      type: 'textarea',
+      description: 'Sample HTML is embedded in the KSS comment and used by KSS to create an example of the componenet'
     }
   ],
   group: 'it',
