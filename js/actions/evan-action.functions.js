@@ -1185,3 +1185,56 @@ doStuff.register({
 
 //  END: Bash path to Windows path
 // ====================================================================
+// START: Fix time in teams chat history
+
+/**
+ * Convert dumb Teams US timestamp to ISO8601 timestamp
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const fixTime = (input, extraInputs, GETvars) => {
+  const today = new Date();
+  const nowYear = today.getFullYear();
+
+  const zeroPrefix = (val) => {
+    if (val.length == 1) {
+      return '0' + val
+    }
+    return val
+  }
+  const rewriteTime = (whole, month, day, year, hour, minute, half) => {
+    const _plus = (half.toUpperCase() === 'PM') ? 12 : 0
+    const _year = (typeof year === 'string') ? year : nowYear
+    const _hour = (hour * 1)
+
+    return '\n[' + _year + '-' + zeroPrefix(month) + '-' + zeroPrefix(day) + ' ' + zeroPrefix(_hour + _plus) + ':' + minute + ']'
+  }
+  const regex = new RegExp('\\[([0-9]{1,2})/([0-9]{1,2})(?:/([12][0-9]))? ([0-9]{1,2}):([0-9]{2}) ([AP]M)\\]', 'ig')
+
+  return input.replace(regex, rewriteTime)
+}
+
+doStuff.register({
+  action: 'fixTime',
+  func: fixTime,
+  description: '',
+  // docsULR: '',
+  extraInputs: [],
+  group: 'evan',
+  ignore: false,
+  name: 'Fix Teams chat history timestamps'
+})
+
+//  END: DUMMY action
+// ====================================================================
