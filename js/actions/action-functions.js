@@ -1162,5 +1162,188 @@ doStuff.register({
   name: 'Comma separated thousands'
 })
 
-//  END: DUMMY action
+//  END: Comma separated thousands
+// ====================================================================
+// START: Format handbook policy
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const formatHandbookPolicy = (input, extraInputs, GETvars) => {
+  let currentHeading = 0
+  let depth = 0
+  let openSections = 0
+  let closeSections = 0
+  let output = input
+  const knownIDs = []
+
+  /**
+   * Convert heading text to a human readable ID attribute
+   *
+   * @param {string} input
+   *
+   * @returns {string} HTML 4.0 safe full id attribute string
+   */
+  function makeID (_input) {
+    let _output = _input.trim()
+    let tmp = ''
+    let a = 0
+
+    // clean up heading text to make it ID safe (and human readable)
+    _output = _output.toLowerCase()
+    _output = _output.replace(/[^a-z0-9_-]+/g, '-') // strip undesirable chars
+    _output = _output.replace(/-+_+-+/g, '_') // strip bad join combos
+    _output = _output.replace(/_+-+_+/g, '-') // strip bad join combos
+
+    // Handle duplicate IDs
+    tmp = _output
+    while (knownIDs.indexOf(tmp) > -1) {
+      tmp = _output + '__' + a // possible unique ID
+      a += 1
+    }
+
+    // Make sure we have a unique ID
+    _output = (tmp !== _output) ? tmp : _output
+
+    // Add the unique ID to the list of all IDs on the page
+    knownIDs.push(_output)
+
+    // send a complete ID attribute back
+    return ' id="' + _output + '"'
+  }
+
+  /**
+   * Prefix SECTION tags to H tags
+   *
+   * @param {string} whole
+   * @param {string} hNum
+   * @param {string} headingText
+   *
+   * @returns {string}
+   */
+  function wrapSection (whole, hNum, headingText) {
+    let id = makeID(headingText)
+    let sectionTags = ''
+
+    if (hNum > currentHeading) {
+      // Deeper level heading
+      hNum = currentHeading
+      openSections = hNum - currentHeading // In a well structured document this will always be 1
+      depth += openSections
+
+      for (let a = 0; a < depth; a += 1) {
+        sectionTags = '<section' + id +'>' + sectionTags
+        id = ''
+      }
+    } else if (hNum < currentHeading) {
+      // Shallower level heading
+      hNum = currentHeading
+      closeSections = currentHeading - hNum // In a well structured document this will always be 1
+      depth -= closeSections
+
+      for (let a = 0; a < depth; a += 1) {
+        sectionTags += '</section>'
+      }
+      sectionTags += '<section' + id +'>'
+    } else {
+      // Same level heading
+      sectionTags = '</section><section' + id +'>'
+    }
+    return sectionTags + whole
+  }
+
+  function listClasses (whole, close, tag, attrs) {
+    const isOpen = close !== '/'
+    const listClasses = {
+      1: 'list-alpha',
+      2: 'list-roman',
+      3: 'list-decimal',
+      4: 'list-alpha',
+      5: 'list-roman',
+      6: 'list-decimal',
+      7: 'list-alpha',
+      8: 'list-roman',
+      9: 'list-decimal'
+    }
+
+    console.group('listClasses()')
+    console.log('whole:', whole)
+    console.log('close:', close)
+    console.log('tag:', tag)
+    console.log('attrs:', attrs)
+
+    if (tag === 'li') {
+      // strip styles from list items.
+      console.log('List item')
+      console.groupEnd()
+      return '<' + close + tag + attrs.replace(/\s+style="[^"]*"/ig, '') + '>'
+    } else {
+      console.log('Ordered list')
+      console.log('depth:', depth)
+      console.log('isOpen:', isOpen)
+      depth = (isOpen) ? depth + 1 : depth - 1;
+      console.log('depth:', depth)
+    }
+    console.log('typeof listClasses[' + depth + ']:', typeof listClasses[depth])
+
+    if (isOpen && typeof listClasses[depth] === 'string') {
+      console.groupEnd()
+      return '<' + close + tag + ' class="' + listClasses[depth] + '"' + attrs.replace(/\s+(?:class|style|type)="[^"]*"/ig, '') + '>'
+    } else {
+      console.groupEnd()
+      return whole
+    }
+  }
+
+  // if (extraInputs.mods('sections') === true) {
+  //   output = output.replace(/<h([1-6])[^>]*>(.*?)<\/h$1>/ig, wrapSection)
+  // }
+
+  if (extraInputs.mods('lists') === true) {
+    output = output.replace(/<(\/?)(ol|li)([^>]*)>/ig, listClasses)
+  }
+
+  if (extraInputs.mods('outerWrap') === true && !output.match('policy-document--ph')) {
+    output = '<div class="policy-document policy-document--ph">\n\n' + output + '\n\n</div>'
+  }
+
+
+  return output
+}
+
+doStuff.register({
+  action: 'formatHandbookPolicy',
+  func: formatHandbookPolicy,
+  description: '',
+  // docsULR: '',
+  extraInputs: [
+    {
+      id: 'mods',
+      label: 'Modification options',
+      type: 'checkbox',
+      options: [
+        { value: 'lists', label: 'Set classes on OL tags', default: true },
+        { value: 'outerWrap', label: 'Wrap the whole content in policy document class' }
+        // { value: 'sections', label: 'Wrap headings in sections' }
+      ]
+    }],
+  // group: 'cim',
+  ignore: false,
+  name: 'Format handbook policy'
+})
+
+//  END: Format handbook policy
 // ====================================================================
