@@ -1336,7 +1336,7 @@ doStuff.register({
       type: 'checkbox',
       options: [
         { value: 'lists', label: 'Set classes on OL tags', default: true },
-        { value: 'outerWrap', label: 'Wrap the whole content in policy document class' }
+        { value: 'outerWrap', label: 'Wrap the whole content in policy document class', default: true }
         // { value: 'sections', label: 'Wrap headings in sections' }
       ]
     }],

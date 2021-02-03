@@ -1236,5 +1236,106 @@ doStuff.register({
   name: 'Fix Teams chat history timestamps'
 })
 
-//  END: DUMMY action
+//  END:  Fix time in teams chat history
+// ====================================================================
+// START: Download old matrix assets
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const downloadMatrixAssets = (input, extraInputs, GETvars) => {
+  const URLs = input.split('\n')
+  const _regex = new RegExp(
+    '^(?:https?:)?//[a-z]+\.acu\.edu\.au/(.*?)/([a-z0-9._-]+?\.[a-z]+)$',
+    'i'
+  )
+
+  const parseURL = (whole, path, file) => {
+    console.group('parseURL()')
+    console.log('whole:', whole)
+    console.log('path:', path)
+    console.log('file:', file)
+    console.groupEnd()
+    return 'getURL "' + path + '" "' + file + '";' + "\n";
+  }
+
+  const _URLs = URLs.filter(url => (url.trim() !== '')).map(url => {
+    console.group('URLs.map()')
+    const _url = url.trim()
+    const _line = _url.replace(_regex, parseURL)
+    console.log('_url:', _url)
+    console.log('_regex:', _regex)
+    console.log('_line:', _line)
+    console.groupEnd()
+    return _line
+  })
+
+  let _output = "#!/bin/sh\n\n" +
+                "function getURL {\n" +
+                "\tdownloadURL=\"https://forms.acu.edu.au/$1/$2\";\n" +
+                "\tdownloadPath=\"/var/www/html/$1\";\n" +
+                "\tdownloadFile=\"$downloadPath/$2\";\n\n" +
+                "\techo;\n" +
+                "\techo '===============================';\n" +
+                "\techo;\n\n" +
+                "\tif [ ! -f \"$downloadFile\" ]\n" +
+                "\tthen\tif [ ! -d \"$downloadPath\" ]\n" +
+                "\t\tthen\tmkdir -p $downloadPath;\n" +
+                "\t\t\techo 'Created '$downloadPath' directory';\n" +
+                "\t\telse\techo 'Directory '$downloadPath' already exists';\n" +
+                "\t\tfi\n\n" +
+                "\t\tcd $downloadPath;\n" +
+                "\t\twget $downloadURL;\n\n" +
+                "\t\tif [ -f $downloadFile ]\n" +
+                "\t\tthen\techo 'Downloaded '$downloadPath;\n" +
+                "\t\telse\techo;\n" +
+                "\t\t\techo '-------------------------';\n" +
+                "\t\t\techo;\n" +
+                "\t\t\techo 'Download of '$downloadFile' FAILED!!!';\n" +
+                "\t\t\techo \"\\t$downloadURL\";\n" +
+                "\t\t\techo;\n" +
+                "\t\t\techo '-------------------------';\n" +
+                "\t\t\techo;\n" +
+                "\t\tfi\n" +
+                "\telse\techo 'File '$downloadFile' already exists';\n" +
+                "\tfi\n\n" +
+                "\techo;\n\techo;\n\techo;\n" +
+                "}\n\n\n"
+
+
+  for (let a = 0; a < _URLs.length; a += 1) {
+    _output += _URLs[a];
+  }
+
+  _output += "\n"
+
+
+  return _output
+}
+
+doStuff.register({
+  action: 'downloadMatrixAssets',
+  func: downloadMatrixAssets,
+  description: '',
+  // docsULR: '',
+  extraInputs: [],
+  group: 'evan',
+  ignore: false,
+  name: 'Download old matrix assets'
+})
+
+//  END:  Download old matrix assets
 // ====================================================================
