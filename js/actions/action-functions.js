@@ -1081,9 +1081,11 @@ doStuff.register({
 // START: Base64
 
 function base64 (input, extraInputs, GETvars) {
-  if (extraInputs.mode(true)) {
+  if (extraInputs.mode() === 'true') {
+    console.log('Base64 encoding')
     return window.btoa(input)
   } else {
+    console.log('Base64 decoding')
     return window.atob(input)
   }
 }
