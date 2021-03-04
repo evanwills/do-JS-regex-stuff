@@ -567,6 +567,18 @@ const getCheckbox = (config, url) => {
 // ======================================================
 // START: validation functions
 
+
+/**
+ * Check whether something is a Function
+ *
+ * @param {mixed} functionToCheck function
+ *
+ * @returns {boolean} TRUE if the input is a Function
+ */
+const isFunction = (functionToCheck) => {
+  return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
+}
+
 /**
  * Test whether an object contains a given property and the value
  * of that property is a string
@@ -714,17 +726,6 @@ const invalidBool = (prop, input) => {
 }
 
 /**
- * Check whether something is a Function
- *
- * @param {mixed} functionToCheck function
- *
- * @returns {boolean} TRUE if the input is a Function
- */
-const isFunction = (functionToCheck) => {
-  return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
-}
-
-/**
  * Test whether a variable is iterable
  *
  * @param {mixed} value to be tested
@@ -843,6 +844,7 @@ const multiRegexReplace = (input, findReplace, flags) => {
 
   const _flags = (typeof flags === 'string') ? getValidFlags(flags) : 'ig'
   if (flags !== _flags) {
+    // console.lob
     console.warn('multiRegexReplace() expects third parameter "flags" to contain valid JavaScript flags ("i", "g", "m", "s", "u", "y") supplied global flags ("' + flags + '") contained invalid characters')
   }
 

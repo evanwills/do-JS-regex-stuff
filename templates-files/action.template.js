@@ -27,12 +27,15 @@ doStuff.register({
   action: '',
   func: myFunction,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   // group: '',
   ignore: false,
+  // inputLabel: '',
   name: ''
+  // remote: false,
+  // rawGet: false,
 })
 
-//  END: DUMMY action
+//  END: Action name
 // ====================================================================

@@ -333,10 +333,10 @@ doStuff.register({
   action: 'animalCrossing1',
   func: animalCrossing1,
   description: 'Rewrite Animal Crossing price list table',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   group: 'evan',
-  ignore: false,
+  ignore: true,
   name: 'Animal Crossing 1'
 })
 
@@ -369,7 +369,7 @@ doStuff.register({
   action: 'CSSclean',
   func: CSSclean,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   group: 'evan',
   ignore: false,
@@ -656,7 +656,7 @@ doStuff.register({
   action: 'artBotSpeeds',
   func: artBotSpeeds,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [{
     id: 'ratio',
     type: 'number',
@@ -782,7 +782,7 @@ doStuff.register({
   action: 'acusysQueries',
   func: acusysQueries,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   group: 'evan',
   ignore: false,
@@ -843,7 +843,7 @@ doStuff.register({
   action: 'emailHashSearch',
   func: emailHashSearch,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   group: 'evan',
   ignore: false,
@@ -942,7 +942,7 @@ doStuff.register({
   action: 'fixBadSitecoreMerge',
   func: fixBadSitecoreMerge,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   group: 'evan',
   ignore: false,
@@ -1012,7 +1012,7 @@ doStuff.register({
   action: 'acceptChanges',
   func: acceptChanges,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [{
     id: 'oursTheirs',
     label: 'Mine or theirs?',
@@ -1090,7 +1090,7 @@ doStuff.register({
   action: 'sideAccordionIDs',
   func: sideAccordionIDs,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   group: 'evan',
   ignore: false,
@@ -1167,7 +1167,7 @@ doStuff.register({
   action: 'bash2windows',
   func: bash2windows,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [
     {
       id: 'whichWay',
@@ -1229,7 +1229,7 @@ doStuff.register({
   action: 'fixTime',
   func: fixTime,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   group: 'evan',
   ignore: false,
@@ -1330,7 +1330,7 @@ doStuff.register({
   action: 'downloadMatrixAssets',
   func: downloadMatrixAssets,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   group: 'evan',
   ignore: false,
@@ -1338,4 +1338,258 @@ doStuff.register({
 })
 
 //  END:  Download old matrix assets
+// ====================================================================
+// START: Checkout modified files with only changed line end characters
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const checkoutWSonly = (input, extraInputs, GETvars) => {
+  const lines = input.split('\n')
+  // console.log('lines:', lines)
+  const modified = []
+  for (let a = 0; a < lines.length; a += 1) {
+    if (lines[a].includes('modified')) {
+      console.log('lines[' + a + ']:', lines[a])
+      let line = lines[a].replace(/^\s*modified:\s+/, '')
+      line = line.trim()
+      // const tmp = line.replace(/\s+)/g, '')
+      // if (line !== tmp) {
+      //   line = '"' + tmp + '"'
+      // }
+      console.log('line:', line)
+      modified.push(line)
+    }
+  }
+
+
+
+  return input
+}
+
+doStuff.register({
+  action: 'checkoutWSonly',
+  func: checkoutWSonly,
+  description: 'When a file in a git repo only has changed line end characters. Just checkout the file to remove the line end changes',
+  // docsURL: '',
+  extraInputs: [],
+  group: 'evan',
+  ignore: false,
+  name: 'Undo changed line end chars'
+})
+
+//  END: Checkout modified files with only changed line end characters
+// ====================================================================
+// START: Transform RYI Suburb/Schools JSON
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const transformSchoolsJSONevan = (input, extraInputs, GETvars) => {
+  let json
+  try {
+    json = JSON.parse(input)
+  } catch (e) {
+    console.error('Schools JSON failed to parse.', e)
+  }
+
+  const outputMode = extraInputs.output()
+  console.log(outputMode)
+
+  const output = []
+  const output2 = {}
+  const output3 = {}
+  let suburbCount = 0;
+  let schoolCount = 0;
+  const allSuburbs = []
+  const allSchools = []
+  let tmp = ''
+  let _tmp = []
+
+
+  for (a = 0; a < json.Suburbs.length; a += 1) {
+    const suburb = json.Suburbs[a]
+    suburbCount += 1
+    output2[suburb.Name] = []
+
+    // console.log('suburb:', suburb)
+    for (b = 0; b < suburb.Schools.length; b += 1) {
+      schoolCount += 1
+      const better = {
+        id: suburb.Schools[b].ID,
+        name: suburb.Schools[b].Name,
+        // suburb: suburb.Name,
+        state: suburb.Schools[b].State
+      }
+      // console.log('suburb.Schools[' + b + ']:', suburb.Schools[b])
+      output.push(better)
+      output2[suburb.Name].push(better)
+    }
+  }
+
+  const sortSchools = (a, b) => {
+    if (a.suburb < b.suburb) {
+      return -1
+    } else if (a.suburb > b.suburb) {
+      return 1
+    } else {
+      if (a.state < b.state) {
+        return -1
+      } else if (a.state > b.state) {
+        return 1
+      } else {
+        if (a.name < b.name) {
+          return -1
+        } else if (a.name > b.name) {
+          return 1
+        } else {
+          return 0
+        }
+      }
+    }
+  }
+
+  console.log('Suburb count:', suburbCount)
+  console.log('School count:', schoolCount)
+
+  switch (outputMode) {
+    case 'suburb':
+      output.sort((a, b) => {
+        if (a.suburb < b.suburb) {
+          return -1
+        }
+        if (a.suburb > b.suburb) {
+          return 1
+        } else {
+          return 0
+        }
+      })
+      _tmp = []
+      tmp = '<label for="suburb"class=" custom-form__label">Suburb</label>\n<select id="suburb" class="ryi-area-first classic-black form-control__primary select customDropDown">'
+      for (let a = 0; a < output.length; a += 1) {
+        if (_tmp.indexOf(output[a].suburb) === -1) {
+          _tmp.push(output[a].suburb)
+          tmp += '\n\t<option value="' + output[a].suburb + '">' + output[a].suburb + '</option>'
+        }
+      }
+      return tmp + '\n</select>'
+
+    case 'school':
+      output.sort((a, b) => {
+        if (a.name < b.name) {
+          return -1
+        }
+        if (a.name > b.name) {
+          return 1
+        } else {
+          return 0
+        }
+      })
+      tmp = '<label for="school" class=" custom-form__label">School</label>\n<select id="school" class="ryi-area-first classic-black form-control__primary select customDropDown">'
+      for (let a = 0; a < output.length; a += 1) {
+        if (_tmp.indexOf(output[a].name + output[a].state) === -1) {
+          _tmp.push(output[a].name + output[a].state)
+          tmp += '\n\t<option value="' + output[a].name + '">' + output[a].name + ' (' + output[a].state + ')</option>'
+        }
+      }
+      return tmp + '\n</select>'
+
+    case 'array':
+      output.sort(sortSchools)
+      return JSON.stringify(output)
+
+    case 'object2':
+      _tmp = Object.keys(output2)
+      for (tmp in output2) {
+        console.log('tmp:', tmp)
+        let _key = tmp.replace(/[^a-z]+/ig, '')
+        console.log('_key:', _key)
+        _key = _key.toLowerCase()
+        console.log('_key:', _key)
+        output3[_key] = {
+          name: tmp,
+          schools: output2[tmp]
+        }
+      }
+
+
+      return 'var RYIschoolSuburbs = ' + multiRegexReplace(
+        JSON.stringify(output3),
+        [{
+          find: '"([^"]+)"(?=:)',
+          replace: function (whole, key) {
+            return key.toLowerCase()
+          }
+        }]
+      )
+      break;
+
+    case 'object':
+    default:
+      for (suburb in output2) {
+        output2[suburb].sort(sortSchools)
+      }
+      return JSON.stringify(output2)
+  }
+}
+
+doStuff.register({
+  action: 'transformSchoolsJSONevan',
+  func: transformSchoolsJSONevan,
+  description: 'Transform RYI Suburb/Schools JSON string to JavaScript variable for use in WWW RYI from</p><p>For creating the JavaScript variable use in the public website RYI form</p><ol><li>Copy the whole JSON (supplied by marketing) into the text box below</li><li>click MODIFY INPUT (green button on the bottom left)</li><li>Copy the (modified) contents of the text box</li><li>Then replace the existing variable in the sitecore <code>ryi-script.js</code> file</li></ol><p>',
+  // docsURL: '',
+  extraInputs: [{
+    id: 'output',
+    type: 'radio',
+    label: 'Output mode',
+    options:[{
+      value: 'object2',
+      label: 'Create keyed clean object for use in www RYI form',
+      default: true
+    },{
+      value: 'object',
+      label: 'Use clean object (if not checked make flat array of school objects)'
+    },{
+      value: 'array',
+      label: 'Single list of all schools as school objects'
+    },{
+      value: 'suburb',
+      label: 'HTML for suburb select input'
+    },{
+      value: 'school',
+      label: 'HTML for school select input'
+    }]
+  }],
+  group: 'evan',
+  ignore: false,
+  name: 'Transform RYI Suburb/Schools JSON'
+})
+
+//  END:  Transform RYI Suburb/Schools JSON
 // ====================================================================

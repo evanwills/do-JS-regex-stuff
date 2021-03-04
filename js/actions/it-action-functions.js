@@ -657,7 +657,7 @@ doStuff.register({
   action: 'fixSassLintIssues',
   func: fixSassLintIssues,
   description: 'Fix common issues identified by sass-lint and use standard branding variables for colour and spacing.',
-  // docsULR: '',
+  // docsURL: '',
   inputLabel: 'SCSS code to be modified',
   extraInputs: [
     {
@@ -740,7 +740,7 @@ doStuff.register({
   action: 'kssCommentBlock',
   func: kssCommentBlock,
   description: 'Generate a KSS comment block (or make HTML code safe to use in a KSS comment block',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [{
     id: 'wholeComment',
     label: 'Build whole KSS comment',
@@ -839,7 +839,7 @@ doStuff.register({
   action: 'sortComponentsAlpha',
   func: sortComponentsAlpha,
   description: 'Sort list of components into alphabetical order',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   // group: 'it',
   ignore: false,
@@ -943,7 +943,7 @@ doStuff.register({
   action: 'uniqueCharsOnly',
   func: uniqueCharsOnly,
   description: 'Remove duplicate characters from a string',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [{
     id: 'requiredChars',
     label: 'Required Characters',
@@ -1059,7 +1059,7 @@ doStuff.register({
   action: 'sitecore2local',
   func: sitecore2local,
   description: 'Rewrite URLs to point to local version of CSS, font & JS files. Plus rewrite image URLs to point to server.',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [{
     id: 'domain',
     label: 'Domain',
@@ -1090,4 +1090,127 @@ doStuff.register({
 })
 
 //  END: Sitecore HTML to local HTML
+// ====================================================================
+// START: Transform RYI Suburb/Schools JSON
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const transformSchoolsJSON = (input, extraInputs, GETvars) => {
+  let json
+  try {
+    json = JSON.parse(input)
+  } catch (e) {
+    console.error('Schools JSON failed to parse.', e)
+  }
+
+  // const outputMode = extraInputs.output()
+  // console.log(outputMode)
+
+  const output = []
+  const output2 = {}
+  const output3 = {}
+  let suburbCount = 0;
+  let schoolCount = 0;
+  const allSuburbs = []
+  const allSchools = []
+  let tmp = ''
+  let _tmp = []
+
+
+  for (a = 0; a < json.Suburbs.length; a += 1) {
+    const suburb = json.Suburbs[a]
+    suburbCount += 1
+    output2[suburb.Name] = []
+
+    // console.log('suburb:', suburb)
+    for (b = 0; b < suburb.Schools.length; b += 1) {
+      schoolCount += 1
+      const better = {
+        id: suburb.Schools[b].ID,
+        name: suburb.Schools[b].Name,
+        // suburb: suburb.Name,
+        state: suburb.Schools[b].State
+      }
+      // console.log('suburb.Schools[' + b + ']:', suburb.Schools[b])
+      output.push(better)
+      output2[suburb.Name].push(better)
+    }
+  }
+
+  const sortSchools = (a, b) => {
+    if (a.suburb < b.suburb) {
+      return -1
+    } else if (a.suburb > b.suburb) {
+      return 1
+    } else {
+      if (a.state < b.state) {
+        return -1
+      } else if (a.state > b.state) {
+        return 1
+      } else {
+        if (a.name < b.name) {
+          return -1
+        } else if (a.name > b.name) {
+          return 1
+        } else {
+          return 0
+        }
+      }
+    }
+  }
+
+  console.log('Suburb count:', suburbCount)
+  console.log('School count:', schoolCount)
+
+  _tmp = Object.keys(output2)
+  for (tmp in output2) {
+    console.log('tmp:', tmp)
+    let _key = tmp.replace(/[^a-z]+/ig, '')
+    console.log('_key:', _key)
+    _key = _key.toLowerCase()
+    console.log('_key:', _key)
+    output3[_key] = {
+      name: tmp,
+      schools: output2[tmp]
+    }
+  }
+
+
+  return 'var RYIschoolSuburbs = ' + multiRegexReplace(
+    JSON.stringify(output3),
+    [{
+      find: '"([^"]+)"(?=:)',
+      replace: function (whole, key) {
+        return key.toLowerCase()
+      }
+    }]
+  )
+}
+
+doStuff.register({
+  action: 'transformSchoolsJSON',
+  func: transformSchoolsJSON,
+  description: 'Transform RYI Suburb/Schools JSON string to JavaScript variable for use in WWW RYI from</p><p>For creating the JavaScript variable use in the public website RYI form</p><ol><li>Copy the whole JSON (supplied by marketing) into the text box below</li><li>click MODIFY INPUT (green button on the bottom left)</li><li>Copy the (modified) contents of the text box</li><li>Then replace the existing variable in the sitecore <code>ryi-script.js</code> file</li></ol><p>',
+  // docsURL: '',
+  extraInputs: [],
+  group: 'mer',
+  ignore: false,
+  name: 'Transform RYI Suburb/Schools JSON'
+})
+
+//  END:  Transform RYI Suburb/Schools JSON
 // ====================================================================

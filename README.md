@@ -65,8 +65,12 @@ After you've defined the function, you need to register it by calling doStuff.re
    by letting the user control options you specify to get specific  
    behaviour that meets their needs.
    ([Read more about Extra inputs objects](#about-extrainput-objects))
-9. `rawGET`: by default GET variables are "URL decoded" and converted
-    to appropriate types. By specifying `rawGET` as `TRUE` the action function receives the _raw_ (all strings) GET variables.
+9. `rawGET`: {boolean} _[optional]_ by default GET variables are 
+   "URL decoded" and converted to appropriate types. 
+   By specifying `rawGET` as `TRUE` the action function receives the
+   _raw_ (all strings) GET variables.
+10. `inputLabel`: {string} _[optional]_ By default the main input box
+    is labeled "_**Input**_". This can be overridden by defining `inputLabel`
 
 ### About `action` identifiers
 
@@ -98,8 +102,13 @@ Having extra user input fields gives your action more flexibility. `extraInput` 
 2. __`label`__: {string} _[required]_
    text to describe the field (or group of checkboxes/radio buttons)
 3. `type`: {string} _[optional]_
-   text (default), textarea, number, radio, checkbox, select
-   (if type is invalid, an error will be shown in the console)
+   > NOTE: if type is invalid, an error will be shown in the console
+   * text (default)
+   * textarea
+   * number
+   * radio
+   * checkbox
+   * select
 4. `default`: {string, number} _[optional]_ (not radio, checkbox or select)
    the default value for the input<br />
    __NOTE:__ If there is a `GET` variable matching the ID of the 

@@ -286,7 +286,7 @@ const makeAccordion = (input, extraInputs, GETvars) => {
 doStuff.register({
   action: 'heading2accordion',
   description: 'Convert content to an accordion using specific headings as the separator for the accordion',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [
     {
       id: 'mode',
@@ -811,7 +811,7 @@ doStuff.register({
   action: 'staffAccessCard',
   func: staffAccessCard,
   description: 'Generate a staff access card URL with email and gender bound in',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [
     {
       id: 'email',
@@ -886,7 +886,7 @@ doStuff.register({
   action: 'fixCEGunitURLs',
   func: fixCEGunitURLs,
   description: 'Fix CEG unit modal URLs',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   ignore: true,
   name: 'Fix CEG unit URLs'
@@ -1015,7 +1015,7 @@ doStuff.register({
   action: 'fixPoliciesAnchorLinksV1',
   func: fixPoliciesAnchorLinksV1,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   ignore: true,
   name: 'Fix policy anchor links'
@@ -1060,7 +1060,7 @@ doStuff.register({
   action: 'stripTableStyles',
   func: stripTableStyles,
   description: 'Remove style attributes (inline styles) from HTML',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [
     {
       id: 'whichStyle',
@@ -1157,7 +1157,7 @@ doStuff.register({
   action: 'commaSepThousand',
   func: commaSepThousand,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [],
   // group: '',
   ignore: false,
@@ -1330,7 +1330,7 @@ doStuff.register({
   action: 'formatHandbookPolicy',
   func: formatHandbookPolicy,
   description: '',
-  // docsULR: '',
+  // docsURL: '',
   extraInputs: [
     {
       id: 'mods',
