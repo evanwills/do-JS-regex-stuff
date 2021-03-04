@@ -954,7 +954,7 @@ function DoStuff (url, _remote, docs) {
     menuShowHide.onclick = bergerShowHide
     mask.onclick = bergerShowHide
 
-    if (typeof action === 'string' && action !== '') {
+    if (typeof action === 'string' && action !== '' && typeof registry[action] !== 'undefined') {
       // console.log('registry[' + action + ']:', registry[action])
       subTitle.className = ''
       subTitle.innerHTML = registry[action].name
