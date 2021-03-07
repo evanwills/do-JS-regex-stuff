@@ -1001,13 +1001,14 @@ const sitecore2local = (input, extraInputs, GETvars) => {
   const regex = [
     {
       find: '/assets/acupublic/(?:custom)?(?=(?:css|js|fonts)/)',
-      replace: '../'
+      replace: '../../../../Foundation/ACUPublic/Theming/code/assets/ACUPublic/'
+      // replace: '../'
     }, {
       find: '(<img src=")(?=/-/media/feature/)',
       replace: '$1https://' + extraInputs.domain() + '.acu.edu.au'
-    }, {
-      find: '\\.\\.(?=\\/js\\/(?:cta-bar|sticky|side-accordion)\\.js)',
-      replace: '../../../../Foundation/ACUPublic/Theming/code/assets/ACUPublic'
+    // }, {
+    //   find: '\\.\\.(?=\\/js\\/(?:cta-bar|sticky|side-accordion)\\.js)',
+    //   replace: '../../../../Foundation/ACUPublic/Theming/code/assets/ACUPublic'
     }, {
       find: '\\s+target=""',
       replace: ''
@@ -1049,6 +1050,12 @@ const sitecore2local = (input, extraInputs, GETvars) => {
     }, {
       find: '(href="#)course(?=overview")',
       replace: '$1'
+    }, {
+      find: '<script.*?src="[^"]+(?:bluebird|addevent)[^"]+".*?></script>',
+      replace: ''
+    }, {
+      find: '(src=")[^"]+((?:acu-logo-white|acu_logo_purple|askacu).svg)[^"]*(?=")',
+      replace: '$1../img/$2'
     }
   ]
 

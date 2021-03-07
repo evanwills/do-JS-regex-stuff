@@ -852,7 +852,7 @@ doStuff.register({
 
 //  END: ACU Form Build email hash search
 // ====================================================================
-// START: Fix bad ACU.Sitecore merge
+// START: (GIT) Fix bad ACU.Sitecore merge
 
 /**
  * Action description goes here
@@ -946,10 +946,10 @@ doStuff.register({
   extraInputs: [],
   group: 'evan',
   ignore: false,
-  name: 'Fix bad ACU.Sitecore merge'
+  name: 'GIT: Fix bad ACU.Sitecore merge'
 })
 
-//  END: Fix bad ACU.Sitecore merge
+//  END: (GIT) Fix bad ACU.Sitecore merge
 // ====================================================================
 // START: Accept all origin changes
 
@@ -1041,7 +1041,7 @@ doStuff.register({
   }],
   group: 'evan',
   ignore: false,
-  name: 'Accept merge changes'
+  name: 'GIT: Accept merge changes'
 })
 
 //  END: DUMMY action
@@ -1388,7 +1388,7 @@ doStuff.register({
   extraInputs: [],
   group: 'evan',
   ignore: false,
-  name: 'Undo changed line end chars'
+  name: 'GIT: Undo changed line end chars'
 })
 
 //  END: Checkout modified files with only changed line end characters
