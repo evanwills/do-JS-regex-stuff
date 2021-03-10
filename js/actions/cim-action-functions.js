@@ -255,17 +255,17 @@ doStuff.register({
       options: [
         { value: 'vdefault', label: 'Select an option', default: true },
         /*{ value: 'SUO', label: 'Add 4th column to Schedule of Unit Offerings'},*/
-		{ value: 'ACPP', label: 'Admission to Coursework Programs Policy link' },
-		{ value: 'CHUD', label: 'Click here for Unit Descriptions link'},
-        /*{ value: 'RAA', label: 'Remove bad code from WORD'},*/
-		{ value: 'RWS', label: 'Remove White Space'},
-		{ value: 'SCM', label: 'Sample Course Map'},
-		{ value: 'SU', label: 'Unit Description links'},
-		{ value: 'CT', label: 'Clean Tables'},
-		{ value: 'SUOT', label: 'Schedule of Unit Offerings Table Formatting'},
-		{ value: 'CAD', label: 'Class Allocation Dates'},
-		{ value: 'EC', label: 'WIP - Extended Calendar'},
-		{ value: 'U&C', label: 'Units and Costs'}
+        { value: 'ACPP', label: 'Admission to Coursework Programs Policy link' },
+        { value: 'CHUD', label: 'Click here for Unit Descriptions link'},
+            /*{ value: 'RAA', label: 'Remove bad code from WORD'},*/
+        { value: 'RWS', label: 'Remove White Space'},
+        { value: 'SCM', label: 'Sample Course Map'},
+        { value: 'SU', label: 'Unit Description links'},
+        { value: 'CT', label: 'Clean Tables'},
+        { value: 'SUOT', label: 'Schedule of Unit Offerings Table Formatting'},
+        { value: 'CAD', label: 'Class Allocation Dates'},
+        { value: 'EC', label: 'WIP - Extended Calendar'},
+        { value: 'U&C', label: 'Units and Costs'}
       ]
     }/*,
 	{

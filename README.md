@@ -59,7 +59,7 @@ After you've defined the function, you need to register it by calling doStuff.re
    inputs the action specifies.<br />
    Normally, documentation is written in HTML and stored in the
    `docs/` directory in this repo.
-8. `extraInputs`: {array} _[option]_ list of objects for extra input  
+8. `extraInputs`: {array} _[option]_ list of objects for extra input
    fields needed for the find/replace<br />
    Extra inputs fields allow you to augment the functionalty of your actions
    by letting the user control options you specify to get specific  
@@ -303,3 +303,75 @@ XRegExp adds a lot of very useful extra functionality to RegExp. Checkout the [X
 
 * [Helper & utility functions](README.utils.md)
 * [PHP API](README.php.md)
+
+## Upcoming features
+
+### Chained actions
+
+Unix has this idea of single purpose tools. Each tool should do one
+thing and do it well. `do-JS-regex-stuff` was built on that principle. 
+Lots of small actions that do one thing well. But in unix you can
+join tools together to perform more complex actions. At the moment 
+`do-JS-regex-stuff` can't do that. However in the future, it will.
+
+When registering an action a new property will be available: 
+`chaindedActions` which will be an array chained action objects.
+
+```json
+chainedActions: [
+  {
+    "actionID": "XXXX",
+    "required": false,
+    "order": {
+      "position": 0,
+      "force": false
+    }
+  }
+]
+```
+
+#### Chained action object
+* `actionID` - {string} *[mandatory]* The ID of the action to be 
+               chained to the main action
+* `required` - {boolean} *[optional]* Whether or not the action must
+               always be performed when the main action is performed<br />
+               (assumed `FALSE` if absent)
+* `order` - {object} *[optional]* The order in which the chanied 
+               action is performed<br />
+               (If absent, chained actions will be performed after 
+               the main action (i.e. the one being registered) in the
+               order they're listed
+* `position` - {number} *[mandatory]* [default: `0`] position within 
+               the chain that this action will be performed <br >
+               By default the user can change the order in which the
+               chained action can be performed
+  * If `position` is less than zero, it will be performed before the
+                  action in the order of its position
+  * If `position` is greater than zero it will be performed after 
+                  the action in the order of its position
+  * If `position` is zero *[default value]* it will performed after 
+                  the main according to its position in the 
+                  chainedActions list, along with other chained 
+                  actions that have no position 
+  * If more than one action has the same `position` value it will be 
+    performed in order of its position in the chainedActions list 
+    relative to others with the same `position` value
+* `force` - {boolean} *[optional]* If `force` is `TRUE` user will not
+            be able to change the order in which this chained action 
+            is performed
+
+#### User interface for chained actions
+
+When an action has chained actions associated with it, a list of 
+checkboxes will be shown to the user. One for each action. 
+
+Where a chained action is required, the checkbox will be read-only.
+
+If the chained action has extra fields when the checkbox is ticked,
+a new fieldset will be shown with all that action's extra input 
+fields.
+
+> __NOTE:__ If an action has multiple output fields specified, only 
+>           the value from the main output field will be passed to 
+>           the next chained action. But all output fields will be 
+>           shown.

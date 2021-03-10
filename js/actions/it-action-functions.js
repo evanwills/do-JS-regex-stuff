@@ -1118,94 +1118,66 @@ doStuff.register({
  */
 const transformSchoolsJSON = (input, extraInputs, GETvars) => {
   let json
-  try {
-    json = JSON.parse(input)
-  } catch (e) {
-    console.error('Schools JSON failed to parse.', e)
-  }
 
-  // const outputMode = extraInputs.output()
-  // console.log(outputMode)
-
-  const output = []
-  const output2 = {}
-  const output3 = {}
-  let suburbCount = 0;
-  let schoolCount = 0;
-  const allSuburbs = []
-  const allSchools = []
-  let tmp = ''
-  let _tmp = []
-
-
-  for (a = 0; a < json.Suburbs.length; a += 1) {
-    const suburb = json.Suburbs[a]
-    suburbCount += 1
-    output2[suburb.Name] = []
-
-    // console.log('suburb:', suburb)
-    for (b = 0; b < suburb.Schools.length; b += 1) {
-      schoolCount += 1
-      const better = {
-        id: suburb.Schools[b].ID,
-        name: suburb.Schools[b].Name,
-        // suburb: suburb.Name,
-        state: suburb.Schools[b].State
-      }
-      // console.log('suburb.Schools[' + b + ']:', suburb.Schools[b])
-      output.push(better)
-      output2[suburb.Name].push(better)
+  const sortByKey = (obj) => {
+    const output = {}
+    const keys = Object.keys(obj)
+    keys.sort()
+    for (let a = 0; a < keys.length; a += 1) {
+      output[keys[a]] = obj[keys[a]]
     }
+
+    return output
+  }
+  const noQuotes = (input) => {
+    return JSON.stringify(input).replace(/"([^"]+)"(?=:)/ig, '$1').replace(/^(\[|\{)/, '$1\n  ').replace(/(\}|\])$/, '\n$1\n')
   }
 
-  const sortSchools = (a, b) => {
-    if (a.suburb < b.suburb) {
-      return -1
-    } else if (a.suburb > b.suburb) {
-      return 1
-    } else {
-      if (a.state < b.state) {
-        return -1
-      } else if (a.state > b.state) {
-        return 1
-      } else {
-        if (a.name < b.name) {
-          return -1
-        } else if (a.name > b.name) {
-          return 1
-        } else {
-          return 0
+  if (extraInputs.mode() === 'suburbs') {
+    try {
+      json = JSON.parse(input.replace(/(^|[\r\n])[\t ]*\/\/[^\r\n]+/ig , ''))
+    } catch (e) {
+      console.error('Schools JSON failed to parse.', e)
+      return ''
+    }
+    return '\n\n/**' +
+           '\n * A list of Australian suburbs hosting High Schools that offer' +
+           '\n * ATAR programs.' +
+           '\n *' +
+           '\n * NOTE: This variable was generated using' +
+           '\n *       https://test-webapps.acu.edu.au/mini-apps/do-JS-regex-stuff/?group=mer&action=transformschoolsjson' +
+           '\n *       (following the instructions in the tool)' +
+           '\n *' +
+           '\n *       The tool converts the JSON into a Javascript variable' +
+           '\n *       appropriate for use in this script' +
+           '\n *' +
+           '\n *       (Repo for the tool is at https://gitlab.acu.edu.au/evwills/do-JS-regex-stuff)\n *' +
+           '\n * @var {array} RYIschoolSuburbs\n */\n' +
+           'var RYIschoolSuburbs = ' +
+           noQuotes(json.Suburbs)
+  } else if (extraInputs.mode() === 'studyArea') {
+    try {
+      json = JSON.parse(input.replace(/^var Campuses = /, '').replace(/([a-z]+)(?=:)/ig, '"$1"'))
+    } catch(e) {
+      console.error('failed to parse study area object', e)
+      return ''
+    }
+
+    for (campus in json) {
+      for (level in json[campus]) {
+        if (typeof json[campus][level] !== 'string') {
+          json[campus][level] = sortByKey(json[campus][level])
         }
       }
     }
+
+    console.log('json:', json)
+    return 'var Campuses = ' + noQuotes(json)
+  } else {
+    console.error('No mode specified.')
+    return ''
   }
 
-  console.log('Suburb count:', suburbCount)
-  console.log('School count:', schoolCount)
-
-  _tmp = Object.keys(output2)
-  for (tmp in output2) {
-    console.log('tmp:', tmp)
-    let _key = tmp.replace(/[^a-z]+/ig, '')
-    console.log('_key:', _key)
-    _key = _key.toLowerCase()
-    console.log('_key:', _key)
-    output3[_key] = {
-      name: tmp,
-      schools: output2[tmp]
-    }
-  }
-
-
-  return 'var RYIschoolSuburbs = ' + multiRegexReplace(
-    JSON.stringify(output3),
-    [{
-      find: '"([^"]+)"(?=:)',
-      replace: function (whole, key) {
-        return key.toLowerCase()
-      }
-    }]
-  )
 }
 
 doStuff.register({
@@ -1213,7 +1185,19 @@ doStuff.register({
   func: transformSchoolsJSON,
   description: 'Transform RYI Suburb/Schools JSON string to JavaScript variable for use in WWW RYI from</p><p>For creating the JavaScript variable use in the public website RYI form</p><ol><li>Copy the whole JSON (supplied by marketing) into the text box below</li><li>click MODIFY INPUT (green button on the bottom left)</li><li>Copy the (modified) contents of the text box</li><li>Then replace the existing variable in the sitecore <code>ryi-script.js</code> file</li></ol><p>',
   // docsURL: '',
-  extraInputs: [],
+  extraInputs: [{
+    id: 'mode',
+    type: 'radio',
+    label: 'What to transform',
+    options: [{
+      value: 'suburbs',
+      label: 'Convert Suburbs JSON to variable'
+    }, {
+      value: 'studyArea',
+      label: 'Alphabetise study areas',
+      default: true
+    }]
+  }],
   group: 'mer',
   ignore: false,
   name: 'Transform RYI Suburb/Schools JSON'

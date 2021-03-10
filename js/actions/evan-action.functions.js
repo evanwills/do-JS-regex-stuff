@@ -880,6 +880,9 @@ const fixBadSitecoreMerge = (input, extraInputs, GETvars) => {
   var checkoutFiles = ''
   var rmFiles = ''
   var rmDirs = ''
+  var sepCO = ' '
+  var sepRMD = ' '
+  var sepRMF = ' '
   var thisURL = 'file:///C:/Users/evwills/Documents/Evan/code/do-JS-regex-stuff/do-JS-regex-stuff.html?groups=it,evan&action=fixbadsitecoremerge'
 
   for (var a = 0; a < lines.length; a += 1) {
@@ -893,13 +896,13 @@ const fixBadSitecoreMerge = (input, extraInputs, GETvars) => {
     if (line === 'Changes not staged for commit:') {
       uncommitted = true
       untracked = false
-      // output += '\n-----------------------\necho "Undoing merge"\n\n'
+      // output += '\n# -----------------------\necho "Undoing merge"\n\n'
       continue
     }
     if (line === 'Untracked files:') {
       uncommitted = false
       untracked = true
-      // output += '\n-----------------------\necho "Removing untracked files"\n\n'
+      // output += '\n# -----------------------\necho "Removing untracked files"\n\n'
       continue
     }
 
@@ -908,25 +911,28 @@ const fixBadSitecoreMerge = (input, extraInputs, GETvars) => {
       console.log('file:', file)
       console.log('line:', line)
       if (file !== line) {
-        checkoutFiles += ' "' + file + '"'
+        checkoutFiles += sepCO + '"' + file + '"'
+        sepCO = '\\\n\t'
       }
     } else if (untracked === true) {
       if (line.substr(line.length - 1) === '/') {
-        rmDirs += ' "' + line + '"'
+        rmDirs += sepRMD + '"' + line + '"'
+        sepRMD = '\\\n\t'
       } else {
-        rmFiles += ' "' + line + '"'
+        rmFiles += sepRMF + '"' + line + '"'
+        sepRMF = '\\\n\t'
       }
     }
   }
 
   if (checkoutFiles !== '') {
-    output += '\n\n-----------------------\necho "Files to be reset";\n\ngit checkout' + checkoutFiles + ';\n\ngit reset' + checkoutFiles + ';'
+    output += '\n\n\n# -----------------------\n\necho "Files to be reset";\n\ngit checkout' + checkoutFiles + ';\n\ngit reset' + checkoutFiles + ';'
   }
   if (rmFiles !== '') {
-    output += '\n\n-----------------------\necho "Files to be deleted";\n\nrm' + rmFiles + ';'
+    output += '\n\n\n# -----------------------\n\necho "Files to be deleted";\n\nrm' + rmFiles + ';'
   }
   if (rmDirs !== '') {
-    output += '\n\n-----------------------\necho "Directories to be deleted";\n\nrm -rf' + rmDirs + ';'
+    output += '\n\n\n# -----------------------\n\necho "Directories to be deleted";\n\nrm -rf' + rmDirs + ';'
   }
 
   if (output !== '') {
@@ -941,7 +947,7 @@ const fixBadSitecoreMerge = (input, extraInputs, GETvars) => {
 doStuff.register({
   action: 'fixBadSitecoreMerge',
   func: fixBadSitecoreMerge,
-  description: '',
+  description: 'Copy the entire output of <code>$ git status;</code> and paste it below',
   // docsURL: '',
   extraInputs: [],
   group: 'evan',
@@ -977,6 +983,7 @@ const acceptChanges = (input, extraInputs, GETvars) => {
   var doAdd = extraInputs.add('add')
   var doCheckout = extraInputs.add('checkout')
   var a
+  var thisURL = 'file:///C:/Users/evwills/Documents/Evan/code/do-JS-regex-stuff/do-JS-regex-stuff.html?groups=it,evan&action=acceptChanges'
 
   oursTheirs = (typeof oursTheirs === 'string') ? oursTheirs : 'theirs'
   console.log('lines:', lines)
@@ -987,22 +994,28 @@ const acceptChanges = (input, extraInputs, GETvars) => {
     console.log('lines[' + a + ']:', lines[a])
     line = lines[a].trim()
     console.log('line:', line)
-    line = line.replace(/^both modified:\s+/, '')
-    console.log('line:', line)
+    if (line.substr(0, 14) === 'both modified:') {
+      line = line.replace(/^both modified:\s+/, '')
+      console.log('line:', line)
 
-    if (line !== '') {
-      if (doCheckout === true) {
-        output += 'git checkout --' + oursTheirs + ' "' + line + '";\n'
+      if (line !== '') {
+        if (doCheckout === true) {
+          output += '\ngit checkout --' + oursTheirs + ' "' + line + '";\n'
+        }
+        if (doAdd === true) {
+          output += 'git add "' + line + '";\n'
+        }
+        console.log('output:', output)
       }
-      if (doAdd === true) {
-        output += 'git add "' + line + '";\n'
-      }
-      console.log('output:', output)
     }
+
+    // if (line !== '') {
+    //   console.log('output:', output)
+    // }
   }
 
   if (output !== '') {
-    output += 'git status;\n'
+    output = '#!/bin/sh\n\n# ' + thisURL + '\n\n' + output + '\n\n\ngit status;\n'
   }
 
   return output
@@ -1432,6 +1445,11 @@ const transformSchoolsJSONevan = (input, extraInputs, GETvars) => {
   let tmp = ''
   let _tmp = []
 
+  const makeJS = (input) => {
+    const _through = JSON.stringify(input)
+    return _through.replace(/"([^"]+)"(?=:)/ig, (whole, key) => key.toLowerCase())
+  }
+
 
   for (a = 0; a < json.Suburbs.length; a += 1) {
     const suburb = json.Suburbs[a]
@@ -1539,23 +1557,18 @@ const transformSchoolsJSONevan = (input, extraInputs, GETvars) => {
       }
 
 
-      return 'var RYIschoolSuburbs = ' + multiRegexReplace(
-        JSON.stringify(output3),
-        [{
-          find: '"([^"]+)"(?=:)',
-          replace: function (whole, key) {
-            return key.toLowerCase()
-          }
-        }]
-      )
+      return 'var RYIschoolSuburbs = ' + makeJS(output3)
       break;
 
     case 'object':
-    default:
       for (suburb in output2) {
         output2[suburb].sort(sortSchools)
       }
       return JSON.stringify(output2)
+    case 'js':
+      default:
+      return 'var RYIschoolSuburbs = ' + makeJS(json.Suburbs)
+
   }
 }
 
@@ -1569,9 +1582,12 @@ doStuff.register({
     type: 'radio',
     label: 'Output mode',
     options:[{
-      value: 'object2',
-      label: 'Create keyed clean object for use in www RYI form',
+      value: 'js',
+      label: 'JS version of original JSON',
       default: true
+    },{
+      value: 'object2',
+      label: 'Create keyed clean object for use in www RYI form'
     },{
       value: 'object',
       label: 'Use clean object (if not checked make flat array of school objects)'
@@ -1592,4 +1608,50 @@ doStuff.register({
 })
 
 //  END:  Transform RYI Suburb/Schools JSON
+// ====================================================================
+// START: Fix handbook URLs
+
+/**
+ * Action description goes here
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const fixHandbookURLs = (input, extraInputs, GETvars) => {
+  //sed -i 's/http:\/\/www\.acu\.edu\.au\/346446/\/handbook\/handbooks\/handbook_2012\/unit_descriptions_for_2012.html/ig' non-award_courses/*.html
+
+  // sed -i 's/\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/units-info\//https:\/\/archives\.acu\.edu\.au\/handbook\/units-info\//ig'
+  var output = '#!/bin/sh\n\n' +
+               'function cleanHTML {\n' +
+               '\tif [ -d "$1" ]\n' +
+               '\tthen\t'
+               '}\n\n'
+  return input
+}
+
+doStuff.register({
+  action: 'fixHandbookURLs',
+  func: fixHandbookURLs,
+  description: '',
+  // docsURL: '',
+  extraInputs: [],
+  // group: '',
+  ignore: false,
+  // inputLabel: '',
+  name: 'Fix (archived) Handbook URLs'
+  // remote: false,
+  // rawGet: false,
+})
+
+//  END: Action name
 // ====================================================================
