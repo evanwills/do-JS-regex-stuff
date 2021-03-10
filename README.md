@@ -4,33 +4,48 @@
 
 ## How "Do JS regex stuff" works
 
-So you have some dodgy text and you'd like to clean it up? Well you've come to the right place.
+So you have some dodgy text and you'd like to clean it up? Well 
+you've come to the right place.
 
-In the _[js/action-functions.js](js/action-functions.js)_ file you need to write a function that does all the stuff you need for one action.
+In the _[js/action-functions.js](js/action-functions.js)_ file you 
+need to write a function that does all the stuff you need for one 
+action.
 
 Then you need to register that function so the app knows what to do.
 
 > `Do-JS-Regex-Stuff` now has the ability to call a server-side API. 
 > This allows you to create actions that can do things that are not 
-> as easy to do in JavaScript.
-> Currently I only have a [PHP implementation](README.php.md) of the server side API. And `Do-JS-Regex-Stuff` can only handle one output from the API, but I plan on implementing
+> as easy to do in JavaScript.<br />
+> Currently I only have a [PHP implementation](README.php.md) of the 
+> server side API. And `Do-JS-Regex-Stuff` can only handle one output
+> from the API, but I plan on implementing
 
 ## The `action` function
 
 There are a few things you need to know about the `action` function:
 
-1. The function must have a unique name (so you don't override someone else's work).
+1. The function must have a unique name (so you don't override 
+   someone else's work).
 2. It must accept three parameters:
-   1. __`input`__: {string} text from the main "Text to be modified" textarea
-   2. __`extraInputs`__: {object} list of key/value pairs where the key is the contents of the `name` attribute of the field and the value is a function that can be called to retrieve the value of that field
-        (see below for more info on extra fields that you can define when you register the function)
-   3. __`GETvars`__: {object} list of all supplied GET variables from URL
-3. It must return a string (to be used as the replacement contents for the "Text to be modified" textarea
-4. It must be a pure function (i.e. it must not make changes to variables that are not defined within the function)
+   1. __`input`__: {string} text from the main "Text to be modified" 
+      textarea
+   2. __`extraInputs`__: {object} list of key/value pairs where the
+      key is the contents of the `name` attribute of the field and 
+      the value is a function that can be called to retrieve the 
+      value of that field
+      (see below for more info on extra fields that you can define
+      when you register the function)
+   3. __`GETvars`__: {object} list of all supplied GET variables 
+      from URL
+3. It must return a string (to be used as the replacement contents
+   for the "Text to be modified" textarea
+4. It must be a pure function (i.e. it must not make changes to 
+   variables that are not defined within the function)
 
 ## Registering an `action` function
 
-After you've defined the function, you need to register it by calling doStuff.register(), which accepts an object with the following keys:
+After you've defined the function, you need to register it by calling
+`doStuff.register()`, which accepts an object with the following keys:
 
 1. __`func`__: {function} _[required]_ (forbidden/ignored for remote 
    actions)<br />
@@ -77,23 +92,29 @@ After you've defined the function, you need to register it by calling doStuff.re
 `action` identifiers must follow a few simple rules:
 1. They must start with at least two alphabetical characters
 2. They can only contain alpha-numeric characters
-3. They must be a minimum of 6 characters long and a maximum of 50 characters long
+3. They must be a minimum of 6 characters long and a maximum of 50
+   characters long
 4. They are case insensitive when compared
 5. They must be unique
 
 ### About `group` names
 
-Like `action` identifiers `group` names must follow some rules to be valid:
+Like `action` identifiers `group` names must follow some rules to be
+valid:
 1. They must start with at least two alphabetical characters
 2. They can only contain alpha-numeric characters
-3. They must be a minimum of 2 characters long and a maximum of 50 characters long
+3. They must be a minimum of 2 characters long and a maximum of 50
+   characters long
 4. They are case insensitive when compared
 
 Unlike `action` identifiers there is no need for them to be unique
 
 ### About `extraInput` objects
 
-Having extra user input fields gives your action more flexibility. `extraInput` objects allow you to define all the attributes you'd like for a given input field, textarea, select field, group of radio buttons or checkboxes.
+Having extra user input fields gives your action more flexibility. 
+`extraInput` objects allow you to define all the attributes you'd 
+like for a given input field, textarea, select field, group of 
+radio buttons or checkboxes.
 
 `extraInput` objects have the following properties:
 
@@ -135,7 +156,9 @@ Having extra user input fields gives your action more flexibility. `extraInput` 
 
 #### `option` objects 
 
-When specifying multi option fields like Select/dropdown fields, Radio button fields, or Checkbox fields, You will need to list each option value/label pair. You can do so by defining option objects.
+When specifying multi option fields like Select/dropdown fields, 
+Radio button fields, or Checkbox fields, You will need to list each
+option value/label pair. You can do so by defining option objects.
 
 `option` object have the following properties:
 
@@ -144,13 +167,22 @@ When specifying multi option fields like Select/dropdown fields, Radio button fi
 3. `default`: {boolean} _[optional]_ Whether or not this field/option 
    is checked/selected by default
 
-__NOTE:__ If there is a `GET` variable matching the ID of the field and the value of that `GET` variable matches the value of the option, then that option will be checked/selected by default.
+__NOTE:__ If there is a `GET` variable matching the ID of the field
+          and the value of that `GET` variable matches the value of
+          the option, then that option will be checked/selected by
+          default.
 
 -----
 
 ## Using the values from extra input fields
 
-Say you have an action function with three _extra input_ fields. One for year with the ID `year` and another for gender and a group of checkboxes for mood. You can get the value of `year` by calling `extraInputs.year()` and the value of gender by calling `extraInputs.gender()`. You can get the value for each type of mood by calling the mood function, passing the value of that mood as the only parameter  e.g.
+Say you have an action function with three _extra input_ fields.
+One for year with the ID `year` and another for gender and a group 
+of checkboxes for mood. You can get the value of `year` by calling 
+`extraInputs.year()` and the value of gender by calling 
+`extraInputs.gender()`. You can get the value for each type of mood
+ by calling the mood function, passing the value of that mood as 
+ the only parameter  e.g.
 
 ``` javascript
 const exposeChickens = (input, extraInputs, GETvars) => {
@@ -245,11 +277,17 @@ doStuff.register({
 
 ### Checkbox fields
 
-All input types have the same way of accessing their values except checkboxes. __do-JS-regex-stuff__ is set up to allow for multiple checkbox inputs for a single "field" but checkboxes are unique and each needs a unique ID, so you access whether a checkbox is checked or not by passing the value to the function.
+All input types have the same way of accessing their values except
+checkboxes. __do-JS-regex-stuff__ is set up to allow for multiple
+checkbox inputs for a single "field" but checkboxes are unique and
+each needs a unique ID, so you access whether a checkbox is checked
+or not by passing the value to the function.
 
 __NOTE:__ Checkbox values are always boolean (`TRUE` or `FALSE`)
 
-In the above code sample we have "_Mood of the chicken_" group of checkboxes identified by `mood`. To get whether a given mood is checked we pass value for that mood to the `mood` function. e.g.
+In the above code sample we have "_Mood of the chicken_" group of
+checkboxes identified by `mood`. To get whether a given mood is
+checked we pass value for that mood to the `mood` function. e.g.
 
 ``` javascript
 var _unsure = (extraInputs.mood('unsure')) ? ' I think' : ''
@@ -261,12 +299,15 @@ var _excited = extraInputs.mood('excited')
 ## Using GET variables from the URL
 
 URL GET variables are used in two ways in __do-JS-regex-stuff__:
+
 1. GET variables are used to preset "_extra input_" fields
 2. GET variables are also available within an action function
 
 ### Pre-Processing GET variables
 
-Where possible, the value of GET variables are converted to their appropriate javascript variable types. e.g.
+Where possible, the value of GET variables are converted to their
+appropriate javascript variable types. e.g.
+
 *  `'true'` will be converted to boolean `TRUE` (case _insensitive_)
 *  `'false'` will be converted to boolean `FALSE` (case _insensitive_)
 *  `'2019'` will be converted to number `2019`
@@ -275,28 +316,45 @@ GET variables are also URL decoded. (But JSON objects are not parsed)
 
 ### Presetting _extra input_ fields
 
-For text type fields, if the field's ID matches a GET variable, then the value of the GET variable is used as the default value for that field.
+For text type fields, if the field's ID matches a GET variable,
+then the value of the GET variable is used as the default value
+for that field.
 
-For checkbox, radio & select fields, if the field's `name` matches a get variable and the field's (or option's) value matches the value of the GET variable then that field/option will be checked/selected
+For checkbox, radio & select fields, if the field's `name` matches
+a get variable and the field's (or option's) value matches the 
+value of the GET variable then that field/option will be 
+checked/selected.
 
 ### Using GET variables within action function
 
-It's probably a bad idea to use GET variables within you action function because it hides functionality from the user which they may or may not need to change.
+It's probably a bad idea to use GET variables within you action 
+function because it hides functionality from the user which they 
+may or may not need to change.
 
 However, there are times when that's exactly what you want.
 
-Action functions get the GET variables passed an object via the third parameter when the function is called.
+Action functions get the GET variables passed an object via the 
+third parameter when the function is called.
 
-As an action function author, you need to test whether the GET variable exists before you use it. Otherwise, an error will be thrown and your function won't work.
+As an action function author, you need to test whether the GET 
+variable exists before you use it. Otherwise, an error will be 
+thrown and your function won't work.
 
-__NOTE:__ If the pre-processed GET variables don't work in your usecase, you can include the `rawGET` property in your registration object. This means that when the GET variables are passed to the action function you get the raw version of the variables.
+__NOTE:__ If the pre-processed GET variables don't work in your 
+usecase, you can include the `rawGET` property in your registration 
+object. This means that when the GET variables are passed to the 
+action function you get the raw version of the variables.
 
 
 ## Regular expressions
 
-Because there are somethings you can't normally do with regular Javascript RegExp regular expressions [XRegExp](http://xregexp.com/) is included.
+Because there are somethings you can't normally do with regular 
+Javascript RegExp regular expressions [XRegExp](http://xregexp.com/) 
+is included.
 
-XRegExp adds a lot of very useful extra functionality to RegExp. Checkout the [XRegExp documentation](https://github.com/slevithan/xregexp/blob/master/README.md) for more info on how to use it.
+XRegExp adds a lot of very useful extra functionality to RegExp. 
+Checkout the [XRegExp documentation](https://github.com/slevithan/xregexp/blob/master/README.md)
+for more info on how to use it.
 
 
 ## More reading
@@ -312,10 +370,10 @@ Unix has this idea of single purpose tools. Each tool should do one
 thing and do it well. `do-JS-regex-stuff` was built on that principle. 
 Lots of small actions that do one thing well. But in unix you can
 join tools together to perform more complex actions. At the moment 
-`do-JS-regex-stuff` can't do that. However in the future, it will.
+`do-JS-regex-stuff` can't do that. However in the future, *it will!*
 
 When registering an action a new property will be available: 
-`chaindedActions` which will be an array chained action objects.
+`chaindedActions` which will be an array of chained action objects.
 
 ```json
 chainedActions: [
