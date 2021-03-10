@@ -478,7 +478,7 @@ $('.custom-fields--label').css('width', '18rem');
 // ====================================================================
 // START: Jon's Table Stripping
 
- function stripTables (input) {
+function stripTables (input) {
   var output = ''
   // var content = ''
   // var tmp = ''

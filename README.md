@@ -39,8 +39,10 @@ There are a few things you need to know about the `action` function:
       from URL
 3. It must return a string (to be used as the replacement contents
    for the "Text to be modified" textarea
-4. It must be a pure function (i.e. it must not make changes to 
-   variables that are not defined within the function)
+4. It must be a pure function (i.e. it *must not* make changes to 
+   variables that are not defined within the function and *must not* 
+   change the user interface)
+5. It (probably) shouldn't make fetch/XHR requests
 
 ## Registering an `action` function
 
