@@ -1645,10 +1645,88 @@ doStuff.register({
   description: '',
   // docsURL: '',
   extraInputs: [],
-  // group: '',
-  ignore: false,
+  group: 'evan',
+  ignore: true,
   // inputLabel: '',
   name: 'Fix (archived) Handbook URLs'
+  // remote: false,
+  // rawGet: false,
+})
+
+//  END: Action name
+// ====================================================================
+// START: extract unicode chars
+
+/**
+ * Extract Unicode chars and their HTML Character entities from the
+ * contents of
+ * view-source:https://dev.w3.org/html5/html-author/charref and make
+ * a JavaScript array for find/replace
+ *
+ * created by: Evan Wills
+ * created: 2020-04-09
+ *
+ * @param {string} input user supplied content (expects HTML code)
+ * @param {object} extraInputs all the values from "extra" form
+ *               fields specified when registering the ation
+ * @param {object} GETvars all the GET variables from the URL as
+ *               key/value pairs
+ *               NOTE: numeric strings are converted to numbers and
+ *                     "true" & "false" are converted to booleans
+ *
+ * @returns {string} modified version user input
+ */
+const extractInicode = (input, extraInputs, GETvars) => {
+  const extractFromRow = (whole, cells) => {
+    matches = cells.match(/^.*?<td class="named"><code>\&amp;([^;]+);(?:\s+\&amp;[^;]+;)*<\/code><td class="hex"><code>\&amp;#x[^;]+;<\/code><td class="dec"><code>\&amp;#([^;]+);<\/code><td class="desc">(.*)/i)
+
+    if (matches === null) {
+      console.log('Nothing was matched')
+      console.log('matches === null:', matches === null)
+      console.log('cells:', cells)
+      return ''
+    } else if ((!extraInputs.bigSmall('ascii') && matches[2] <= 128) || (!extraInputs.bigSmall('high') && matches[2] > 9999)) {
+      console.log('matches === null:', matches === null)
+      console.log('matches[2] (' + matches[2] + ') <= 128:', matches[2] <= 128)
+      console.log('matches[2] (' + matches[2] + ') > 9999:', matches[2] > 9999)
+      console.log('cells:', cells)
+      return ''
+    }
+
+    const unicode = (matches[2] < 1000) ? '0' + matches[2] : matches[2]
+
+    return '\n    [ /\\u' + unicode + '/g, \'&' + matches[1] + ';\' ], // ' + matches[3]
+  }
+
+  const replaceRows = (whole, rows) => {
+    return rows.replace(/<tr[^>]+>(.*?)(?=<tr |$)/igs, extractFromRow)
+  }
+
+  return input.replace(/^.*?<table[^>]*>(.*?)<\/table>.*$/is, replaceRows)
+}
+
+doStuff.register({
+  action: 'extractInicode',
+  func: extractInicode,
+  description: 'Extract Unicode chars and their HTML Character entities from the contents of <a href="https://dev.w3.org/html5/html-author/charref">W3C\'s Character Entity Reference Chart</a> (<a href="view-source:https://dev.w3.org/html5/html-author/charref">source</a>) and make a JavaScript array for find/replace',
+  // docsURL: '',
+  extraInputs: [{
+    type: 'checkbox',
+    id: 'bigSmall',
+    label: 'Which entities to include',
+    options: [{
+      value: 'ascii',
+      label: 'Include low ascii characters'
+    }, {
+      value: 'high',
+      label: 'Include high ascii characters (above #9999)',
+      default: true
+    }]
+  }],
+  group: 'evan',
+  ignore: false,
+  // inputLabel: '',
+  name: 'Extract unicode chars'
   // remote: false,
   // rawGet: false,
 })

@@ -1,6 +1,24 @@
 # "Do JS regex stuff"
 
+1. [How "Do JS regex stuff" works](#how-do-js-regex-stuff-works)
+2. [The `action` function](tThe-action-function)
+3. [Registering an `action` function](#registering-an-action-function)
+    1. [About `action` identifiers](#about-action-identifiers)
+    2. [About `group` names](#about-group-names)
+    3. [About `extraInput` objects](#about-extraInput-objects)
+       1. [`option` objects](#option-objects)
+4. [Using the values from extra input fields](#using-the-values-from-extra-input-fields)
+    1. [Checkbox fields](#checkbox-fields)
+5. [Using GET variables from the URL](#using-get-variables-from-the-url)
+6. [Regular expressions](#regular-expressions)
+7. [Upcoming features](#upcoming-features)
+    1. [Chained actions](#chained-actions)
+        1. [Chained action object](#chained-action-object)
+        2. [User interface for chained actions](#user-interface-for-chained-actions)
+    2. [Extra outputs](#extra-outputs)
+8. [More reading](#more-reading)
 
+---
 
 ## How "Do JS regex stuff" works
 
@@ -358,12 +376,7 @@ XRegExp adds a lot of very useful extra functionality to RegExp.
 Checkout the [XRegExp documentation](https://github.com/slevithan/xregexp/blob/master/README.md)
 for more info on how to use it.
 
-
-## More reading
-
-* [Helper & utility functions](README.utils.md)
-* [PHP API](README.php.md)
-
+-----
 ## Upcoming features
 
 ### Chained actions
@@ -435,3 +448,36 @@ fields.
 >           the value from the main output field will be passed to 
 >           the next chained action. But all output fields will be 
 >           shown.
+
+
+### Extra outputs
+
+If you are performing an action and would like to have multiple outputs (e.g. converting form field IDs to HTML form fields fields _AND_ HTML form submission results HTML _AND_ a user receipt email HTML)
+
+This will allow you to specify multiple output fields
+
+When registering an action a new property will be available: 
+`extraOutputs` which will be an array of extra output objects.
+
+```json
+"extraOutputs": [
+  {
+    "outputID": "XXXX",
+    "singleLine": false,
+    "before": false
+  }
+]
+```
+
+Only the `outputID` is required.
+
+If `singleLine` is omitted it is assumed to be false i.e. `<textarea>` is used by default
+If `before` is omitted it is assumed that the extra output is to be rendered after the main output.
+
+Extra outputs are rendered in order of appearance.
+
+-----
+## More reading
+
+* [Helper & utility functions](README.utils.md)
+* [PHP API](README.php.md)
